@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -781,38 +780,7 @@
     </div>
 
     <div class="tab-content active" id="downloadsTab">
-      <div class="stats-container">
-        <div class="stat-card">
-          <div class="stat-value" id="totalDownloads">0</div>
-          <div class="stat-label">Total Downloads</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="activeUsers">0</div>
-          <div class="stat-label">Active Users</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="lastUpdated">Today</div>
-          <div class="stat-label">Last Updated</div>
-        </div>
-      </div>
-
       <div class="games-grid" id="macrosGrid">
-        <div class="game-card">
-          <h2 class="game-title">Anime Vanguards</h2>
-          <ul class="game-features">
-            <li>Namek Inf</li>
-            <li>Legend Stages</li>
-            <li>Portals</li>
-            <li>Custom</li>
-            <li>And much more coming ...</li>
-          </ul>
-          <a href="#" class="download-button" id="avButton">
-            <i class="fas fa-download"></i> Download Now
-          </a>
-          <div class="version-tag"><i class="fas fa-code-branch"></i> <span id="avVersion">Loading...</span></div>
-          <div class="download-count"><i class="fas fa-cloud-download-alt"></i> Downloads: <span id="avDownloads">Loading...</span></div>
-        </div>
-
         <div class="game-card">
           <h2 class="game-title">Anime Guardians</h2>
           <ul class="game-features">
@@ -834,11 +802,13 @@
         <div class="game-card">
           <h2 class="game-title">Anime Last Stand</h2>
           <ul class="game-features">
-            <li>Central and U-18 Raid</li>
+            <li>Every Raid</li>
             <li>Every Legend Stage</li>
-            <li>Unknown Planet Infinite</li>
-            <li>Portals</li>
-            <li>Survival</li>
+            <li>Oasis Inf</li>
+            <li>Portal</li>
+            <li>Every Dungeon</li>
+            <li>Every Extreme Boost</li>
+            <li>Every Survival</li>
             <li>Custom</li>
           </ul>
           <a href="#" class="download-button" id="alsButton">
@@ -875,9 +845,6 @@
           </div>
           <div class="game-tab-button" id="alsSetupButton">
             <i class="fas fa-cog"></i> ALS Setup
-          </div>
-          <div class="game-tab-button" id="avSetupButton">
-            <i class="fas fa-cog"></i> AV Setup
           </div>
         </div>
         
@@ -986,23 +953,6 @@
             <img src="alssetup.png" alt="Anime Last Stand Setup" class="game-settings-image">
           </div>
         </div>
-
-        <div class="game-tab-content" id="avSetupTab">
-          <div class="setup-step">
-            <h3>INGAME SETTINGS</h3>
-            <img src="avsettings1.png" alt="Anime Vanguards Settings 1" class="game-settings-image">
-            <img src="avsettings2.png" alt="Anime Vanguards Settings 2" class="game-settings-image">
-          </div>
-          
-          <div class="setup-step">
-            <h3>SETUP</h3>
-            <li>For Namek put a wave you want to restart at - start in lobby</li>
-            <li>For legend stages f4 to take a picture of whatever stage your on it will ask zoomtech click yes or no - START WITH THE CARDS SHOWING UP IN ENGLISH</li>
-            <li>For portals get a picture using f4 make sure your on the mode so it replaces the right image - Start in lobby</li>
-            <li>Custom f4 it will replace the image - start in the map</li>
-            <li>IF YOU ARE DOING NAMEK THE SETUP UNIT SLOT IS IN SETTINGS(for top down setup best unit would be speedwagon)</li>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -1089,18 +1039,13 @@
       document.getElementById('macroDownloads').textContent = "0";
       document.getElementById('animeDownloads').textContent = "0";
       document.getElementById('alsDownloads').textContent = "0";
-      document.getElementById('avDownloads').textContent = "0";
       document.getElementById('macroVersion').textContent = "Loading...";
       document.getElementById('animeVersion').textContent = "Loading...";
       document.getElementById('alsVersion').textContent = "Loading...";
-      document.getElementById('avVersion').textContent = "Loading...";
-      
-      updateStats();
       
       fetchMacroInfo();
       fetchAnimeInfo();
       fetchAnimeLastStandInfo();
-      fetchAnimeVanguardInfo();
       
       const downloadsBtn = document.getElementById('downloadsTabButton');
       const setupBtn = document.getElementById('setupTabButton');
@@ -1168,12 +1113,10 @@
       const generalSetupButton = document.getElementById('generalSetupButton');
       const agSetupButton = document.getElementById('agSetupButton');
       const alsSetupButton = document.getElementById('alsSetupButton');
-      const avSetupButton = document.getElementById('avSetupButton');
       
       const generalSetupTab = document.getElementById('generalSetupTab');
       const agSetupTab = document.getElementById('agSetupTab');
       const alsSetupTab = document.getElementById('alsSetupTab');
-      const avSetupTab = document.getElementById('avSetupTab');
       
       generalSetupButton.addEventListener('click', function() {
         document.querySelectorAll('.game-tab-content').forEach(content => {
@@ -1207,36 +1150,7 @@
         alsSetupTab.classList.add('active');
         alsSetupButton.classList.add('active');
       });
-
-      avSetupButton.addEventListener('click', function() {
-        document.querySelectorAll('.game-tab-content').forEach(content => {
-          content.classList.remove('active');
-        });
-        document.querySelectorAll('.game-tab-button').forEach(button => {
-          button.classList.remove('active');
-        });
-        avSetupTab.classList.add('active');
-        avSetupButton.classList.add('active');
-      });
     });
-
-    function updateStats() {
-      let totalDownloads = 0;
-      
-      const macroDownloads = parseInt(document.getElementById('macroDownloads').textContent.replace(/,/g, '')) || 0;
-      const animeDownloads = parseInt(document.getElementById('animeDownloads').textContent.replace(/,/g, '')) || 0;
-      const alsDownloads = parseInt(document.getElementById('alsDownloads').textContent.replace(/,/g, '')) || 0;
-      const avDownloads = parseInt(document.getElementById('avDownloads').textContent.replace(/,/g, '')) || 0;
-      
-      totalDownloads = macroDownloads + animeDownloads + alsDownloads + avDownloads;
-      const activeUsers = Math.floor(totalDownloads * 0.7);
-      
-      document.getElementById('totalDownloads').textContent = totalDownloads.toLocaleString();
-      document.getElementById('activeUsers').textContent = activeUsers.toLocaleString();
-      
-      const lastUpdated = new Date();
-      document.getElementById('lastUpdated').textContent = lastUpdated.toLocaleDateString();
-    }
 
     function fetchMacroInfo() {
       fetch('https://api.github.com/repos/Cyszx/AGMacro.github.io/releases/latest')
@@ -1256,13 +1170,11 @@
                 .then(countData => {
                   if (countData.value !== undefined) {
                     document.getElementById('macroDownloads').textContent = countData.value.toLocaleString();
-                    updateStats();
                   }
                 })
                 .catch(error => {
                   console.error("Error fetching macro download count:", error);
                   document.getElementById('macroDownloads').textContent = "0";
-                  updateStats();
                 });
               
               const downloadButton = document.getElementById('macroButton');
@@ -1281,7 +1193,6 @@
           document.getElementById('macroVersion').textContent = "Error loading";
           document.getElementById('macroDownloads').textContent = "0";
           updateButtonStatus('macroButton', false);
-          updateStats();
         });
     }
 
@@ -1303,13 +1214,11 @@
                 .then(countData => {
                   if (countData.value !== undefined) {
                     document.getElementById('animeDownloads').textContent = countData.value.toLocaleString();
-                    updateStats();
                   }
                 })
                 .catch(error => {
                   console.error("Error fetching anime download count:", error);
                   document.getElementById('animeDownloads').textContent = "0";
-                  updateStats();
                 });
               
               const downloadButton = document.getElementById('animeButton');
@@ -1328,7 +1237,6 @@
           document.getElementById('animeVersion').textContent = "Error loading";
           document.getElementById('animeDownloads').textContent = "0";
           updateButtonStatus('animeButton', false);
-          updateStats();
         });
     }
 
@@ -1350,13 +1258,11 @@
                 .then(countData => {
                   if (countData.value !== undefined) {
                     document.getElementById('alsDownloads').textContent = countData.value.toLocaleString();
-                    updateStats();
                   }
                 })
                 .catch(error => {
                   console.error("Error fetching als download count:", error);
                   document.getElementById('alsDownloads').textContent = "0";
-                  updateStats();
                 });
               
               const downloadButton = document.getElementById('alsButton');
@@ -1375,54 +1281,6 @@
           document.getElementById('alsVersion').textContent = "Error loading";
           document.getElementById('alsDownloads').textContent = "0";
           updateButtonStatus('alsButton', false);
-          updateStats();
-        });
-    }
-
-    function fetchAnimeVanguardInfo() {
-      fetch('https://api.github.com/repos/Cyszx/AnimeVanguards/releases/latest')       
-        .then(response => response.json())
-        .then(data => {
-          if (data.message === "Not Found" || !data.assets || data.assets.length === 0) {
-            document.getElementById('avVersion').textContent = "Not Available";
-            document.getElementById('avDownloads').textContent = "0";
-            updateButtonStatus('avButton', false);
-          } else {
-            const zipAsset = data.assets.find(asset => asset.name.endsWith('.zip'));
-            if (zipAsset) {
-              document.getElementById('avVersion').textContent = data.tag_name || zipAsset.name;
-              
-              fetch('https://api.countapi.xyz/get/cyszxmacros/av')
-                .then(response => response.json())
-                .then(countData => {
-                  if (countData.value !== undefined) {
-                    document.getElementById('avDownloads').textContent = countData.value.toLocaleString();
-                    updateStats();
-                  }
-                })
-                .catch(error => {
-                  console.error("Error fetching av download count:", error);
-                  document.getElementById('avDownloads').textContent = "0";
-                  updateStats();
-                });
-              
-              const downloadButton = document.getElementById('avButton');
-              downloadButton.href = zipAsset.browser_download_url;
-              downloadButton.addEventListener('click', function() {
-                incrementDownloadCount('av');
-              });
-            } else {
-              document.getElementById('avVersion').textContent = "No ZIP Available";
-              document.getElementById('avDownloads').textContent = "0";
-              updateButtonStatus('avButton', false);
-            }
-          }
-        })
-        .catch(error => {
-          document.getElementById('avVersion').textContent = "Error loading";
-          document.getElementById('avDownloads').textContent = "0";
-          updateButtonStatus('avButton', false);
-          updateStats();
         });
     }
 
@@ -1448,7 +1306,6 @@
         .then(data => {
           if (data && data.value) {
             document.getElementById(type + 'Downloads').textContent = data.value.toLocaleString();
-            updateStats();
           }
         })
         .catch(error => {
@@ -1458,7 +1315,6 @@
             .then(data => {
               if (data && data.value) {
                 document.getElementById(type + 'Downloads').textContent = data.value.toLocaleString();
-                updateStats();
               }
             });
         });
