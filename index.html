@@ -9,7 +9,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="googlebot" content="noindex, nofollow">
   <meta name="author" content="Cys">
-  <meta name="copyright" content="© 2025 Cys Macros">
+  <meta name="copyright" content="Â© 2025 Cys Macros">
   <style>
     :root {
       --primary-color: #00d9ff;
@@ -21,15 +21,14 @@
       --body-bg: #0a0a15;
       --button-hover: #00c3ff;
       --discord-color: #7289da;
-      --neon-glow: 0 0 10px rgba(0, 217, 255, 0.7);
-      --neon-glow-hover: 0 0 15px rgba(0, 217, 255, 0.9);
-      --accent-glow: 0 0 10px rgba(255, 0, 170, 0.7);
-      --card-glow: 0 0 15px rgba(0, 217, 255, 0.3);
       --success-color: #00ff88;
       --warning-color: #ffcc00;
       --error-color: #ff4444;
-      --gold-color: #ffd700;
       --donation-color: #ff9500;
+      --primary-gradient: linear-gradient(135deg, #00d9ff, #0084ff);
+      --accent-gradient: linear-gradient(135deg, #ff00aa, #ff0066);
+      --text-gradient: linear-gradient(90deg, #00d9ff, #ff00aa);
+      --text-scale: clamp(1rem, 0.34vw + 0.91rem, 1.19rem);
     }
 
     * {
@@ -42,9 +41,37 @@
       font-family: 'Poppins', sans-serif;
       background-color: var(--body-bg);
       color: var(--text-color);
-      line-height: 1.6;
+      line-height: clamp(1.5, 0.17vw + 1.35, 1.7);
       min-height: 100vh;
       overflow-x: hidden;
+      font-size: var(--text-scale);
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(0,217,255,0.1) 0%, transparent 25%),
+        radial-gradient(circle at 80% 70%, rgba(255,0,170,0.1) 0%, transparent 25%);
+      z-index: -1;
+    }
+
+    @media (prefers-reduced-motion) {
+      * {
+        animation-duration: 0.01ms !important;
+      }
+    }
+
+    @media (prefers-contrast: more) {
+      :root {
+        --primary-color: #00a8ff;
+        --text-color: #ffffff;
+      }
     }
 
     .container {
@@ -52,6 +79,7 @@
       margin: 0 auto;
       padding: 2rem;
       position: relative;
+      opacity: 0;
       animation: fadeIn 0.5s ease forwards;
     }
 
@@ -64,11 +92,11 @@
       margin-bottom: 3rem;
       padding: 2rem 0;
       position: relative;
-      animation: slideDown 0.5s ease forwards;
-    }
-
-    @keyframes slideDown {
-      to { transform: translateY(0); opacity: 1; }
+      background: rgba(26, 26, 46, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      border-radius: 15px;
     }
 
     .header::after {
@@ -80,23 +108,25 @@
       width: 80%;
       height: 2px;
       background: linear-gradient(90deg, transparent, var(--primary-color), var(--accent-color), transparent);
-      box-shadow: var(--neon-glow);
+    }
+
+    .logo {
+      height: 120px;
+      margin-bottom: 1rem;
     }
 
     .header h1 {
       font-size: 3.5rem;
       font-weight: 700;
       margin-bottom: 1rem;
-      background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+      background: var(--text-gradient);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      text-shadow: var(--neon-glow);
       letter-spacing: 1px;
     }
 
     .description {
-      font-size: 1.2rem;
       max-width: 700px;
       margin: 0 auto;
       opacity: 0.9;
@@ -126,7 +156,6 @@
       overflow: hidden;
       z-index: 1;
       border: 1px solid rgba(255, 255, 255, 0.1);
-      cursor: pointer;
       color: white;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
@@ -134,6 +163,11 @@
     .action-button:hover {
       transform: translateY(-3px);
       box-shadow: 0 10px 25px rgba(0, 217, 255, 0.5);
+    }
+
+    .action-button:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 5px rgba(0,217,255,0.3);
     }
 
     .action-button i {
@@ -145,7 +179,7 @@
     }
 
     .downloads-button {
-      background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+      background: var(--primary-gradient);
       box-shadow: 0 4px 15px rgba(0, 217, 255, 0.4);
     }
 
@@ -154,7 +188,7 @@
     }
 
     .setup-button {
-      background: linear-gradient(135deg, var(--accent-color), #ff0066);
+      background: var(--accent-gradient);
       box-shadow: 0 4px 15px rgba(255, 0, 170, 0.4);
     }
 
@@ -189,51 +223,18 @@
       display: block;
     }
 
-    .stats-container {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      margin-bottom: 3rem;
-      flex-wrap: wrap;
-    }
-
-    .stat-card {
-      background-color: rgba(0, 217, 255, 0.1);
-      border-radius: 15px;
-      padding: 1.5rem;
-      min-width: 200px;
-      text-align: center;
-      border: 1px solid rgba(0, 217, 255, 0.3);
-      transition: all 0.3s ease;
-    }
-
-    .stat-card:hover {
-      transform: translateY(-5px);
-      box-shadow: var(--neon-glow);
-    }
-
-    .stat-value {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: var(--primary-color);
-      margin-bottom: 0.5rem;
-    }
-
-    .stat-label {
-      font-size: 0.9rem;
-      opacity: 0.8;
-      transition: all 0.2s ease;
-    }
-
-    .stat-card:hover .stat-label {
-      opacity: 1;
-      color: var(--accent-color);
-    }
-
     .games-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 2.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      transition: grid-template-columns 0.3s ease;
+    }
+
+    @media (hover: hover) {
+      .games-grid:hover .game-card:not(:hover) {
+        opacity: 0.8;
+        transform: scale(0.98);
+      }
     }
 
     .game-card {
@@ -247,12 +248,26 @@
       flex-direction: column;
       height: 100%;
       position: relative;
-      box-shadow: var(--card-glow);
+      box-shadow: 0 1px 1px rgba(0,0,0,0.1),
+                  0 2px 2px rgba(0,0,0,0.1),
+                  0 4px 4px rgba(0,0,0,0.1),
+                  0 8px 8px rgba(0,0,0,0.1);
+    }
+
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(0,217,255,0.1) 0%, transparent 70%);
+      transform: rotate(30deg);
+      z-index: 0;
     }
 
     .game-card:hover {
       transform: translateY(-10px);
-      box-shadow: var(--neon-glow-hover);
       border-color: var(--primary-color);
     }
 
@@ -286,7 +301,7 @@
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-      background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+      background: var(--primary-gradient);
       color: white;
       padding: 1rem 2rem;
       border-radius: 50px;
@@ -391,6 +406,7 @@
       border-radius: 15px;
       padding: 2rem;
       border: 1px solid rgba(0, 217, 255, 0.3);
+      backdrop-filter: blur(5px);
     }
 
     .setup-guide h2 {
@@ -434,7 +450,7 @@
 
     .setting-item:hover {
       transform: translateY(-3px);
-      box-shadow: var(--card-glow);
+      box-shadow: 0 4px 15px rgba(0, 217, 255, 0.2);
       border-left-color: var(--primary-color);
     }
 
@@ -482,7 +498,7 @@
     }
 
     .game-tab-button.active {
-      background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+      background: var(--primary-gradient);
       color: white;
     }
 
@@ -500,8 +516,10 @@
       margin: 1rem auto;
       border-radius: 10px;
       border: 1px solid rgba(0, 217, 255, 0.3);
-      box-shadow: var(--card-glow);
+      box-shadow: 0 4px 15px rgba(0, 217, 255, 0.2);
       transition: all 0.2s ease;
+      aspect-ratio: 16/9;
+      object-fit: cover;
     }
 
     .game-settings-image:hover {
@@ -526,6 +544,7 @@
       border-radius: 15px;
       padding: 2rem;
       border: 1px solid rgba(0, 217, 255, 0.3);
+      backdrop-filter: blur(5px);
     }
 
     .faq-item {
@@ -539,7 +558,7 @@
 
     .faq-item:hover {
       transform: translateY(-3px);
-      box-shadow: var(--neon-glow);
+      box-shadow: 0 4px 15px rgba(0, 217, 255, 0.3);
       border-left-color: var(--primary-color);
     }
 
@@ -559,7 +578,7 @@
       margin: 1.5rem auto;
       border-radius: 10px;
       overflow: hidden;
-      box-shadow: var(--neon-glow);
+      box-shadow: 0 4px 15px rgba(0, 217, 255, 0.3);
     }
 
     .video-container video {
@@ -567,6 +586,7 @@
       display: block;
       border: 1px solid rgba(0, 217, 255, 0.3);
       border-radius: 10px;
+      aspect-ratio: 16/9;
     }
 
     footer {
@@ -587,7 +607,6 @@
       width: 80%;
       height: 1px;
       background: linear-gradient(90deg, transparent, var(--primary-color), var(--accent-color), transparent);
-      box-shadow: var(--neon-glow);
     }
 
     .donation-button {
@@ -631,6 +650,7 @@
       transform-origin: bottom left;
       transition: all 0.2s ease;
       pointer-events: none;
+      backdrop-filter: blur(5px);
     }
 
     .donation-menu.active {
@@ -690,6 +710,39 @@
       100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
     }
 
+    ::-webkit-scrollbar {
+      width: 8px;
+      background: var(--card-bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 4px;
+    }
+
+    .skeleton-loader {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .skeleton-line {
+      background: linear-gradient(90deg,
+        rgba(255,255,255,0.1) 25%,
+        rgba(255,255,255,0.3) 50%,
+        rgba(255,255,255,0.1) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      height: 1rem;
+      border-radius: 4px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
     @media (max-width: 768px) {
       .games-grid {
         grid-template-columns: 1fr;
@@ -701,16 +754,6 @@
 
       .game-card {
         padding: 1.5rem;
-      }
-
-      .stats-container {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .stat-card {
-        width: 100%;
-        max-width: 300px;
       }
 
       .button-container {
@@ -754,12 +797,17 @@
       .faq-item h3 {
         font-size: 1.2rem;
       }
+
+      body::before {
+        backdrop-filter: none;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
+      <img src="cyslogo.png" alt="Cys Macros Logo" class="logo">
       <h1>Cys Macros</h1>
       <p class="description">Download the latest version of Cys Macros to enhance your gaming experience with premium automation!</p>
       
@@ -1009,7 +1057,7 @@
   </div>
 
   <footer>
-    <p>© 2025 Cys Macros. All rights reserved.</p>
+    <p>Â© 2025 Cys Macros. All rights reserved.</p>
   </footer>
 
   <button class="donation-button" id="donationButton">
@@ -1036,13 +1084,6 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      document.getElementById('macroDownloads').textContent = "0";
-      document.getElementById('animeDownloads').textContent = "0";
-      document.getElementById('alsDownloads').textContent = "0";
-      document.getElementById('macroVersion').textContent = "Loading...";
-      document.getElementById('animeVersion').textContent = "Loading...";
-      document.getElementById('alsVersion').textContent = "Loading...";
-      
       fetchMacroInfo();
       fetchAnimeInfo();
       fetchAnimeLastStandInfo();
@@ -1152,141 +1193,87 @@
       });
     });
 
-    function fetchMacroInfo() {
-      fetch('https://api.github.com/repos/Cyszx/AGMacro.github.io/releases/latest')
-        .then(response => response.json())
-        .then(data => {
-          if (data.message === "Not Found" || !data.assets || data.assets.length === 0) {
-            document.getElementById('macroVersion').textContent = "Not Available";
-            document.getElementById('macroDownloads').textContent = "0";
-            updateButtonStatus('macroButton', false);
-          } else {
-            const zipAsset = data.assets.find(asset => asset.name.endsWith('.zip'));
-            if (zipAsset) {
-              document.getElementById('macroVersion').textContent = data.tag_name || zipAsset.name;
-              
-              fetch('https://api.countapi.xyz/get/cyszxmacros/macro')
-                .then(response => response.json())
-                .then(countData => {
-                  if (countData.value !== undefined) {
-                    document.getElementById('macroDownloads').textContent = countData.value.toLocaleString();
-                  }
-                })
-                .catch(error => {
-                  console.error("Error fetching macro download count:", error);
-                  document.getElementById('macroDownloads').textContent = "0";
-                });
-              
-              const downloadButton = document.getElementById('macroButton');
-              downloadButton.href = zipAsset.browser_download_url;
-              downloadButton.addEventListener('click', function() {
-                incrementDownloadCount('macro');
-              });
-            } else {
-              document.getElementById('macroVersion').textContent = "No ZIP Available";
-              document.getElementById('macroDownloads').textContent = "0";
-              updateButtonStatus('macroButton', false);
-            }
-          }
-        })
-        .catch(error => {
-          document.getElementById('macroVersion').textContent = "Error loading";
-          document.getElementById('macroDownloads').textContent = "0";
-          updateButtonStatus('macroButton', false);
+    async function fetchMacroInfo() {
+      try {
+        const response = await fetch('https://api.github.com/repos/Cyszx/AGMacro.github.io/releases/latest');
+        if (!response.ok) throw new Error('Failed to fetch');
+        
+        const data = await response.json();
+        if (!data.assets || data.assets.length === 0) throw new Error('No assets found');
+        
+        const zipAsset = data.assets.find(asset => asset.name.endsWith('.zip'));
+        if (!zipAsset) throw new Error('No ZIP asset found');
+        
+        document.getElementById('macroVersion').textContent = data.tag_name || 'Latest';
+        document.getElementById('macroDownloads').textContent = zipAsset.download_count.toLocaleString();
+        
+        const downloadButton = document.getElementById('macroButton');
+        downloadButton.href = zipAsset.browser_download_url;
+        downloadButton.addEventListener('click', function() {
+          updateDownloadUI('macro');
         });
+      } catch (error) {
+        document.getElementById('macroVersion').textContent = "Error";
+        document.getElementById('macroDownloads').textContent = "0";
+        updateButtonStatus('macroButton', false);
+      }
     }
 
-    function fetchAnimeInfo() {
-      fetch('https://api.github.com/repos/Cyszx/Anime-Royale-Macro/releases/latest')
-        .then(response => response.json())
-        .then(data => {
-          if (data.message === "Not Found" || !data.assets || data.assets.length === 0) {
-            document.getElementById('animeVersion').textContent = "Not Available";
-            document.getElementById('animeDownloads').textContent = "0";
-            updateButtonStatus('animeButton', false);
-          } else {
-            const zipAsset = data.assets.find(asset => asset.name.endsWith('.zip'));
-            if (zipAsset) {
-              document.getElementById('animeVersion').textContent = data.tag_name || zipAsset.name;
-              
-              fetch('https://api.countapi.xyz/get/cyszxmacros/anime')
-                .then(response => response.json())
-                .then(countData => {
-                  if (countData.value !== undefined) {
-                    document.getElementById('animeDownloads').textContent = countData.value.toLocaleString();
-                  }
-                })
-                .catch(error => {
-                  console.error("Error fetching anime download count:", error);
-                  document.getElementById('animeDownloads').textContent = "0";
-                });
-              
-              const downloadButton = document.getElementById('animeButton');
-              downloadButton.href = zipAsset.browser_download_url;
-              downloadButton.addEventListener('click', function() {
-                incrementDownloadCount('anime');
-              });
-            } else {
-              document.getElementById('animeVersion').textContent = "No ZIP Available";
-              document.getElementById('animeDownloads').textContent = "0";
-              updateButtonStatus('animeButton', false);
-            }
-          }
-        })
-        .catch(error => {
-          document.getElementById('animeVersion').textContent = "Error loading";
-          document.getElementById('animeDownloads').textContent = "0";
-          updateButtonStatus('animeButton', false);
+    async function fetchAnimeInfo() {
+      try {
+        const response = await fetch('https://api.github.com/repos/Cyszx/Anime-Royale-Macro/releases/latest');
+        if (!response.ok) throw new Error('Failed to fetch');
+        
+        const data = await response.json();
+        if (!data.assets || data.assets.length === 0) throw new Error('No assets found');
+        
+        const zipAsset = data.assets.find(asset => asset.name.endsWith('.zip'));
+        if (!zipAsset) throw new Error('No ZIP asset found');
+        
+        document.getElementById('animeVersion').textContent = data.tag_name || 'Latest';
+        document.getElementById('animeDownloads').textContent = zipAsset.download_count.toLocaleString();
+        
+        const downloadButton = document.getElementById('animeButton');
+        downloadButton.href = zipAsset.browser_download_url;
+        downloadButton.addEventListener('click', function() {
+          updateDownloadUI('anime');
         });
+      } catch (error) {
+        document.getElementById('animeVersion').textContent = "Error";
+        document.getElementById('animeDownloads').textContent = "0";
+        updateButtonStatus('animeButton', false);
+      }
     }
 
-    function fetchAnimeLastStandInfo() {
-      fetch('https://api.github.com/repos/Cyszx/AnimeLastStand/releases/latest')       
-        .then(response => response.json())
-        .then(data => {
-          if (data.message === "Not Found" || !data.assets || data.assets.length === 0) {
-            document.getElementById('alsVersion').textContent = "Not Available";
-            document.getElementById('alsDownloads').textContent = "0";
-            updateButtonStatus('alsButton', false);
-          } else {
-            const zipAsset = data.assets.find(asset => asset.name.endsWith('.zip'));
-            if (zipAsset) {
-              document.getElementById('alsVersion').textContent = data.tag_name || zipAsset.name;
-              
-              fetch('https://api.countapi.xyz/get/cyszxmacros/als')
-                .then(response => response.json())
-                .then(countData => {
-                  if (countData.value !== undefined) {
-                    document.getElementById('alsDownloads').textContent = countData.value.toLocaleString();
-                  }
-                })
-                .catch(error => {
-                  console.error("Error fetching als download count:", error);
-                  document.getElementById('alsDownloads').textContent = "0";
-                });
-              
-              const downloadButton = document.getElementById('alsButton');
-              downloadButton.href = zipAsset.browser_download_url;
-              downloadButton.addEventListener('click', function() {
-                incrementDownloadCount('als');
-              });
-            } else {
-              document.getElementById('alsVersion').textContent = "No ZIP Available";
-              document.getElementById('alsDownloads').textContent = "0";
-              updateButtonStatus('alsButton', false);
-            }
-          }
-        })
-        .catch(error => {
-          document.getElementById('alsVersion').textContent = "Error loading";
-          document.getElementById('alsDownloads').textContent = "0";
-          updateButtonStatus('alsButton', false);
+    async function fetchAnimeLastStandInfo() {
+      try {
+        const response = await fetch('https://api.github.com/repos/Cyszx/AnimeLastStand/releases/latest');
+        if (!response.ok) throw new Error('Failed to fetch');
+        
+        const data = await response.json();
+        if (!data.assets || data.assets.length === 0) throw new Error('No assets found');
+        
+        const zipAsset = data.assets.find(asset => asset.name.endsWith('.zip'));
+        if (!zipAsset) throw new Error('No ZIP asset found');
+        
+        document.getElementById('alsVersion').textContent = data.tag_name || 'Latest';
+        document.getElementById('alsDownloads').textContent = zipAsset.download_count.toLocaleString();
+        
+        const downloadButton = document.getElementById('alsButton');
+        downloadButton.href = zipAsset.browser_download_url;
+        downloadButton.addEventListener('click', function() {
+          updateDownloadUI('als');
         });
+      } catch (error) {
+        document.getElementById('alsVersion').textContent = "Error";
+        document.getElementById('alsDownloads').textContent = "0";
+        updateButtonStatus('alsButton', false);
+      }
     }
 
     function updateButtonStatus(buttonId, available) {
-      const button = document.getElementById(buttonId);
       if (!available) {
+        const button = document.getElementById(buttonId);
         const parentElement = button.parentElement;
         const notAvailableDiv = document.createElement('div');
         notAvailableDiv.className = 'not-available';
@@ -1295,30 +1282,7 @@
       }
     }
 
-    function incrementDownloadCount(type) {
-      fetch(`https://api.countapi.xyz/hit/cyszxmacros/${type}`)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          if (data && data.value) {
-            document.getElementById(type + 'Downloads').textContent = data.value.toLocaleString();
-          }
-        })
-        .catch(error => {
-          console.error("Error updating download count:", error);
-          fetch(`https://api.countapi.xyz/get/cyszxmacros/${type}`)
-            .then(response => response.json())
-            .then(data => {
-              if (data && data.value) {
-                document.getElementById(type + 'Downloads').textContent = data.value.toLocaleString();
-              }
-            });
-        });
-      
+    function updateDownloadUI(type) {
       const button = document.getElementById(type + 'Button');
       button.innerHTML = '<i class="fas fa-check"></i> Download Started!';
       button.style.background = 'linear-gradient(135deg, var(--success-color), var(--primary-color))';
