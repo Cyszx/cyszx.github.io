@@ -303,7 +303,8 @@
     }
 
     .game-title {
-      height: 80px;
+      height: 120px;
+      width: auto;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -830,6 +831,10 @@
     
     .game-card.av-card {
       background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('assets/imgs/av/av-background.png') center/cover;
+    }
+
+    .game-card.ac-card {
+      background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('assets/imgs/ac/ac-background.png') center/cover;
     }
 
     @media (max-width: 768px) {
