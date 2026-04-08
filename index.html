@@ -4,362 +4,350 @@
   <title>Cys Macros</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sour+Gummy:ital,wght@0,100..900;1,100..900&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
   <link rel="icon" type="image/x-icon" href="assets/cyslogo.png">
   <meta name="robots" content="noindex, nofollow">
+  <meta name="googlebot" content="noindex, nofollow">
   <meta name="author" content="Cys">
   <meta name="copyright" content="© 2025 Cys Macros">
 </head>
 <body>
 
-  <div class="bg-animation">
-    <div class="snow-container" id="snowContainer"></div>
-    <div class="gradient-orbs">
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-      <div class="orb orb-3"></div>
-    </div>
+  <div class="scroll-progress" id="scrollProgress"></div>
+
+  <div class="bg-wrap" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="bg-aurora"></div>
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
   </div>
 
-  <nav class="navbar">
+  <nav class="navbar" id="navbar">
     <div class="nav-container">
-      <div class="nav-logo">
+      <a href="#hero" class="nav-logo">
         <img src="assets/cyslogo.png" alt="Cys Logo">
         <span>Cys Macros</span>
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="#macros" class="nav-link" data-section="macros"><i class="fas fa-download"></i><span>Macros</span></a>
+        <a href="#setup" class="nav-link" data-section="setup"><i class="fas fa-cog"></i><span>Setup</span></a>
+        <a href="#faq" class="nav-link" data-section="faq"><i class="fas fa-question-circle"></i><span>FAQ</span></a>
+        <a href="https://discord.gg/cys" class="nav-link discord-link" target="_blank"><i class="fab fa-discord"></i><span>Discord</span></a>
       </div>
-      <div class="nav-links">
-        <a href="#macros" class="nav-link active" data-tab="macros">
-          <i class="fas fa-download"></i>
-          <span>Macros</span>
-        </a>
-        <a href="#setup" class="nav-link" data-tab="setup">
-          <i class="fas fa-cog"></i>
-          <span>Setup</span>
-        </a>
-        <a href="#faq" class="nav-link" data-tab="faq">
-          <i class="fas fa-question-circle"></i>
-          <span>FAQ</span>
-        </a>
-        <a href="https://discord.gg/cys" class="nav-link discord-link" target="_blank">
-          <i class="fab fa-discord"></i>
-          <span>Discord</span>
-        </a>
-      </div>
+      <button class="nav-mobile-toggle" id="mobileToggle" aria-label="Toggle menu"><i class="fas fa-bars"></i></button>
     </div>
   </nav>
 
-  <section class="hero">
+  <section class="hero" id="hero">
     <div class="hero-content">
-      <h1 class="hero-title">
-        <span class="title-line gradient-text">Cys Macros</span>
-      </h1>
+      <h1 class="hero-title">Cys <span class="accent">Macros</span></h1>
       <div class="hero-stats">
         <div class="stat-item">
-          <div class="stat-number" id="totalDownloads">150K+</div>
+          <div class="stat-number" id="totalDownloads">—</div>
           <div class="stat-label">Downloads</div>
         </div>
+        <div class="stat-sep"></div>
         <div class="stat-item">
-          <div class="stat-number">6</div>
-          <div class="stat-label">Games Supported</div>
+          <div class="stat-number">8</div>
+          <div class="stat-label">Games</div>
         </div>
+        <div class="stat-sep"></div>
         <div class="stat-item">
           <div class="stat-number">90K+</div>
-          <div class="stat-label">Community Members</div>
+          <div class="stat-label">Members</div>
         </div>
       </div>
+      <a href="#macros" class="hero-cta"><span>Browse Macros</span><i class="fas fa-arrow-right"></i></a>
     </div>
+    <div class="scroll-hint"><div class="scroll-dot"></div></div>
   </section>
 
-  <main class="main-content">
-
-    <section class="content-section active" id="macros-section">
+  <section class="page-section" id="macros">
+    <div class="section-inner">
       <div class="section-header">
-        <h2 class="section-title">Available Macros</h2>
-        <p class="section-subtitle">Find the macro you need!</p>
+        <h2 class="section-title">Macros</h2>
+        <p class="section-sub">Find the macro you need!</p>
       </div>
-
       <div class="macros-grid">
-        <div class="macro-card" data-game="ag">
-          <div class="card-glow"></div>
+
+        <div class="macro-card card-free" data-game="ag">
+          <div class="card-accent"></div>
           <div class="card-header">
             <img src="assets/imgs/ag/ag-title.png" alt="Anime Guardians" class="card-logo">
-            <div class="card-badge">Free</div>
+            <div class="card-badge badge-free">Free</div>
           </div>
           <div class="card-body">
             <h3 class="card-title">Anime Guardians</h3>
             <ul class="feature-list">
-              <li><i class="fas fa-check"></i> Orc Automation</li>
-              <li><i class="fas fa-check"></i> Every Raid</li>
-              <li><i class="fas fa-check"></i> Tower Adventures</li>
-              <li><i class="fas fa-check"></i> Cog & Infinite</li>
-              <li><i class="fas fa-check"></i> Auto-Challenge</li>
+              <li><i class="fas fa-check"></i>Orc Automation</li>
+              <li><i class="fas fa-check"></i>Every Raid</li>
+              <li><i class="fas fa-check"></i>Tower Adventures</li>
+              <li><i class="fas fa-check"></i>Cog &amp; Infinite</li>
+              <li><i class="fas fa-check"></i>Auto-Challenge</li>
             </ul>
           </div>
           <div class="card-footer">
-            <div class="card-info">
-              <span class="version"><i class="fas fa-tag"></i> <span id="macroVersion">Loading...</span></span>
-              <span class="downloads"><i class="fas fa-arrow-down"></i> <span id="macroDownloads">-</span></span>
+            <div class="card-meta">
+              <span><i class="fas fa-tag"></i><span id="macroVersion">Loading…</span></span>
+              <span><i class="fas fa-download"></i><span id="macroDownloads">—</span></span>
             </div>
-            <button class="btn-download" id="macroButton">
-              <span class="btn-text">Download</span>
-              <i class="fas fa-download"></i>
-            </button>
+            <button class="btn btn-cyan" id="macroButton"><i class="fas fa-download"></i><span class="btn-text">Download</span></button>
           </div>
         </div>
 
-        <div class="macro-card featured" data-game="als">
-          <div class="card-glow"></div>
-          <div class="featured-badge">
-            <i class="fas fa-crown"></i>
-            <span>Premium Available</span>
-          </div>
+        <div class="macro-card card-featured" data-game="als">
+          <div class="card-accent"></div>
+          <div class="featured-chip"><i class="fas fa-fire"></i> Popular</div>
           <div class="card-header">
             <img src="assets/imgs/als/als-title.png" alt="Anime Last Stand" class="card-logo">
-            <div class="card-badge premium">Popular</div>
+            <div class="card-badge badge-free">Free + Premium</div>
           </div>
           <div class="card-body">
             <h3 class="card-title">Anime Last Stand</h3>
             <ul class="feature-list">
-              <li><i class="fas fa-check"></i> All Raids & Legends</li>
-              <li><i class="fas fa-check"></i> Oasis Infinite</li>
-              <li><i class="fas fa-check"></i> Portal Automation</li>
-              <li><i class="fas fa-check"></i> Every Dungeon</li>
-              <li><i class="fas fa-check"></i> Custom Configs</li>
+              <li><i class="fas fa-check"></i>All Raids &amp; Legends</li>
+              <li><i class="fas fa-check"></i>Oasis Infinite</li>
+              <li><i class="fas fa-check"></i>Portal Automation</li>
+              <li><i class="fas fa-check"></i>Every Dungeon</li>
+              <li><i class="fas fa-check"></i>Custom Configs</li>
             </ul>
           </div>
           <div class="card-footer">
-            <div class="card-info">
-              <span class="version"><i class="fas fa-tag"></i> <span id="alsVersion">Loading...</span></span>
-              <span class="downloads"><i class="fas fa-arrow-down"></i> <span id="alsDownloads">-</span></span>
+            <div class="card-meta">
+              <span><i class="fas fa-tag"></i><span id="alsVersion">Loading…</span></span>
+              <span><i class="fas fa-download"></i><span id="alsDownloads">—</span></span>
             </div>
-            <div class="button-group">
-              <button class="btn-download" id="alsButton">
-                <span class="btn-text">Free</span>
-                <i class="fas fa-download"></i>
-              </button>
-              <a href="https://www.roblox.com/game-pass/1131030571/Donation" class="btn-premium" target="_blank">
-                <span class="btn-text">Premium</span>
-                <i class="fas fa-crown"></i>
-              </a>
+            <div class="btn-group">
+              <button class="btn btn-cyan" id="alsButton"><i class="fas fa-download"></i><span class="btn-text">Free</span></button>
+              <a href="https://www.roblox.com/game-pass/1131030571/Donation" class="btn btn-pink" target="_blank"><i class="fas fa-crown"></i><span class="btn-text">Premium</span></a>
             </div>
           </div>
         </div>
 
-        <div class="macro-card" data-game="ar">
-          <div class="card-glow"></div>
+        <div class="macro-card card-premium" data-game="av">
+          <div class="card-accent"></div>
           <div class="card-header">
-            <img src="assets/imgs/ar/anime-title.png" alt="Anime Royale" class="card-logo">
-            <div class="card-badge">Free</div>
-          </div>
-          <div class="card-body">
-            <h3 class="card-title">Anime Royale</h3>
-            <ul class="feature-list">
-              <li><i class="fas fa-check"></i> Gem Farming</li>
-              <li><i class="fas fa-check"></i> Auto-Play</li>
-            </ul>
-          </div>
-          <div class="card-footer">
-            <div class="card-info">
-              <span class="version"><i class="fas fa-tag"></i> <span id="animeVersion">Loading...</span></span>
-              <span class="downloads"><i class="fas fa-arrow-down"></i> <span id="animeDownloads">-</span></span>
-            </div>
-            <button class="btn-download" id="animeButton">
-              <span class="btn-text">Download</span>
-              <i class="fas fa-download"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="macro-card premium-only" data-game="av">
-          <div class="card-glow"></div>
-          <div class="card-header">
-            <img src="assets/imgs/av/av-title.png" alt="AV" class="card-logo">
-            <div class="card-badge premium">Premium</div>
+            <img src="assets/imgs/av/av-title.png" alt="Anime Vanguards" class="card-logo">
+            <div class="card-badge badge-prem">Premium</div>
           </div>
           <div class="card-body">
             <h3 class="card-title">Anime Vanguards</h3>
             <ul class="feature-list">
-              <li><i class="fas fa-check"></i> Cid Raid</li>
-              <li><i class="fas fa-check"></i> Summer Event</li>
-              <li><i class="fas fa-check"></i> Portals</li>
-              <li><i class="fas fa-check"></i> Rifts</li>
-              <li><i class="fas fa-check"></i> Odyssey</li>
-              <li><i class="fas fa-check"></i> Legend Stages</li>
-              <li><i class="fas fa-check"></i> Boss Rush</li>
-              <li><i class="fas fa-check"></i> Dungeons</li>
-              <li><i class="fas fa-check"></i> Custom</li>
+              <li><i class="fas fa-check"></i>Cid Raid</li>
+              <li><i class="fas fa-check"></i>Portals &amp; Rifts</li>
+              <li><i class="fas fa-check"></i>Odyssey</li>
+              <li><i class="fas fa-check"></i>Legend Stages</li>
+              <li><i class="fas fa-check"></i>Boss Rush</li>
+              <li><i class="fas fa-check"></i>Dungeons</li>
+              <li><i class="fas fa-check"></i>Custom</li>
             </ul>
           </div>
           <div class="card-footer">
-            <a href="https://www.roblox.com/game-pass/1510472554/AV-Donator" class="btn-premium full" target="_blank">
-              <span class="btn-text">Get Premium</span>
-              <i class="fas fa-star"></i>
-            </a>
+            <a href="https://www.roblox.com/game-pass/1510472554/AV-Donator" class="btn btn-pink full" target="_blank"><i class="fas fa-star"></i><span class="btn-text">Get Premium</span></a>
           </div>
         </div>
 
-        <div class="macro-card premium-only" data-game="ac">
-          <div class="card-glow"></div>
+        <div class="macro-card card-premium" data-game="ac">
+          <div class="card-accent"></div>
           <div class="card-header">
-            <img src="assets/imgs/ac/ac-title.png" alt="AC" class="card-logo" width="130px">
-            <div class="card-badge premium">Premium</div>
+            <img src="assets/imgs/ac/ac-title.png" alt="Anime Crusaders" class="card-logo">
+            <div class="card-badge badge-prem">Premium</div>
           </div>
           <div class="card-body">
             <h3 class="card-title">Anime Crusaders</h3>
             <ul class="feature-list">
-              <li><i class="fas fa-check"></i> Raids</li>
-              <li><i class="fas fa-check"></i> Halloween Event</li>
-              <li><i class="fas fa-check"></i> Boss Rush</li>
-              <li><i class="fas fa-check"></i> Auto Challenge</li>
-              <li><i class="fas fa-check"></i> Portals</li>
-              <li><i class="fas fa-check"></i> Infinity Castle</li>
-              <li><i class="fas fa-check"></i> New Legend Stages</li>
-              <li><i class="fas fa-check"></i> Marine Inf</li>
-              <li><i class="fas fa-check"></i> Custom</li>
+              <li><i class="fas fa-check"></i>Raids</li>
+              <li><i class="fas fa-check"></i>Halloween Event</li>
+              <li><i class="fas fa-check"></i>Boss Rush</li>
+              <li><i class="fas fa-check"></i>Auto Challenge</li>
+              <li><i class="fas fa-check"></i>Portals</li>
+              <li><i class="fas fa-check"></i>Infinity Castle</li>
+              <li><i class="fas fa-check"></i>Custom</li>
             </ul>
           </div>
           <div class="card-footer">
-            <a href="https://www.roblox.com/game-pass/1531361678/Donator-AC" class="btn-premium full" target="_blank">
-              <span class="btn-text">Get Premium</span>
-              <i class="fas fa-star"></i>
-            </a>
+            <a href="https://www.roblox.com/game-pass/1531361678/Donator-AC" class="btn btn-pink full" target="_blank"><i class="fas fa-star"></i><span class="btn-text">Get Premium</span></a>
           </div>
         </div>
 
-        <div class="macro-card premium-only" data-game="utd">
-          <div class="card-glow"></div>
+        <div class="macro-card card-premium" data-game="utd">
+          <div class="card-accent"></div>
           <div class="card-header">
-            <img src="assets/imgs/utd/utd-title.png" alt="utd" class="card-logo">
-            <div class="card-badge premium">Premium</div>
+            <img src="assets/imgs/utd/utd-title.png" alt="Universal Tower Defense" class="card-logo">
+            <div class="card-badge badge-prem">Premium</div>
           </div>
           <div class="card-body">
             <h3 class="card-title">Universal Tower Defense</h3>
             <ul class="feature-list">
-              <li><i class="fas fa-check"></i> Auto-Challenge</li>
-              <li><i class="fas fa-check"></i> All Stories</li>
-              <li><i class="fas fa-check"></i> Legend Stages</li>
-              <li><i class="fas fa-check"></i> Multi-Mode</li>
-              <li><i class="fas fa-check"></i> Ragna Event</li>
-              <li><i class="fas fa-check"></i> Virtual Realm</li>
-              <li><i class="fas fa-check"></i> Custom</li>
+              <li><i class="fas fa-check"></i>Auto-Challenge</li>
+              <li><i class="fas fa-check"></i>All Stories</li>
+              <li><i class="fas fa-check"></i>Legend Stages</li>
+              <li><i class="fas fa-check"></i>Multi-Mode</li>
+              <li><i class="fas fa-check"></i>Ragna Event</li>
+              <li><i class="fas fa-check"></i>Virtual Realm</li>
+              <li><i class="fas fa-check"></i>Custom</li>
             </ul>
           </div>
           <div class="card-footer">
-            <a href="https://www.roblox.com/game-pass/1629886425/Donator-UTD" class="btn-premium full" target="_blank">
-              <span class="btn-text">Get Premium</span>
-              <i class="fas fa-star"></i>
-            </a>
+            <a href="https://www.roblox.com/game-pass/1629886425/Donator-UTD" class="btn btn-pink full" target="_blank"><i class="fas fa-star"></i><span class="btn-text">Get Premium</span></a>
           </div>
         </div>
-      </div>
-    </section>
 
-    <section class="content-section" id="setup-section">
+        <div class="macro-card card-premium" data-game="arx">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <img src="assets/imgs/arx/arx-title.png" alt="Re: Rangers X" class="card-logo">
+            <div class="card-badge badge-prem">Premium</div>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">Re:Rangers X</h3>
+            <ul class="feature-list">
+              <li><i class="fas fa-check"></i>Easter</li>
+              <li><i class="fas fa-check"></i>Invasion</li>
+              <li><i class="fas fa-check"></i>Calamity</li>
+              <li><i class="fas fa-check"></i>Raids</li>
+              <li><i class="fas fa-check"></i>Dungeon</li>
+              <li><i class="fas fa-check"></i>Customs</li>
+            </ul>
+          </div>
+          <div class="card-footer">
+            <a href="https://www.roblox.com/game-pass/1790269545/Donator-ARX" class="btn btn-pink full" target="_blank"><i class="fas fa-star"></i><span class="btn-text">Get Premium</span></a>
+          </div>
+        </div>
+
+        <div class="macro-card card-premium" data-game="astd">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <img src="assets/imgs/astd/astd-title.png" alt="All Star Tower Defense" class="card-logo">
+            <div class="card-badge badge-prem">Premium</div>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">All Star Tower Defense</h3>
+            <ul class="feature-list">
+              <li><i class="fas fa-check"></i>Gauntlet Mode</li>
+              <li><i class="fas fa-check"></i>Custom Mode</li>
+            </ul>
+          </div>
+          <div class="card-footer">
+            <a href="https://www.roblox.com/game-pass/1781509289/Donator-ASTD" class="btn btn-pink full" target="_blank"><i class="fas fa-star"></i><span class="btn-text">Get Premium</span></a>
+          </div>
+        </div>
+
+        <div class="macro-card card-premium" data-game="ao">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <img src="assets/imgs/ao/ao-title.png" alt="Anime Overload" class="card-logo">
+            <div class="card-badge badge-prem">Premium</div>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">Anime Overload</h3>
+            <ul class="feature-list">
+              <li><i class="fas fa-check"></i>Story Mode</li>
+              <li><i class="fas fa-check"></i>Legend Stages</li>
+              <li><i class="fas fa-check"></i>Makima Event</li>
+              <li><i class="fas fa-check"></i>Custom</li>
+            </ul>
+          </div>
+          <div class="card-footer">
+            <a href="https://www.roblox.com/game-pass/1779491291/Donator-AO" class="btn btn-pink full" target="_blank"><i class="fas fa-star"></i><span class="btn-text">Get Premium</span></a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="page-section" id="setup">
+    <div class="section-inner">
       <div class="section-header">
-        <h2 class="section-title">Setup Guide</h2>
-        <p class="section-subtitle">Follow these steps to get started!</p>
+        <h2 class="section-title">Setup</h2>
+        <p class="section-sub">Get the macro ready in minutes.</p>
       </div>
-
+      <div class="setup-tabs">
+        <button class="setup-tab active" data-setup="general"><i class="fas fa-cog"></i><span>General</span></button>
+      </div>
       <div class="setup-content">
+
         <div class="setup-panel active" id="general-setup">
           <div class="steps-container">
             <div class="step-card">
-              <div class="step-number">1</div>
+              <div class="step-num">1</div>
               <div class="step-content">
                 <h3>Install AutoHotkey v2.0</h3>
                 <p>Download and install the latest version of AutoHotkey v2.0 from the official website.</p>
-                <a href="https://www.autohotkey.com/" class="step-link" target="_blank">
-                  <span>Download AutoHotkey</span>
-                  <i class="fas fa-external-link-alt"></i>
-                </a>
+                <a href="https://www.autohotkey.com/" class="step-link" target="_blank">Download AutoHotkey <i class="fas fa-external-link-alt"></i></a>
               </div>
             </div>
             <div class="step-card">
-              <div class="step-number">2</div>
+              <div class="step-num">2</div>
               <div class="step-content">
-                <h3>Download Macro</h3>
-                <p>Get the latest macro version from the Downloads section above.</p>
+                <h3>Download Your Macro</h3>
+                <p>Get the latest version from the Macros section above.</p>
               </div>
             </div>
             <div class="step-card">
-              <div class="step-number">3</div>
+              <div class="step-num">3</div>
               <div class="step-content">
                 <h3>Extract Files</h3>
-                <p>Right-click the downloaded file and select "Extract All". You may need WinRAR if you encounter issues.</p>
-                <a href="https://www.win-rar.com/" class="step-link" target="_blank">
-                  <span>Download WinRAR</span>
-                  <i class="fas fa-external-link-alt"></i>
-                </a>
+                <p>Right-click the downloaded file and select "Extract All". Use WinRAR if you have issues.</p>
+                <a href="https://www.win-rar.com/" class="step-link" target="_blank">Download WinRAR <i class="fas fa-external-link-alt"></i></a>
               </div>
             </div>
             <div class="step-card">
-              <div class="step-number">4</div>
+              <div class="step-num">4</div>
               <div class="step-content">
                 <h3>Configure Roblox Settings</h3>
-                <div class="settings-showcase">
-                  <div class="setting-row">
-                    <span class="setting-key">Camera Mode</span>
-                    <span class="setting-val">Default</span>
-                  </div>
-                  <div class="setting-row">
-                    <span class="setting-key">Movement Mode</span>
-                    <span class="setting-val">Keyboard</span>
-                  </div>
-                  <div class="setting-row">
-                    <span class="setting-key">Frame Rate</span>
-                    <span class="setting-val">60 FPS</span>
-                  </div>
-                  <div class="setting-row">
-                    <span class="setting-key">Graphics Quality</span>
-                    <span class="setting-val">Lowest</span>
-                  </div>
-                  <div class="setting-row">
-                    <span class="setting-key">Camera Sensitivity</span>
-                    <span class="setting-val">0.20</span>
-                  </div>
+                <div class="settings-grid">
+                  <div class="setting-row"><span class="setting-key">Camera Mode</span><span class="setting-val">Default</span></div>
+                  <div class="setting-row"><span class="setting-key">Movement Mode</span><span class="setting-val">Keyboard</span></div>
+                  <div class="setting-row"><span class="setting-key">Frame Rate</span><span class="setting-val">60 FPS</span></div>
+                  <div class="setting-row"><span class="setting-key">Graphics Quality</span><span class="setting-val">Lowest</span></div>
+                  <div class="setting-row"><span class="setting-key">Camera Sensitivity</span><span class="setting-val">0.20</span></div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <section class="content-section" id="faq-section">
+      </div>
+    </div>
+  </section>
+
+  <section class="page-section" id="faq">
+    <div class="section-inner">
       <div class="section-header">
-        <h2 class="section-title">Frequently Asked Questions</h2>
-        <p class="section-subtitle">Everything you need to know!</p>
+        <h2 class="section-title">FAQ</h2>
+        <p class="section-sub">Everything you need to know.</p>
       </div>
-
       <div class="faq-grid">
+
         <div class="faq-card">
           <div class="faq-icon"><i class="fas fa-play-circle"></i></div>
           <h3>Macro Basics</h3>
-          <p>Learn the fundamentals of using Cys Macros</p>
-          <video controls class="faq-video">
-            <source src="assets/vids/Basics.mp4" type="video/mp4">
-          </video>
+          <p>Learn the basics of using the macro</p>
+          <video controls class="faq-video" preload="none"><source src="assets/vids/Basics.mp4" type="video/mp4"></video>
         </div>
+
         <div class="faq-card">
-          <div class="faq-icon"><i class="fas fa-satellite-dish"></i></div>
+          <div class="faq-icon"><i class="fab fa-discord"></i></div>
           <h3>Discord Webhooks</h3>
-          <p>Set up notifications and automation</p>
-          <video controls class="faq-video">
-            <source src="assets/vids/Webhooks.mp4" type="video/mp4">
-          </video>
+          <p>Set up notifications to your discord</p>
+          <video controls class="faq-video" preload="none"><source src="assets/vids/Webhooks.mp4" type="video/mp4"></video>
         </div>
+
         <div class="faq-card">
           <div class="faq-icon"><i class="fas fa-file-import"></i></div>
           <h3>Import Configs</h3>
-          <p>Use community-created configurations</p>
-          <video controls class="faq-video">
-            <source src="assets/vids/ConfigGuide.mp4" type="video/mp4">
-          </video>
+          <p>Use configs made by our community!</p>
+          <video controls class="faq-video" preload="none"><source src="assets/vids/ConfigGuide.mp4" type="video/mp4"></video>
         </div>
-        <div class="faq-card wide">
-          <div class="faq-icon"><i class="fas fa-question"></i></div>
+
+        <div class="faq-card faq-wide">
+          <div class="faq-icon"><i class="fas fa-list-ol"></i></div>
           <h3>How to Install Configs</h3>
           <ol class="faq-steps">
             <li>Download the .txt config file from Discord</li>
@@ -373,88 +361,67 @@
             <span>Raids, legends, and portals must start in lobby. Other configs start in-game.</span>
           </div>
         </div>
-      </div>
-    </section>
 
-  </main>
+      </div>
+    </div>
+  </section>
 
   <footer class="footer">
-    <div class="footer-content">
+    <div class="footer-inner">
       <div class="footer-brand">
         <img src="assets/cyslogo.png" alt="Cys Logo">
         <span>Cys Macros</span>
       </div>
-      <p class="footer-text">© 2025 Cys Macros. All rights reserved.</p>
-      <div class="footer-social">
-        <a href="https://discord.gg/cys" target="_blank" class="social-link">
-          <i class="fab fa-discord"></i>
-        </a>
-      </div>
+      <p class="footer-copy">© 2025 Cys Macros. All rights reserved.</p>
+      <a href="https://discord.gg/cys" target="_blank" class="footer-discord"><i class="fab fa-discord"></i></a>
     </div>
   </footer>
 
-  <button class="floating-donate" id="donateBtn">
-    <i class="fas fa-gift"></i>
-    <span>Donate</span>
-  </button>
+  <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="fas fa-chevron-up"></i></button>
+  <button class="floating-donate" id="donateBtn"><i class="fas fa-gift"></i><span>Donate</span></button>
 
-  <div class="donate-modal" id="donateModal">
+  <div class="donate-modal" id="donateModal" role="dialog" aria-modal="true">
     <div class="modal-backdrop" id="modalBackdrop"></div>
     <div class="modal-content">
-      <button class="modal-close" id="modalClose">
-        <i class="fas fa-times"></i>
-      </button>
+      <button class="modal-close" id="modalClose" aria-label="Close"><i class="fas fa-times"></i></button>
       <h2 class="modal-title">Support Development</h2>
-      <p class="modal-subtitle">Your support helps us create better macros</p>
+      <p class="modal-sub">Your support keeps the macros alive</p>
       <div class="donate-options">
         <a href="https://www.roblox.com/game-pass/1131030571/Donation" class="donate-option" target="_blank">
-          <div class="option-icon"><i class="fas fa-bolt"></i></div>
-          <div class="option-info">
-            <span class="option-name">ALS Donator</span>
-            <span class="option-price">100 Robux</span>
-          </div>
+          <div class="opt-icon"><i class="fas fa-candy-cane"></i></div>
+          <div class="opt-info"><span class="opt-name">ALS Donator</span><span class="opt-price">100 R$</span></div>
         </a>
         <a href="https://www.roblox.com/game-pass/1531361678/Donator-AC" class="donate-option" target="_blank">
-          <div class="option-icon"><i class="fas fa-shield-alt"></i></div>
-          <div class="option-info">
-            <span class="option-name">AC Donator</span>
-            <span class="option-price">100 Robux</span>
-          </div>
+          <div class="opt-icon"><i class="fas fa-snowflake"></i></div>
+          <div class="opt-info"><span class="opt-name">AC Donator</span><span class="opt-price">100 R$</span></div>
         </a>
         <a href="https://www.roblox.com/game-pass/1629886425/Donator-UTD" class="donate-option" target="_blank">
-          <div class="option-icon"><i class="fas fa-tower-observation"></i></div>
-          <div class="option-info">
-            <span class="option-name">UTD Donator</span>
-            <span class="option-price">100 Robux</span>
-          </div>
+          <div class="opt-icon"><i class="fas fa-tree"></i></div>
+          <div class="opt-info"><span class="opt-name">UTD Donator</span><span class="opt-price">100 R$</span></div>
         </a>
-        <a href="https://www.roblox.com/game-pass/1510472554/AV-Donator" class="donate-option" target="_blank">
-          <div class="option-icon"><i class="fas fa-sword"></i></div>
-          <div class="option-info">
-            <span class="option-name">AV Donator</span>
-            <span class="option-price">200 Robux</span>
-          </div>
+        <a href="https://www.roblox.com/game-pass/1790269545/Donator-ARX" class="donate-option" target="_blank">
+          <div class="opt-icon"><i class="fas fa-shield-alt"></i></div>
+          <div class="opt-info"><span class="opt-name">ARX Donator</span><span class="opt-price">100 R$</span></div>
+        </a>
+        <a href="https://www.roblox.com/game-pass/1781509289/Donator-ASTD" class="donate-option" target="_blank">
+          <div class="opt-icon"><i class="fas fa-star"></i></div>
+          <div class="opt-info"><span class="opt-name">ASTD Donator</span><span class="opt-price">100 R$</span></div>
         </a>
         <a href="https://www.roblox.com/game-pass/1779491291/Donator-AO" class="donate-option" target="_blank">
-          <div class="option-icon"><i class="fas fa-star-of-life"></i></div>
-          <div class="option-info">
-            <span class="option-name">AO Donator</span>
-            <span class="option-price">100 Robux</span>
-          </div>
+          <div class="opt-icon"><i class="fas fa-bolt"></i></div>
+          <div class="opt-info"><span class="opt-name">AO Donator</span><span class="opt-price">100 R$</span></div>
         </a>
-        <a href="https://www.roblox.com/game-pass/1142811490/Big-Donation" class="donate-option featured" target="_blank">
-          <div class="option-icon"><i class="fas fa-gem"></i></div>
-          <div class="option-info">
-            <span class="option-name">Elite Donation</span>
-            <span class="option-price">500 Robux</span>
-          </div>
+        <a href="https://www.roblox.com/game-pass/1510472554/AV-Donator" class="donate-option" target="_blank">
+          <div class="opt-icon"><i class="fas fa-gift"></i></div>
+          <div class="opt-info"><span class="opt-name">AV Donator</span><span class="opt-price">200 R$</span></div>
         </a>
-        <a href="https://www.roblox.com/game-pass/1142443636/Huge-Donation" class="donate-option featured" target="_blank">
-          <div class="option-icon"><i class="fas fa-crown"></i></div>
-          <div class="option-info">
-            <span class="option-name">Divine Donation</span>
-            <span class="option-price">1000 Robux</span>
-          </div>
+        <a href="https://www.roblox.com/game-pass/1142811490/Big-Donation" class="donate-option opt-featured" target="_blank">
+          <div class="opt-icon"><i class="fas fa-gem"></i></div>
+          <div class="opt-info"><span class="opt-name">Elite Donation</span><span class="opt-price">500 R$</span></div>
+        </a>
+        <a href="https://www.roblox.com/game-pass/1142443636/Huge-Donation" class="donate-option opt-featured" target="_blank">
+          <div class="opt-icon"><i class="fas fa-crown"></i></div>
+          <div class="opt-info"><span class="opt-name">Divine Donation</span><span class="opt-price">1000 R$</span></div>
         </a>
       </div>
     </div>
