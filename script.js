@@ -1,6 +1,7 @@
 const REPOS = [
   { owner: 'Cyszx', repo: 'AGMacro.github.io', versionEl: 'macroVersion', downloadsEl: 'macroDownloads', buttonEl: 'macroButton' },
   { owner: 'Cyszx', repo: 'AnimeLastStand',    versionEl: 'alsVersion',   downloadsEl: 'alsDownloads',   buttonEl: 'alsButton'   },
+  { owner: 'Cyszx', repo: 'Cys-Task',          versionEl: 'taskVersion',  downloadsEl: 'taskDownloads',  buttonEl: 'taskButton'  },
 ];
 
 async function fetchRepoInfo({ owner, repo, versionEl, downloadsEl, buttonEl }) {
