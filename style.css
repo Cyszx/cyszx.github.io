@@ -360,25 +360,25 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
 .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
 .btn:active { transform: scale(0.96); }
 
-.btn-prim {
+.btn-cyan {
   background: var(--prim); color: #07080f;
   box-shadow: 0 2px 14px rgba(41,240,240,0.18);
 }
-.btn-prim:hover { box-shadow: 0 6px 22px rgba(41,240,240,0.32); }
+.btn-cyan:hover { box-shadow: 0 6px 22px rgba(41,240,240,0.32); }
 
-.btn-scnd {
+.btn-pink {
   background: var(--scnd); color: #fff;
   box-shadow: 0 2px 14px rgba(212,45,204,0.18);
 }
-.btn-scnd:hover { box-shadow: 0 6px 22px rgba(212,45,204,0.32); }
+.btn-pink:hover { box-shadow: 0 6px 22px rgba(212,45,204,0.32); }
 
 .btn.full { flex: none; width: 100%; }
 .btn-group { display: flex; gap: 0.6rem; }
 
 /* SETUP */
-.setup-tabs { display: none; gap: 0.45rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.setup-tabs { display: flex; gap: 0.45rem; margin-bottom: 2rem; flex-wrap: wrap; }
 .setup-tab {
-  display: none; align-items: center; gap: 0.45rem;
+  display: flex; align-items: center; gap: 0.45rem;
   padding: 0.55rem 1.1rem;
   background: var(--surf); border: 1px solid var(--border);
   border-radius: var(--pill);
@@ -436,27 +436,6 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
 }
 .setting-key { color: var(--text-2); font-size: 0.83rem; }
 .setting-val { font-family: var(--font-m); font-size: 0.78rem; font-weight: 700; color: var(--prim); }
-
-.game-setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-.setup-box {
-  background: var(--surf); border: 1px solid var(--border);
-  border-radius: var(--r-lg); padding: 1.6rem;
-}
-.setup-box h3 {
-  font-family: var(--font-d); font-size: 1.05rem; font-weight: 700;
-  color: var(--text); margin-bottom: 0.9rem;
-}
-.setup-img { width: 100%; border-radius: var(--r-md); border: 1px solid var(--border); margin-bottom: 0.65rem; }
-
-.instruction-block {
-  margin-bottom: 1rem; padding: 0.9rem;
-  background: var(--surf-2); border-radius: var(--r-md);
-}
-.instruction-block h4 {
-  display: flex; align-items: center; gap: 0.45rem;
-  color: var(--prim); font-size: 0.88rem; font-weight: 600; margin-bottom: 0.35rem;
-}
-.instruction-block p { color: var(--text-2); font-size: 0.85rem; }
 
 /* FAQ */
 .faq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 1rem; }
