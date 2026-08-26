@@ -34,9 +34,17 @@
       </a>
       <div class="nav-links" id="navLinks">
         <a href="#macros" class="nav-link" data-section="macros"><i class="fas fa-download"></i><span>Macros</span></a>
+        <a href="configs/" class="nav-link"><i class="fas fa-th-large"></i><span>Configs</span></a>
+        <a href="#reviews" class="nav-link" data-section="reviews"><i class="fas fa-star"></i><span>Reviews</span></a>
         <a href="#setup" class="nav-link" data-section="setup"><i class="fas fa-cog"></i><span>Setup</span></a>
         <a href="#faq" class="nav-link" data-section="faq"><i class="fas fa-question-circle"></i><span>FAQ</span></a>
         <a href="https://discord.gg/cys" class="nav-link discord-link" target="_blank"><i class="fab fa-discord"></i><span>Discord</span></a>
+      </div>
+      <div class="nav-auth-wrapper">
+        <button class="nav-auth-btn" id="navAuthBtn" onclick="handleNavAuthClick()">
+          <i class="fab fa-discord"></i>
+          <span id="navAuthText">Login</span>
+        </button>
       </div>
       <button class="nav-mobile-toggle" id="mobileToggle" aria-label="Toggle menu"><i class="fas fa-bars"></i></button>
     </div>
@@ -52,7 +60,7 @@
         </div>
         <div class="stat-sep"></div>
         <div class="stat-item">
-          <div class="stat-number">8</div>
+          <div class="stat-number">5</div>
           <div class="stat-label">Games</div>
         </div>
         <div class="stat-sep"></div>
@@ -152,32 +160,6 @@
           </div>
         </div>
 
-        <div class="macro-card card-premium" data-game="utd">
-          <div class="card-accent"></div>
-          <div class="card-header">
-            <img src="assets/imgs/utd/utd-title.png" alt="Universal Tower Defense" class="card-logo">
-            <div class="card-badge badge-prem">Premium</div>
-          </div>
-          <div class="card-body">
-            <h3 class="card-title">Universal Tower Defense</h3>
-            <ul class="feature-list">
-              <li><i class="fas fa-check"></i>Auto-Challenge</li>
-              <li><i class="fas fa-check"></i>All Stories</li>
-              <li><i class="fas fa-check"></i>Legend Stages</li>
-              <li><i class="fas fa-check"></i>Multi-Mode</li>
-              <li><i class="fas fa-check"></i>Permanent Challenges</li>
-              <li><i class="fas fa-check"></i>Virtual Realm</li>
-              <li><i class="fas fa-check"></i>Universal Tears</li>
-              <li><i class="fas fa-check"></i>World Boss</li>
-              <li><i class="fas fa-check"></i>Event Modes</li>
-              <li><i class="fas fa-check"></i>Custom</li>
-            </ul>
-          </div>
-          <div class="card-footer">
-            <a href="https://www.roblox.com/game-pass/1629886425/Donator-UTD" class="btn btn-pink full" target="_blank"><i class="fas fa-star"></i><span class="btn-text">Get Premium</span></a>
-          </div>
-        </div>
-
         <div class="macro-card card-premium" data-game="aor">
           <div class="card-accent"></div>
           <div class="card-header">
@@ -198,51 +180,6 @@
           </div>
           <div class="card-footer">
             <a href="https://www.roblox.com/game-pass/1949750962/Donator-AOR" class="btn btn-pink full" target="_blank"><i class="fas fa-star"></i><span class="btn-text">Get Premium</span></a>
-          </div>
-        </div>
-
-        <div class="macro-card card-premium" data-game="ac">
-          <div class="card-accent"></div>
-          <div class="card-header">
-            <img src="assets/imgs/ac/ac-title.png" alt="Anime Crusaders" class="card-logo">
-            <div class="card-badge badge-prem">Premium</div>
-          </div>
-          <div class="card-body">
-            <h3 class="card-title">Anime Crusaders</h3>
-            <ul class="feature-list">
-              <li><i class="fas fa-check"></i>Raids</li>
-              <li><i class="fas fa-check"></i>Halloween Event</li>
-              <li><i class="fas fa-check"></i>Boss Rush</li>
-              <li><i class="fas fa-check"></i>Auto Challenge</li>
-              <li><i class="fas fa-check"></i>Portals</li>
-              <li><i class="fas fa-check"></i>Infinity Castle</li>
-              <li><i class="fas fa-check"></i>Custom</li>
-            </ul>
-          </div>
-          <div class="card-footer">
-            <a href="https://www.roblox.com/game-pass/1531361678/Donator-AC" class="btn btn-pink full" target="_blank"><i class="fas fa-star"></i><span class="btn-text">Get Premium</span></a>
-          </div>
-        </div>
-
-        <div class="macro-card card-premium" data-game="arx">
-          <div class="card-accent"></div>
-          <div class="card-header">
-            <img src="assets/imgs/arx/arx-title.png" alt="Re: Rangers X" class="card-logo">
-            <div class="card-badge badge-prem">Premium</div>
-          </div>
-          <div class="card-body">
-            <h3 class="card-title">Re:Rangers X</h3>
-            <ul class="feature-list">
-              <li><i class="fas fa-check"></i>Easter</li>
-              <li><i class="fas fa-check"></i>Invasion</li>
-              <li><i class="fas fa-check"></i>Calamity</li>
-              <li><i class="fas fa-check"></i>Raids</li>
-              <li><i class="fas fa-check"></i>Dungeon</li>
-              <li><i class="fas fa-check"></i>Customs</li>
-            </ul>
-          </div>
-          <div class="card-footer">
-            <a href="https://www.roblox.com/game-pass/1790269545/Donator-ARX" class="btn btn-pink full" target="_blank"><i class="fas fa-star"></i><span class="btn-text">Get Premium</span></a>
           </div>
         </div>
 
@@ -289,26 +226,6 @@
           </div>
         </div>
 
-        <div class="macro-card card-premium" data-game="ao">
-          <div class="card-accent"></div>
-          <div class="card-header">
-            <img src="assets/imgs/ao/ao-title.png" alt="Anime Overload" class="card-logo">
-            <div class="card-badge badge-prem">Premium</div>
-          </div>
-          <div class="card-body">
-            <h3 class="card-title">Anime Overload</h3>
-            <ul class="feature-list">
-              <li><i class="fas fa-check"></i>Story Mode</li>
-              <li><i class="fas fa-check"></i>Legend Stages</li>
-              <li><i class="fas fa-check"></i>Makima Event</li>
-              <li><i class="fas fa-check"></i>Custom</li>
-            </ul>
-          </div>
-          <div class="card-footer">
-            <a href="https://www.roblox.com/game-pass/1779491291/Donator-AO" class="btn btn-pink full" target="_blank"><i class="fas fa-star"></i><span class="btn-text">Get Premium</span></a>
-          </div>
-        </div>
-
         <div class="macro-card card-free" data-game="task">
           <div class="card-accent"></div>
           <div class="card-header">
@@ -337,6 +254,91 @@
           </div>
         </div>
 
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEWS SECTION -->
+  <section class="page-section" id="reviews">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="verified-pill"><i class="fas fa-crown"></i> Verified Donators &amp; Premium</div>
+        <h2 class="section-title">User <span class="accent">Reviews</span></h2>
+        <p class="section-sub">Real ratings and feedback submitted by verified Premium members.</p>
+      </div>
+
+      <!-- Rating Overview Card -->
+      <div class="reviews-summary-card">
+        <div class="rating-overview-box">
+          <div class="rating-big-score" id="reviewAvgScore">4.9</div>
+          <div class="rating-overview-stars" id="reviewOverviewStars">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+          </div>
+          <div class="rating-overview-count" id="reviewTotalCount">Based on 140+ reviews</div>
+        </div>
+
+        <div class="rating-breakdown-bars">
+          <div class="rating-bar-row">
+            <span class="bar-label">5 <i class="fas fa-star"></i></span>
+            <div class="bar-track"><div class="bar-fill" id="bar5" style="width: 94%;"></div></div>
+            <span class="bar-percent" id="barCount5">94%</span>
+          </div>
+          <div class="rating-bar-row">
+            <span class="bar-label">4 <i class="fas fa-star"></i></span>
+            <div class="bar-track"><div class="bar-fill" id="bar4" style="width: 5%;"></div></div>
+            <span class="bar-percent" id="barCount4">5%</span>
+          </div>
+          <div class="rating-bar-row">
+            <span class="bar-label">3 <i class="fas fa-star"></i></span>
+            <div class="bar-track"><div class="bar-fill" id="bar3" style="width: 1%;"></div></div>
+            <span class="bar-percent" id="barCount3">1%</span>
+          </div>
+          <div class="rating-bar-row">
+            <span class="bar-label">2 <i class="fas fa-star"></i></span>
+            <div class="bar-track"><div class="bar-fill" id="bar2" style="width: 0%;"></div></div>
+            <span class="bar-percent" id="barCount2">0%</span>
+          </div>
+          <div class="rating-bar-row">
+            <span class="bar-label">1 <i class="fas fa-star"></i></span>
+            <div class="bar-track"><div class="bar-fill" id="bar1" style="width: 0%;"></div></div>
+            <span class="bar-percent" id="barCount1">0%</span>
+          </div>
+        </div>
+
+        <div class="review-action-box">
+          <div class="review-policy-badge">
+            <i class="fas fa-shield-alt"></i>
+            <div>
+              <strong>Premium-Only Reviews</strong>
+              <span>To prevent fake reviews, only verified Premium users can post. Free users cannot submit.</span>
+            </div>
+          </div>
+          <button class="btn btn-cyan btn-write-review" id="btnOpenReviewModal" onclick="openReviewModal()">
+            <i class="fas fa-pen"></i>
+            <span>Write a Review</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters & User Status Bar -->
+      <div class="reviews-controls-bar">
+        <div class="review-filter-chips" id="reviewFilterChips">
+          <button class="rev-chip active" data-filter="all">All Stars</button>
+          <button class="rev-chip" data-filter="5">5 <i class="fas fa-star"></i></button>
+          <button class="rev-chip" data-filter="4">4 <i class="fas fa-star"></i></button>
+          <button class="rev-chip" data-filter="3">3 <i class="fas fa-star"></i></button>
+          <button class="rev-chip" data-filter="Anime Expeditions">Anime Expeditions</button>
+          <button class="rev-chip" data-filter="Anime Last Stand">Anime Last Stand</button>
+          <button class="rev-chip" data-filter="Anime Vanguards">Anime Vanguards</button>
+        </div>
+        <div class="reviews-user-badge-wrap" id="reviewUserBadgeWrap">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Reviews Grid -->
+      <div class="reviews-grid" id="reviewsGrid">
+        <!-- Dynamically rendered review cards -->
       </div>
     </div>
   </section>
@@ -452,7 +454,7 @@
         <img src="assets/cyslogo.png" alt="Cys Logo">
         <span>Cys Macros</span>
       </div>
-      <p class="footer-copy">© 2025 Cys Macros. All rights reserved.</p>
+      <p class="footer-copy">© 2025 Cys Macros. All rights reserved. · <a href="terms.html" style="color:var(--text-2);text-decoration:underline;">Terms</a> · <a href="privacy.html" style="color:var(--text-2);text-decoration:underline;">Privacy</a></p>
       <a href="https://discord.gg/cys" target="_blank" class="footer-discord"><i class="fab fa-discord"></i></a>
     </div>
   </footer>
@@ -460,6 +462,7 @@
   <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="fas fa-chevron-up"></i></button>
   <button class="floating-donate" id="donateBtn"><i class="fas fa-gift"></i><span>Donate</span></button>
 
+  <!-- Donate Modal -->
   <div class="donate-modal" id="donateModal" role="dialog" aria-modal="true">
     <div class="modal-backdrop" id="modalBackdrop"></div>
     <div class="modal-content">
@@ -471,10 +474,6 @@
           <div class="opt-icon"><i class="fas fa-candy-cane"></i></div>
           <div class="opt-info"><span class="opt-name">ALS Donator</span><span class="opt-price">100 R$</span></div>
         </a>
-        <a href="https://www.roblox.com/game-pass/1531361678/Donator-AC" class="donate-option" target="_blank">
-          <div class="opt-icon"><i class="fas fa-snowflake"></i></div>
-          <div class="opt-info"><span class="opt-name">AC Donator</span><span class="opt-price">100 R$</span></div>
-        </a>
         <a href="https://www.roblox.com/game-pass/1906035034/Donator-AE" class="donate-option" target="_blank">
           <div class="opt-icon"><i class="fas fa-tree"></i></div>
           <div class="opt-info"><span class="opt-name">AE Donator</span><span class="opt-price">250 R$</span></div>
@@ -483,21 +482,9 @@
           <div class="opt-icon"><i class="fas fa-cat"></i></div>
           <div class="opt-info"><span class="opt-name">AOR Donator</span><span class="opt-price">100 R$</span></div>
         </a>
-        <a href="https://www.roblox.com/game-pass/1629886425/Donator-UTD" class="donate-option" target="_blank">
-          <div class="opt-icon"><i class="fas fa-tree"></i></div>
-          <div class="opt-info"><span class="opt-name">UTD Donator</span><span class="opt-price">100 R$</span></div>
-        </a>
-        <a href="https://www.roblox.com/game-pass/1790269545/Donator-ARX" class="donate-option" target="_blank">
-          <div class="opt-icon"><i class="fas fa-shield-alt"></i></div>
-          <div class="opt-info"><span class="opt-name">ARX Donator</span><span class="opt-price">100 R$</span></div>
-        </a>
         <a href="https://www.roblox.com/game-pass/1781509289/Donator-ASTD" class="donate-option" target="_blank">
           <div class="opt-icon"><i class="fas fa-star"></i></div>
           <div class="opt-info"><span class="opt-name">ASTD Donator</span><span class="opt-price">100 R$</span></div>
-        </a>
-        <a href="https://www.roblox.com/game-pass/1779491291/Donator-AO" class="donate-option" target="_blank">
-          <div class="opt-icon"><i class="fas fa-bolt"></i></div>
-          <div class="opt-info"><span class="opt-name">AO Donator</span><span class="opt-price">100 R$</span></div>
         </a>
         <a href="https://www.roblox.com/game-pass/1510472554/AV-Donator" class="donate-option" target="_blank">
           <div class="opt-icon"><i class="fas fa-gift"></i></div>
@@ -510,6 +497,125 @@
       </div>
     </div>
   </div>
+
+  <!-- WRITE REVIEW MODAL -->
+  <div class="review-modal" id="reviewModal" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" id="reviewModalBackdrop" onclick="closeReviewModal()"></div>
+    <div class="modal-content review-modal-content">
+      <button class="modal-close" id="reviewModalClose" onclick="closeReviewModal()" aria-label="Close"><i class="fas fa-times"></i></button>
+
+      <!-- VIEW 1: NOT LOGGED IN -->
+      <div class="rev-modal-state" id="revStateLoggedOut">
+        <div class="rev-modal-icon-badge icon-discord"><i class="fab fa-discord"></i></div>
+        <h2 class="modal-title">Login with Discord</h2>
+        <p class="modal-sub">To submit a review, you must verify your Discord account so we can verify your Premium/Donator status.</p>
+        <div class="rev-lock-notice">
+          <i class="fas fa-shield-alt"></i>
+          <span>Only verified Premium members can submit reviews. Free users cannot post reviews.</span>
+        </div>
+        <button class="btn btn-discord full" onclick="startDiscordLogin()">
+          <i class="fab fa-discord"></i>
+          <span>Login with Discord</span>
+        </button>
+      </div>
+
+      <!-- VIEW 2: LOGGED IN AS FREE USER (LOCKED) -->
+      <div class="rev-modal-state hidden" id="revStateFreeUser">
+        <div class="rev-modal-icon-badge icon-lock"><i class="fas fa-lock"></i></div>
+        <h2 class="modal-title">Premium Exclusive Feature</h2>
+        <p class="modal-sub">Reviews can only be submitted by verified <span class="accent-pink">Premium &amp; Donator</span> members. Free users are not permitted to submit reviews.</p>
+        <div class="rev-free-user-profile" id="revFreeUserProfile">
+          <img id="revFreeUserAvatar" src="" alt="Avatar">
+          <div>
+            <div class="user-name" id="revFreeUserName">User</div>
+            <span class="user-role-chip free-chip"><i class="fas fa-user"></i> Free Member</span>
+          </div>
+        </div>
+        <div class="rev-upgrade-box">
+          <p>Get Donator or Premium access to unlock verified reviews, automated modes, priority support, and more!</p>
+          <a href="https://www.roblox.com/game-pass/1906035034/Donator-AE" class="btn btn-pink full" target="_blank">
+            <i class="fas fa-crown"></i>
+            <span>Get Premium Access</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- VIEW 3: LOGGED IN AS PREMIUM / ADMIN (SUBMIT FORM) -->
+      <div class="rev-modal-state hidden" id="revStatePremiumUser">
+        <div class="rev-user-header">
+          <div class="rev-user-info">
+            <img id="revPremUserAvatar" src="" alt="Avatar">
+            <div>
+              <div class="user-name" id="revPremUserName">User</div>
+              <span class="user-role-chip premium-chip" id="revPremUserRole"><i class="fas fa-crown"></i> Verified Premium</span>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="modal-title" style="margin-top: 0.5rem; text-align: left;">Write a Review</h2>
+        <p class="modal-sub" style="text-align: left; margin-bottom: 1.25rem;">Rate your experience from 1 to 5 stars.</p>
+
+        <form id="reviewForm" onsubmit="submitReview(event)">
+          <!-- Star Rating Picker (1-5 stars) -->
+          <div class="form-group">
+            <label class="form-label">Star Rating <span class="required">*</span></label>
+            <div class="star-rating-picker" id="starRatingPicker">
+              <div class="stars-row">
+                <button type="button" class="star-btn active" data-rating="1" title="1 Star"><i class="fas fa-star"></i></button>
+                <button type="button" class="star-btn active" data-rating="2" title="2 Stars"><i class="fas fa-star"></i></button>
+                <button type="button" class="star-btn active" data-rating="3" title="3 Stars"><i class="fas fa-star"></i></button>
+                <button type="button" class="star-btn active" data-rating="4" title="4 Stars"><i class="fas fa-star"></i></button>
+                <button type="button" class="star-btn active" data-rating="5" title="5 Stars"><i class="fas fa-star"></i></button>
+              </div>
+              <span class="star-rating-label" id="starRatingLabel">★★★★★ - 5 Stars (Flawless / Excellent!)</span>
+            </div>
+          </div>
+
+          <!-- Game Selector -->
+          <div class="form-group">
+            <label class="form-label" for="reviewGameSelect">Macro / Game</label>
+            <select class="form-input" id="reviewGameSelect">
+              <option value="Anime Expeditions" selected>Anime Expeditions</option>
+              <option value="Anime Last Stand">Anime Last Stand</option>
+              <option value="Anime Vanguards">Anime Vanguards</option>
+              <option value="Anime Origins">Anime Origins</option>
+              <option value="All Star Tower Defense">All Star Tower Defense (ASTD)</option>
+              <option value="Anime Guardians">Anime Guardians</option>
+              <option value="Cys Task">Cys Task</option>
+              <option value="General">General / All Macros</option>
+            </select>
+          </div>
+
+          <!-- Review Title -->
+          <div class="form-group">
+            <label class="form-label" for="reviewTitleInput">Review Headline (Optional)</label>
+            <input type="text" class="form-input" id="reviewTitleInput" placeholder="e.g. Best AE macro, runs 24/7 with zero flaws!" maxlength="100">
+          </div>
+
+          <!-- Review Comment -->
+          <div class="form-group">
+            <div class="label-with-count">
+              <label class="form-label" for="reviewCommentInput">Your Detailed Review <span class="required">*</span></label>
+              <span class="char-count" id="commentCharCount">0 / 2000</span>
+            </div>
+            <textarea class="form-input form-textarea" id="reviewCommentInput" rows="4" placeholder="Share your honest thoughts about the macro stability, features, and performance..." required minlength="5" maxlength="2000"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeReviewModal()">Cancel</button>
+            <button type="submit" class="btn btn-cyan" id="btnSubmitReview">
+              <i class="fas fa-paper-plane"></i>
+              <span id="btnSubmitReviewText">Post Review</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
 
   <script src="script.js"></script>
 </body>
