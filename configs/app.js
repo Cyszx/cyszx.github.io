@@ -12,7 +12,16 @@
   var DISCORD_CLIENT_ID = "1363171262314188951";
 
   // OAuth2 redirect: automatically uses the current page URL (works for localhost, Live Server, and GitHub Pages)
-  var REDIRECT_URI = window.location.origin + window.location.pathname;
+  function getRedirectUri() {
+    if (window.location.protocol === "file:" || !window.location.origin || window.location.origin === "null") {
+      return "https://cyszx.github.io/configs/";
+    }
+    var uri = window.location.origin + window.location.pathname;
+    uri = uri.replace(/\/index\.html$/i, "/");
+    if (!uri.endsWith("/")) uri += "/";
+    return uri;
+  }
+  var REDIRECT_URI = getRedirectUri();
 
   // Allowed file extensions for upload
   var ALLOWED_EXTENSIONS = [".txt", ".json", ".ini", ".cfg", ".zip"];
