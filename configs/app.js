@@ -550,16 +550,18 @@
       previewEl.textContent = rawData;
     }
 
-    // Show edit & delete button if owner or admin
+    // Show edit button ONLY if current user is the original author
+    var isAuthor = currentUser && (currentUser.id === config.author_id);
     var isOwnerOrAdmin = currentUser && (currentUser.id === config.author_id || currentUser.is_admin);
+
     var editBtn = document.getElementById("btn-edit-config");
     if (editBtn) {
-      if (isOwnerOrAdmin) editBtn.classList.remove("hidden");
+      if (isAuthor) editBtn.classList.remove("hidden");
       else editBtn.classList.add("hidden");
     }
     var editHeaderBtn = document.getElementById("btn-edit-header");
     if (editHeaderBtn) {
-      if (isOwnerOrAdmin) editHeaderBtn.classList.remove("hidden");
+      if (isAuthor) editHeaderBtn.classList.remove("hidden");
       else editHeaderBtn.classList.add("hidden");
     }
     var deleteBtn = document.getElementById("btn-delete-config");
@@ -906,8 +908,8 @@
 
   window.openEditModal = function () {
     if (!currentDetailConfig) return;
-    if (!currentUser || (currentUser.id !== currentDetailConfig.author_id && !currentUser.is_admin)) {
-      showToast("You are not authorized to edit this config", "error");
+    if (!currentUser || currentUser.id !== currentDetailConfig.author_id) {
+      showToast("Only the original creator of this config can edit it.", "error");
       return;
     }
 
