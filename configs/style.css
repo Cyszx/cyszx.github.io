@@ -808,21 +808,54 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
 }
 
 .btn-edit-config {
-  display: flex; align-items: center; justify-content: center; gap: 0.4rem;
-  padding: 0.75rem 1.2rem;
-  font-family: var(--font-d); font-size: 0.85rem; font-weight: 700;
-  color: var(--text); background: rgba(255,255,255,0.06); border: 1px solid var(--border-2);
-  border-radius: var(--pill); transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.75rem 1.3rem;
+  font-family: var(--font-d);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #ffffff;
+  background: rgba(41, 240, 240, 0.12);
+  border: 1px solid rgba(41, 240, 240, 0.4);
+  border-radius: var(--pill);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
-.btn-edit-config:hover { background: rgba(255,255,255,0.12); color: var(--prim); border-color: var(--prim-border); transform: translateY(-2px); }
+.btn-edit-config i {
+  color: var(--prim);
+  font-size: 0.9rem;
+}
+.btn-edit-config:hover {
+  background: rgba(41, 240, 240, 0.25);
+  border-color: var(--prim);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(41, 240, 240, 0.28);
+}
 
 .btn-delete-config {
-  display: flex; align-items: center; justify-content: center;
-  padding: 0.75rem 1rem;
-  color: var(--danger); background: var(--danger-dim); border: 1px solid var(--danger-border);
-  border-radius: var(--pill); transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.1rem;
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: var(--pill);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.btn-delete-config:hover { background: rgba(239,68,68,0.2); }
+.btn-delete-config:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+}
 
 /* ============================================
    UPLOAD MODAL
