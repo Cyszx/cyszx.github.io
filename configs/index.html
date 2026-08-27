@@ -105,12 +105,14 @@
     <div class="ch-filters" id="filter-chips">
       <button class="filter-chip active" data-filter="all">All</button>
       <button class="filter-chip" data-filter="Anime Expeditions">Anime Expeditions</button>
-      <button class="filter-chip" data-filter="Anime Last Stand">Anime Last Stand</button>
-      <button class="filter-chip" data-filter="All Star Tower Defense">ASTD</button>
+      <button class="filter-chip" data-filter="Anime Origins">Anime Origins</button>
       <button class="filter-chip" data-filter="Story">Story</button>
       <button class="filter-chip" data-filter="Raid">Raid</button>
       <button class="filter-chip" data-filter="Challenge">Challenge</button>
-      <button class="filter-chip" data-filter="Tower">Tower</button>
+      <button class="filter-chip" data-filter="Infinity Tower">Infinity Tower</button>
+      <button class="filter-chip" data-filter="Legend-Stages">Legend-Stages</button>
+      <button class="filter-chip" data-filter="Artifacts">Artifacts</button>
+      <button class="filter-chip" data-filter="Rifts">Rifts</button>
       <button class="filter-chip" data-filter="Custom">Custom</button>
     </div>
   </div>
@@ -209,18 +211,21 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Download
         </button>
-        <button class="btn-delete-config hidden" id="btn-delete-config" onclick="deleteConfig()">
+        <button class="btn-edit-config hidden" id="btn-edit-config" onclick="openEditModal()" title="Edit this config">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="btn-delete-config hidden" id="btn-delete-config" onclick="deleteConfig()" title="Delete this config">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Upload Modal -->
+  <!-- Upload / Edit Modal -->
   <div class="modal-overlay" id="upload-modal">
     <div class="modal-box">
       <div class="modal-header">
-        <h3>Upload Config</h3>
+        <h3 id="upload-modal-title">Upload Config</h3>
         <button class="modal-close" onclick="closeModal('upload-modal')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -231,11 +236,10 @@
 
         <div class="upload-form-group">
           <label>Game / Macro Name <span class="required">*</span></label>
-          <input type="text" class="upload-input" id="upload-game" list="game-suggestions" placeholder="Anime Expeditions, Anime Last Stand, ASTD..." required maxlength="60" autocomplete="off" />
+          <input type="text" class="upload-input" id="upload-game" list="game-suggestions" placeholder="Anime Expeditions, Anime Origins..." required maxlength="60" autocomplete="off" />
           <datalist id="game-suggestions">
             <option value="Anime Expeditions"></option>
-            <option value="Anime Last Stand"></option>
-            <option value="All Star Tower Defense"></option>
+            <option value="Anime Origins"></option>
           </datalist>
         </div>
 
@@ -251,16 +255,19 @@
 
         <div class="upload-form-group">
           <label>Mode / Category (Optional)</label>
-          <input type="text" class="upload-input" id="upload-mode" list="mode-suggestions" placeholder="Story, Raid, Challenge, Tower..." maxlength="50" autocomplete="off" />
+          <input type="text" class="upload-input" id="upload-mode" list="mode-suggestions" placeholder="Story, Raid, Challenge, Infinity Tower..." maxlength="50" autocomplete="off" />
           <datalist id="mode-suggestions">
             <option value="Story"></option>
             <option value="Raid"></option>
             <option value="Challenge"></option>
             <option value="Expedition"></option>
-            <option value="Tower / Infinity"></option>
-            <option value="Auto Farm"></option>
+            <option value="Infinity Tower"></option>
             <option value="Event"></option>
             <option value="Boss Bounty"></option>
+            <option value="Legend-Stages"></option>
+            <option value="Raids"></option>
+            <option value="Artifacts"></option>
+            <option value="Rifts"></option>
             <option value="Custom"></option>
           </datalist>
         </div>
@@ -278,12 +285,12 @@
         </div>
 
         <div class="upload-form-group">
-          <label>Config File or ZIP <span class="required">*</span></label>
+          <label id="upload-file-label">Config File(s) or ZIP <span class="required">*</span></label>
           <div class="upload-dropzone" id="upload-dropzone">
             <span class="drop-icon"><i class="fas fa-folder-open"></i></span>
-            <div class="drop-text">Drag & drop your config file here</div>
-            <div class="drop-hint">Accepts .txt, .json, .ini, .cfg, .zip (max 2MB)</div>
-            <input type="file" id="upload-file" accept=".txt,.json,.ini,.cfg,.zip" />
+            <div class="drop-text" id="drop-main-text">Drag & drop your config file(s) here</div>
+            <div class="drop-hint">Single file or multiple .txt / .json files (auto-zipped)</div>
+            <input type="file" id="upload-file" accept=".txt,.json,.ini,.cfg,.zip" multiple />
           </div>
           <div id="upload-file-preview-wrap"></div>
           <div id="upload-validation" class="upload-validation hidden"></div>
@@ -291,7 +298,7 @@
 
         <button type="submit" class="btn-submit-config" id="btn-submit" disabled>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Upload Config
+          <span id="btn-submit-text">Upload Config</span>
         </button>
       </form>
     </div>

@@ -37,7 +37,9 @@
   var currentSearch = "";
   var currentDetailConfig = null;
   var uploadTags = [];
-  var uploadFile = null;
+  var uploadFiles = [];
+  var isEditing = false;
+  var editingConfigCode = null;
 
   // ==========================================
   // INITIALIZATION
@@ -75,12 +77,7 @@
       var token = localStorage.getItem("ch_token");
       if (userData && token) {
         currentUser = JSON.parse(userData);
-        // Automatic Admin grant for Cys owner account
-        if (
-          currentUser.id === "1363171262314188951" ||
-          (currentUser.username && currentUser.username.toLowerCase().includes("cys")) ||
-          currentUser.is_admin
-        ) {
+        if (currentUser.id === "1363171262314188951" || currentUser.is_admin) {
           currentUser.is_admin = true;
           currentUser.is_premium = true;
         }
@@ -126,35 +123,23 @@
           return;
         }
         currentUser = data.user;
-        if (
-          currentUser.id === "1363171262314188951" ||
-          (currentUser.username && currentUser.username.toLowerCase().includes("cys")) ||
-          currentUser.is_admin
-        ) {
+        if (currentUser.id === "1363171262314188951" || currentUser.is_admin) {
           currentUser.is_admin = true;
           currentUser.is_premium = true;
         }
         localStorage.setItem("ch_user", JSON.stringify(currentUser));
         localStorage.setItem("ch_token", data.token);
         updateUIForLoggedIn();
-        showToast("Logged in as " + currentUser.username, "success");
+        var roleTitle = currentUser.is_admin
+          ? " (Admin)"
+          : ((currentUser.is_config_maker || currentUser.is_creator)
+            ? " (Config Maker)"
+            : (currentUser.is_premium ? " (Donator)" : ""));
+        showToast("Logged in as " + currentUser.username + roleTitle, "success");
       })
-      .catch(function () {
-        // Fallback for local testing before API is deployed to Cloudflare
-        if (API_BASE.includes("YOUR-SUBDOMAIN")) {
-          var mockUser = {
-            id: "1363171262314188951",
-            username: "Cys (Test User)",
-            avatar: null
-          };
-          currentUser = mockUser;
-          localStorage.setItem("ch_user", JSON.stringify(mockUser));
-          localStorage.setItem("ch_token", "mock_local_dev_token");
-          updateUIForLoggedIn();
-          showToast("Logged in (Local Test Mode)", "success");
-        } else {
-          showToast("Login failed. Please verify your backend API.", "error");
-        }
+      .catch(function (err) {
+        console.error("Auth error:", err);
+        showToast("Login connection error: " + (err.message || "Failed to connect to API"), "error");
       });
   }
 
@@ -174,6 +159,9 @@
       if (currentUser.is_admin) {
         roleBadge.textContent = "Admin";
         roleBadge.classList.add("admin");
+      } else if (currentUser.is_config_maker || currentUser.is_creator) {
+        roleBadge.textContent = "Config Maker";
+        roleBadge.classList.add("config-maker");
       } else if (currentUser.is_premium) {
         roleBadge.textContent = "Donator";
         roleBadge.classList.add("premium");
@@ -354,11 +342,11 @@
       var authorBadgeHtml = "";
       var role = (config.author_role || "").toLowerCase();
       if (role === "admin" || (config.author_name && config.author_name.toLowerCase().includes("cys"))) {
-        authorBadgeHtml = '<span class="author-badge badge-admin">STAFF</span>';
-      } else if (role === "creator") {
-        authorBadgeHtml = '<span class="author-badge badge-creator">CONFIG MAKER</span>';
+        authorBadgeHtml = '<span class="author-badge badge-admin"><i class="fas fa-crown"></i> STAFF</span>';
+      } else if (role === "creator" || role === "config maker" || role === "config_maker" || role === "config makers") {
+        authorBadgeHtml = '<span class="author-badge badge-creator"><i class="fas fa-hammer"></i> CONFIG MAKER</span>';
       } else if (role === "donator") {
-        authorBadgeHtml = '<span class="author-badge badge-donator">DONATOR</span>';
+        authorBadgeHtml = '<span class="author-badge badge-donator"><i class="fas fa-gem"></i> DONATOR</span>';
       }
 
       var card = document.createElement("div");
@@ -376,7 +364,7 @@
         '<div class="config-card-title">' +
         escapeHtml(config.name) +
         "</div>" +
-        '<span class="share-code-badge">' +
+        '<span class="share-code-badge" onclick="event.stopPropagation(); copyShareCodeText(\'' + escapeHtml(config.share_code) + '\')" title="Click to copy code">' +
         escapeHtml(config.share_code) +
         "</span>" +
         "</div>" +
@@ -562,12 +550,17 @@
       previewEl.textContent = rawData;
     }
 
-    // Show delete button if owner or admin
+    // Show edit & delete button if owner or admin
+    var isOwnerOrAdmin = currentUser && (currentUser.id === config.author_id || currentUser.is_admin);
+    var editBtn = document.getElementById("btn-edit-config");
+    if (editBtn) {
+      if (isOwnerOrAdmin) editBtn.classList.remove("hidden");
+      else editBtn.classList.add("hidden");
+    }
     var deleteBtn = document.getElementById("btn-delete-config");
-    if (currentUser && (currentUser.id === config.author_id || currentUser.is_admin)) {
-      deleteBtn.classList.remove("hidden");
-    } else {
-      deleteBtn.classList.add("hidden");
+    if (deleteBtn) {
+      if (isOwnerOrAdmin) deleteBtn.classList.remove("hidden");
+      else deleteBtn.classList.add("hidden");
     }
 
     // Reset copy button
@@ -582,6 +575,69 @@
 
     openModal("detail-modal");
   }
+
+  function copyToClipboard(text, onSuccess, onError) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        if (onSuccess) onSuccess();
+      }).catch(function () {
+        fallbackCopy(text, onSuccess, onError);
+      });
+    } else {
+      fallbackCopy(text, onSuccess, onError);
+    }
+  }
+
+  function fallbackCopy(text, onSuccess, onError) {
+    try {
+      var textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "-9999px";
+      textArea.setAttribute("readonly", "");
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      var successful = document.execCommand("copy");
+      document.body.removeChild(textArea);
+      if (successful) {
+        if (onSuccess) onSuccess();
+      } else {
+        if (onError) onError();
+      }
+    } catch (err) {
+      if (onError) onError(err);
+    }
+  }
+
+  window.copyShareCode = function () {
+    if (!currentDetailConfig || !currentDetailConfig.share_code) return;
+    var code = currentDetailConfig.share_code;
+    var btn = document.getElementById("btn-copy-code");
+    copyToClipboard(code, function () {
+      if (btn) {
+        btn.classList.add("copied");
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(function () {
+          btn.classList.remove("copied");
+          btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+        }, 2000);
+      }
+      showToast("Copied: " + code, "success");
+    }, function () {
+      showToast("Failed to copy to clipboard", "error");
+    });
+  };
+
+  window.copyShareCodeText = function (code) {
+    if (!code) return;
+    copyToClipboard(code, function () {
+      showToast("Copied: " + code, "success");
+    }, function () {
+      showToast("Failed to copy code", "error");
+    });
+  };
 
   window.toggleLike = function (code) {
     if (!currentUser) {
@@ -769,8 +825,60 @@
   };
 
   // ==========================================
-  // UPLOAD
+  // UPLOAD & EDIT MODALS
   // ==========================================
+
+  var GAME_MODES = {
+    "Anime Expeditions": [
+      "Story",
+      "Raid",
+      "Challenge",
+      "Expedition",
+      "Infinity Tower",
+      "Event",
+      "Boss Bounty",
+      "Custom"
+    ],
+    "Anime Origins": [
+      "Story",
+      "Legend-Stages",
+      "Raids",
+      "Challenge",
+      "Artifacts",
+      "Rifts",
+      "Custom"
+    ]
+  };
+
+  function updateModeSuggestions(gameName) {
+    var list = document.getElementById("mode-suggestions");
+    if (!list) return;
+    var modes = [];
+    if (gameName && GAME_MODES[gameName]) {
+      modes = GAME_MODES[gameName];
+    } else {
+      modes = [
+        "Story",
+        "Raid",
+        "Challenge",
+        "Expedition",
+        "Infinity Tower",
+        "Event",
+        "Boss Bounty",
+        "Legend-Stages",
+        "Raids",
+        "Artifacts",
+        "Rifts",
+        "Custom"
+      ];
+    }
+    list.innerHTML = "";
+    modes.forEach(function (m) {
+      var opt = document.createElement("option");
+      opt.value = m;
+      list.appendChild(opt);
+    });
+  }
 
   window.openUploadModal = function () {
     if (!currentUser) {
@@ -778,31 +886,77 @@
       startDiscordLogin();
       return;
     }
+    isEditing = false;
+    editingConfigCode = null;
     resetUploadForm();
+    updateModeSuggestions("Anime Expeditions");
+    document.getElementById("upload-modal-title").textContent = "Upload Config";
+    document.getElementById("upload-file-label").innerHTML = 'Config File(s) or ZIP <span class="required">*</span>';
+    document.getElementById("btn-submit-text").textContent = "Upload Config";
+    openModal("upload-modal");
+  };
+
+  window.openEditModal = function () {
+    if (!currentDetailConfig) return;
+    if (!currentUser || (currentUser.id !== currentDetailConfig.author_id && !currentUser.is_admin)) {
+      showToast("You are not authorized to edit this config", "error");
+      return;
+    }
+
+    isEditing = true;
+    editingConfigCode = currentDetailConfig.share_code;
+
+    closeModal("detail-modal");
+    resetUploadForm();
+
+    document.getElementById("upload-modal-title").textContent = "Edit Config (" + currentDetailConfig.share_code + ")";
+    var gameVal = currentDetailConfig.game || "Anime Expeditions";
+    document.getElementById("upload-game").value = gameVal;
+    updateModeSuggestions(gameVal);
+    document.getElementById("upload-name").value = currentDetailConfig.name || "";
+    document.getElementById("upload-description").value = currentDetailConfig.description || "";
+    document.getElementById("upload-mode").value = currentDetailConfig.mode || "";
+    document.getElementById("upload-map").value = currentDetailConfig.map_name || "";
+    
+    try {
+      uploadTags = currentDetailConfig.tags ? JSON.parse(currentDetailConfig.tags) : [];
+      if (!Array.isArray(uploadTags)) uploadTags = [];
+    } catch {
+      uploadTags = [];
+    }
+    renderUploadTags();
+
+    document.getElementById("upload-file-label").innerHTML = 'Replace File(s) or ZIP <span style="font-weight:normal;color:var(--text-3);font-size:0.75rem;">(Optional - leave empty to keep current file)</span>';
+    document.getElementById("btn-submit-text").textContent = "Save Changes";
+    document.getElementById("btn-submit").disabled = false;
+
     openModal("upload-modal");
   };
 
   function resetUploadForm() {
     document.getElementById("upload-form").reset();
     uploadTags = [];
-    uploadFile = null;
+    uploadFiles = [];
     renderUploadTags();
     document.getElementById("upload-file-preview-wrap").innerHTML = "";
     document.getElementById("upload-validation").classList.add("hidden");
-    document.getElementById("btn-submit").disabled = true;
+    document.getElementById("btn-submit").disabled = !isEditing;
 
     // Populate role notice
     var notice = document.getElementById("upload-role-notice");
     if (notice && currentUser) {
       if (currentUser.is_admin) {
         notice.className = "upload-role-notice admin";
-        notice.innerHTML = '👑 <strong>Admin Mode</strong> - Full upload and moderation access.';
+        notice.innerHTML = '👑 <strong>Admin Mode</strong> - Full upload, edit, and moderation access.';
+      } else if (currentUser.is_config_maker || currentUser.is_creator) {
+        notice.className = "upload-role-notice config-maker";
+        notice.innerHTML = '<i class="fas fa-hammer"></i> <strong>Config Maker Verified</strong> - Official Config Maker creator badge & 10MB upload limit enabled.';
       } else if (currentUser.is_premium) {
         notice.className = "upload-role-notice premium";
-        notice.innerHTML = '💎 <strong>Donator Verified</strong> - Uploading enabled for Cys Donator members.';
+        notice.innerHTML = '💎 <strong>Donator Verified</strong> - Upload and edit access enabled.';
       } else {
         notice.className = "upload-role-notice member";
-        notice.innerHTML = '🔒 <strong>Donator Required</strong> - Uploading is reserved for Discord Donators. <a href="https://discord.gg/cys" target="_blank" rel="noopener">Get Donator at discord.gg/cys</a>';
+        notice.innerHTML = '🔒 <strong>Donator Required</strong> - Uploading is reserved for Discord Donators & Config Makers. <a href="https://discord.gg/cys" target="_blank" rel="noopener">Get role at discord.gg/cys</a>';
       }
     }
   }
@@ -813,7 +967,7 @@
 
     fileInput.addEventListener("change", function (e) {
       if (e.target.files.length > 0) {
-        handleFileSelected(e.target.files[0]);
+        handleFilesSelected(Array.from(e.target.files));
       }
     });
 
@@ -830,61 +984,71 @@
       e.preventDefault();
       dropzone.classList.remove("dragover");
       if (e.dataTransfer.files.length > 0) {
-        handleFileSelected(e.dataTransfer.files[0]);
+        handleFilesSelected(Array.from(e.dataTransfer.files));
       }
     });
   }
 
-  function handleFileSelected(file) {
+  function handleFilesSelected(files) {
+    if (!files || files.length === 0) return;
     var validation = document.getElementById("upload-validation");
-    var ext = "." + file.name.split(".").pop().toLowerCase();
-
-    // Validate extension
-    if (ALLOWED_EXTENSIONS.indexOf(ext) === -1) {
-      validation.className = "upload-validation invalid";
-      validation.textContent = "✗ Invalid file type. Allowed: " + ALLOWED_EXTENSIONS.join(", ");
-      validation.classList.remove("hidden");
-      uploadFile = null;
-      updateSubmitButton();
-      return;
-    }
-
-    // Validate size
-    if (file.size > MAX_FILE_SIZE) {
-      validation.className = "upload-validation invalid";
-      validation.textContent =
-        "✗ File too large. Maximum size is " +
-        formatFileSize(MAX_FILE_SIZE);
-      validation.classList.remove("hidden");
-      uploadFile = null;
-      updateSubmitButton();
-      return;
-    }
-
-    uploadFile = file;
-
-    // Show preview
     var previewWrap = document.getElementById("upload-file-preview-wrap");
-    previewWrap.innerHTML =
-      '<div class="upload-file-preview">' +
-      '<span class="file-name">' +
-      escapeHtml(file.name) +
-      "</span>" +
-      '<span class="file-size">' +
-      formatFileSize(file.size) +
-      "</span>" +
-      '<button class="file-remove" onclick="removeUploadFile()">✕</button>' +
-      "</div>";
+    var totalSize = 0;
 
-    validation.className = "upload-validation valid";
-    validation.textContent = "✓ File ready for upload";
-    validation.classList.remove("hidden");
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      var ext = "." + f.name.split(".").pop().toLowerCase();
+      if (ALLOWED_EXTENSIONS.indexOf(ext) === -1) {
+        validation.className = "upload-validation invalid";
+        validation.textContent = "✗ Invalid file type: " + f.name + ". Allowed: " + ALLOWED_EXTENSIONS.join(", ");
+        validation.classList.remove("hidden");
+        uploadFiles = [];
+        updateSubmitButton();
+        return;
+      }
+      totalSize += f.size;
+    }
+
+    if (totalSize > MAX_FILE_SIZE) {
+      validation.className = "upload-validation invalid";
+      validation.textContent = "✗ Total size too large (" + formatFileSize(totalSize) + "). Max limit is " + formatFileSize(MAX_FILE_SIZE);
+      validation.classList.remove("hidden");
+      uploadFiles = [];
+      updateSubmitButton();
+      return;
+    }
+
+    uploadFiles = files;
+
+    if (files.length === 1) {
+      previewWrap.innerHTML =
+        '<div class="upload-file-preview">' +
+        '<span class="file-name"><i class="fas fa-file-alt"></i> ' + escapeHtml(files[0].name) + '</span>' +
+        '<span class="file-size">' + formatFileSize(files[0].size) + '</span>' +
+        '<button type="button" class="file-remove" onclick="removeUploadFiles()">✕</button>' +
+        '</div>';
+      validation.className = "upload-validation valid";
+      validation.textContent = "✓ 1 file ready for upload";
+      validation.classList.remove("hidden");
+    } else {
+      var fileNames = files.map(function (f) { return f.name; }).join(", ");
+      if (fileNames.length > 55) fileNames = fileNames.substring(0, 52) + "...";
+      previewWrap.innerHTML =
+        '<div class="upload-file-preview">' +
+        '<span class="file-name"><i class="fas fa-archive"></i> ' + files.length + ' files selected (' + escapeHtml(fileNames) + ')</span>' +
+        '<span class="file-size">' + formatFileSize(totalSize) + '</span>' +
+        '<button type="button" class="file-remove" onclick="removeUploadFiles()">✕</button>' +
+        '</div>';
+      validation.className = "upload-validation valid";
+      validation.textContent = "✓ " + files.length + " files ready (will be auto-packaged as ZIP)";
+      validation.classList.remove("hidden");
+    }
 
     updateSubmitButton();
   }
 
-  window.removeUploadFile = function () {
-    uploadFile = null;
+  window.removeUploadFiles = function () {
+    uploadFiles = [];
     document.getElementById("upload-file").value = "";
     document.getElementById("upload-file-preview-wrap").innerHTML = "";
     document.getElementById("upload-validation").classList.add("hidden");
@@ -894,23 +1058,27 @@
   function updateSubmitButton() {
     var game = (document.getElementById("upload-game").value || "").trim();
     var name = (document.getElementById("upload-name").value || "").trim();
-    document.getElementById("btn-submit").disabled =
-      !game || !name || !uploadFile;
+    if (isEditing) {
+      document.getElementById("btn-submit").disabled = !game || !name;
+    } else {
+      document.getElementById("btn-submit").disabled = !game || !name || uploadFiles.length === 0;
+    }
   }
 
   // Listen for input changes to update submit button
   document.addEventListener("input", function (e) {
-    if (
-      e.target.id === "upload-game" ||
-      e.target.id === "upload-name"
-    ) {
+    if (e.target.id === "upload-game" || e.target.id === "upload-name") {
       updateSubmitButton();
+      if (e.target.id === "upload-game") {
+        updateModeSuggestions(e.target.value.trim());
+      }
     }
   });
 
   document.addEventListener("change", function (e) {
     if (e.target.id === "upload-game") {
       updateSubmitButton();
+      updateModeSuggestions(e.target.value.trim());
     }
   });
 
@@ -962,7 +1130,7 @@
     renderUploadTags();
   };
 
-  // Submit
+  // Submit (Handles both Create & Edit)
   window.submitConfig = function (e) {
     e.preventDefault();
 
@@ -977,20 +1145,26 @@
     var mode = (document.getElementById("upload-mode").value || "General").trim();
     var mapName = (document.getElementById("upload-map").value || "").trim();
 
-    if (!game || !name || !uploadFile) {
-      showToast("Please fill in Game, Config Name, and select a file", "error");
+    if (!game || !name) {
+      showToast("Please fill in Game and Config Name", "error");
+      return;
+    }
+
+    if (!isEditing && uploadFiles.length === 0) {
+      showToast("Please select at least one configuration file", "error");
       return;
     }
 
     var submitBtn = document.getElementById("btn-submit");
+    var submitText = document.getElementById("btn-submit-text");
     submitBtn.disabled = true;
-    submitBtn.innerHTML = "Scanning & Uploading...";
+    if (submitText) submitText.textContent = isEditing ? "Saving Changes..." : "Scanning & Uploading...";
 
-    processFileForUpload(uploadFile, function (result) {
-      if (!result.safe) {
+    var onProcessed = function (result) {
+      if (result && !result.safe) {
         showToast("Upload rejected: " + result.reason, "error");
         submitBtn.disabled = false;
-        submitBtn.innerHTML = "Upload Config";
+        if (submitText) submitText.textContent = isEditing ? "Save Changes" : "Upload Config";
         return;
       }
 
@@ -1001,12 +1175,18 @@
         mode: mode,
         map_name: mapName,
         tags: JSON.stringify(uploadTags),
-        config_data: result.configData,
-        file_count: result.fileCount || 1,
       };
 
-      fetch(API_BASE + "/api/configs", {
-        method: "POST",
+      if (result && result.configData) {
+        payload.config_data = result.configData;
+        payload.file_count = result.fileCount || 1;
+      }
+
+      var url = isEditing ? (API_BASE + "/api/configs/" + editingConfigCode) : (API_BASE + "/api/configs");
+      var method = isEditing ? "PUT" : "POST";
+
+      fetch(url, {
+        method: method,
         headers: Object.assign({ "Content-Type": "application/json" }, getAuthHeaders()),
         body: JSON.stringify(payload),
       })
@@ -1015,64 +1195,106 @@
         })
         .then(function (data) {
           if (data.error) {
-            showToast("Upload failed: " + data.error, "error");
+            showToast("Failed: " + data.error, "error");
             submitBtn.disabled = false;
-            submitBtn.innerHTML = "Upload Config";
+            if (submitText) submitText.textContent = isEditing ? "Save Changes" : "Upload Config";
             return;
           }
           showToast(
-            "Config uploaded! Share code: " + data.share_code,
+            isEditing ? "Config updated successfully!" : ("Config uploaded! Share code: " + data.share_code),
             "success"
           );
           closeModal("upload-modal");
           loadConfigs();
+          submitBtn.disabled = false;
+          if (submitText) submitText.textContent = isEditing ? "Save Changes" : "Upload Config";
         })
-        .catch(function () {
-          if (API_BASE.includes("YOUR-SUBDOMAIN")) {
-            // Local dev test upload
-            var randomCode = "CYS-" + Math.random().toString(36).substring(2, 6).toUpperCase();
-            var newConfig = {
-              id: Date.now(),
-              share_code: randomCode,
-              game: game,
-              name: name,
-              description: description,
-              mode: mode,
-              map_name: mapName,
-              tags: JSON.stringify(uploadTags),
-              author_id: currentUser ? currentUser.id : "1363171262314188951",
-              author_name: currentUser ? currentUser.username : "Cys (Test User)",
-              author_avatar: null,
-              downloads: 0,
-              file_count: result.fileCount || 1,
-              config_data: result.configData,
-              created_at: new Date().toISOString()
-            };
-            allConfigs.unshift(newConfig);
-            updateStats({
-              total_configs: allConfigs.length,
-              total_downloads: allConfigs.reduce(function (a, b) { return a + (b.downloads || 0); }, 0),
-              total_creators: 1
-            });
-            renderConfigs(allConfigs);
-            showToast("Config created! Share Code: " + randomCode, "success");
-            closeModal("upload-modal");
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = "Upload Config";
-          } else {
-            showToast("Upload failed. Please check backend connection.", "error");
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = "Upload Config";
-          }
+        .catch(function (err) {
+          showToast("Operation failed. Please check backend connection.", "error");
+          submitBtn.disabled = false;
+          if (submitText) submitText.textContent = isEditing ? "Save Changes" : "Upload Config";
         });
-    });
+    };
+
+    if (uploadFiles.length > 0) {
+      processFilesForUpload(uploadFiles, onProcessed);
+    } else if (isEditing) {
+      // Editing metadata only without replacing file
+      onProcessed(null);
+    }
   };
 
   // ==========================================
-  // FILE PROCESSOR & MALWARE SCANNER
+  // MULTI-FILE PROCESSOR & MALWARE SCANNER
   // ==========================================
 
-  function processFileForUpload(file, callback) {
+  function processFilesForUpload(files, callback) {
+    if (!files || files.length === 0) {
+      callback({ safe: false, reason: "No files selected." });
+      return;
+    }
+
+    // MULTIPLE FILES: Automatically bundle into a clean ZIP archive
+    if (files.length > 1) {
+      if (typeof JSZip === "undefined") {
+        callback({ safe: false, reason: "JSZip library not loaded. Please refresh the page." });
+        return;
+      }
+
+      var zip = new JSZip();
+      var allowedExtensions = [".txt", ".json", ".ini", ".cfg"];
+      var readPromises = [];
+
+      for (var i = 0; i < files.length; i++) {
+        (function (f) {
+          var ext = "." + f.name.split(".").pop().toLowerCase();
+          if (allowedExtensions.indexOf(ext) === -1) {
+            callback({ safe: false, reason: 'Invalid file "' + f.name + '". Only text configuration files (.txt, .json, .ini, .cfg) can be multi-bundled.' });
+            return;
+          }
+
+          var p = new Promise(function (resolve, reject) {
+            var reader = new FileReader();
+            reader.onload = function (ev) {
+              var text = ev.target.result;
+              var scan = scanForMalware(text);
+              if (!scan.safe) {
+                reject(new Error('Dangerous content in "' + f.name + '": ' + scan.reason));
+                return;
+              }
+              zip.file(f.name, text);
+              resolve();
+            };
+            reader.onerror = function () {
+              reject(new Error('Failed to read "' + f.name + '"'));
+            };
+            reader.readAsText(f);
+          });
+          readPromises.push(p);
+        })(files[i]);
+      }
+
+      Promise.all(readPromises).then(function () {
+        zip.generateAsync({ type: "base64", compression: "DEFLATE" }).then(function (b64) {
+          var dataUri = "data:application/zip;base64," + b64;
+          callback({
+            safe: true,
+            configData: dataUri,
+            fileCount: files.length,
+            isZip: true
+          });
+        }).catch(function (err) {
+          callback({ safe: false, reason: "Failed to create ZIP package: " + err.message });
+        });
+      }).catch(function (err) {
+        callback({ safe: false, reason: err.message });
+      });
+
+      return;
+    }
+
+    // SINGLE FILE
+    var file = files[0];
     var isZip = file.name.toLowerCase().endsWith(".zip");
 
     if (isZip) {
@@ -1101,7 +1323,6 @@
             return;
           }
 
-          // Strict whitelist extensions for config files
           var allowedExtensions = [".txt", ".json", ".ini", ".cfg"];
           var promises = [];
 
@@ -1110,7 +1331,6 @@
             var entry = entries[i].entry;
             var ext = "." + path.split(".").pop().toLowerCase();
 
-            // Check against allowed whitelist (blocks .exe, .bat, .dll, .ps1, .vbs, .scr, etc.)
             if (allowedExtensions.indexOf(ext) === -1) {
               callback({
                 safe: false,
@@ -1119,7 +1339,6 @@
               return;
             }
 
-            // Inspect binary contents of each file inside zip
             (function (p, ent) {
               promises.push(
                 ent.async("uint8array").then(function (bytes) {
@@ -1127,14 +1346,12 @@
                   if (totalSize > 10 * 1024 * 1024) {
                     throw new Error("Uncompressed ZIP size exceeds 10MB limit.");
                   }
-                  // Check magic bytes for executables
                   if (bytes.length >= 2 && bytes[0] === 0x4d && bytes[1] === 0x5a) {
                     throw new Error('Executable binary header (MZ) detected in "' + p + '"');
                   }
                   if (bytes.length >= 4 && bytes[0] === 0x7f && bytes[1] === 0x45 && bytes[2] === 0x4c && bytes[3] === 0x46) {
                     throw new Error('Linux binary header (ELF) detected in "' + p + '"');
                   }
-                  // Convert to text and scan content
                   var decoder = new TextDecoder("utf-8");
                   var text = decoder.decode(bytes);
                   var scan = scanForMalware(text);
@@ -1146,35 +1363,31 @@
             })(path, entry);
           }
 
-          Promise.all(promises).then(function () {
-            // Convert buffer to base64
-            var bytes = new Uint8Array(buffer);
-            var binary = "";
-            for (var b = 0; b < bytes.byteLength; b++) {
-              binary += String.fromCharCode(bytes[b]);
-            }
-            var base64 = btoa(binary);
-            var dataUri = "data:application/zip;base64," + base64;
-            callback({
-              safe: true,
-              configData: dataUri,
-              fileCount: fileCount
+          Promise.all(promises)
+            .then(function () {
+              var base64Reader = new FileReader();
+              base64Reader.onload = function (bEv) {
+                callback({
+                  safe: true,
+                  configData: bEv.target.result,
+                  fileCount: fileCount,
+                  isZip: true
+                });
+              };
+              base64Reader.readAsDataURL(file);
+            })
+            .catch(function (err) {
+              callback({ safe: false, reason: err.message });
             });
-          }).catch(function (err) {
-            callback({ safe: false, reason: err.message || "Failed to verify ZIP contents." });
-          });
         }).catch(function () {
-          callback({ safe: false, reason: "Corrupted or invalid ZIP archive." });
+          callback({ safe: false, reason: "Corrupted or invalid ZIP file." });
         });
-      };
-      reader.onerror = function () {
-        callback({ safe: false, reason: "Failed to read file." });
       };
       reader.readAsArrayBuffer(file);
     } else {
       // Plain text file (.txt, .json, .ini, .cfg)
-      var reader = new FileReader();
-      reader.onload = function (ev) {
+      var textReader = new FileReader();
+      textReader.onload = function (ev) {
         var text = ev.target.result;
         var scan = scanForMalware(text);
         if (!scan.safe) {
@@ -1187,10 +1400,10 @@
           fileCount: 1
         });
       };
-      reader.onerror = function () {
+      textReader.onerror = function () {
         callback({ safe: false, reason: "Failed to read file." });
       };
-      reader.readAsText(file);
+      textReader.readAsText(file);
     }
   }
 

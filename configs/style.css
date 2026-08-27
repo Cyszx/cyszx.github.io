@@ -223,6 +223,13 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   color: #ffd700;
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
 }
+.user-role-badge.config-maker,
+.user-role-badge.creator {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(192, 132, 252, 0.2));
+  border: 1px solid rgba(192, 132, 252, 0.6);
+  color: #c084fc;
+  box-shadow: 0 0 10px rgba(192, 132, 252, 0.25);
+}
 .user-role-badge.premium {
   background: linear-gradient(135deg, rgba(41, 240, 240, 0.18), rgba(212, 45, 204, 0.18));
   border: 1px solid rgba(41, 240, 240, 0.5);
@@ -249,6 +256,12 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   background: rgba(255, 215, 0, 0.08);
   border: 1px solid rgba(255, 215, 0, 0.3);
   color: #ffe066;
+}
+.upload-role-notice.config-maker,
+.upload-role-notice.creator {
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #d8b4fe;
 }
 .upload-role-notice.premium {
   background: rgba(41, 240, 240, 0.08);
@@ -780,6 +793,15 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .btn-download-config:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(41,240,240,0.32); }
+
+.btn-edit-config {
+  display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+  padding: 0.75rem 1.2rem;
+  font-family: var(--font-d); font-size: 0.85rem; font-weight: 700;
+  color: var(--text); background: rgba(255,255,255,0.06); border: 1px solid var(--border-2);
+  border-radius: var(--pill); transition: all 0.2s;
+}
+.btn-edit-config:hover { background: rgba(255,255,255,0.12); color: var(--prim); border-color: var(--prim-border); transform: translateY(-2px); }
 
 .btn-delete-config {
   display: flex; align-items: center; justify-content: center;
