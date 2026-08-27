@@ -177,16 +177,46 @@ function loadUserFromStorage() {
     const token = localStorage.getItem("ch_token");
     if (userData && token) {
       currentUser = JSON.parse(userData);
-      if (currentUser.id === "1363171262314188951" || currentUser.is_admin) {
-        currentUser.is_admin = true;
-        currentUser.is_premium = true;
-      }
+      currentUser.is_admin = !!currentUser.is_admin;
+      currentUser.is_premium = !!(currentUser.is_premium || currentUser.is_admin || currentUser.is_config_maker || currentUser.is_creator);
+      syncLiveUserRoles();
     }
   } catch (e) {
     localStorage.removeItem("ch_user");
     localStorage.removeItem("ch_token");
   }
   updateNavbarAuthUI();
+}
+
+function syncLiveUserRoles() {
+  const token = localStorage.getItem("ch_token");
+  if (!token) return;
+
+  fetch(API_BASE + "/api/auth/me", {
+    headers: { Authorization: "Bearer " + token }
+  })
+    .then(res => {
+      if (res.status === 401) {
+        console.warn("[Auth Sync] Session expired or invalid.");
+        return null;
+      }
+      return res.json();
+    })
+    .then(data => {
+      if (!data || !data.user) return;
+      console.log("[Auth Sync] Live roles synced from server:", data);
+      if (currentUser) {
+        currentUser.is_admin = !!data.user.is_admin;
+        currentUser.is_premium = !!data.user.is_premium;
+        currentUser.is_config_maker = !!data.user.is_config_maker;
+        currentUser.is_creator = !!data.user.is_creator;
+        localStorage.setItem("ch_user", JSON.stringify(currentUser));
+        updateNavbarAuthUI();
+      }
+    })
+    .catch(err => {
+      console.warn("[Auth Sync] Could not sync live roles:", err);
+    });
 }
 
 function handleOAuthCallback() {
@@ -208,10 +238,8 @@ function handleOAuthCallback() {
         return;
       }
       currentUser = data.user;
-      if (currentUser.id === "1363171262314188951" || currentUser.is_admin) {
-        currentUser.is_admin = true;
-        currentUser.is_premium = true;
-      }
+      currentUser.is_admin = !!currentUser.is_admin;
+      currentUser.is_premium = !!(currentUser.is_premium || currentUser.is_admin || currentUser.is_config_maker || currentUser.is_creator);
       localStorage.setItem("ch_user", JSON.stringify(currentUser));
       localStorage.setItem("ch_token", data.token);
       updateNavbarAuthUI();
