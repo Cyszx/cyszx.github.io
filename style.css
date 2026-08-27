@@ -757,6 +757,12 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   background: rgba(212,45,204,0.15); border: 1px solid rgba(212,45,204,0.3);
   color: #f472b6; font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
 }
+.review-badge-creator {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  padding: 0.15rem 0.5rem; border-radius: var(--pill);
+  background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.4);
+  color: #c084fc; font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+}
 .review-badge-admin {
   display: inline-flex; align-items: center; gap: 0.25rem;
   padding: 0.15rem 0.5rem; border-radius: var(--pill);
@@ -849,7 +855,9 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   text-transform: uppercase; margin-top: 0.2rem;
 }
 .user-role-chip.free-chip { background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: var(--text-2); }
+.user-role-chip.config-maker-chip { background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.4); color: #c084fc; }
 .user-role-chip.premium-chip { background: var(--scnd-dim); border: 1px solid var(--scnd-border); color: #f472b6; }
+.user-role-chip.admin-chip { background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.4); color: #ffd700; }
 
 .rev-upgrade-box {
   padding: 1.25rem; border-radius: var(--r-lg);

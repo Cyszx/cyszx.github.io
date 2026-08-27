@@ -4,7 +4,16 @@
 
 const API_BASE = "https://cys-configs-api.cyszxz615.workers.dev";
 const DISCORD_CLIENT_ID = "1363171262314188951";
-const REDIRECT_URI = window.location.origin + window.location.pathname;
+function getRedirectUri() {
+  if (window.location.protocol === "file:" || !window.location.origin || window.location.origin === "null") {
+    return "https://cyszx.github.io/";
+  }
+  let uri = window.location.origin + window.location.pathname;
+  uri = uri.replace(/\/index\.html$/i, "/");
+  if (!uri.endsWith("/")) uri += "/";
+  return uri;
+}
+const REDIRECT_URI = getRedirectUri();
 
 let currentUser = null;
 let allReviews = [];
@@ -168,11 +177,7 @@ function loadUserFromStorage() {
     const token = localStorage.getItem("ch_token");
     if (userData && token) {
       currentUser = JSON.parse(userData);
-      if (
-        currentUser.id === "1363171262314188951" ||
-        (currentUser.username && currentUser.username.toLowerCase().includes("cys")) ||
-        currentUser.is_admin
-      ) {
+      if (currentUser.id === "1363171262314188951" || currentUser.is_admin) {
         currentUser.is_admin = true;
         currentUser.is_premium = true;
       }
@@ -203,21 +208,23 @@ function handleOAuthCallback() {
         return;
       }
       currentUser = data.user;
-      if (
-        currentUser.id === "1363171262314188951" ||
-        (currentUser.username && currentUser.username.toLowerCase().includes("cys")) ||
-        currentUser.is_admin
-      ) {
+      if (currentUser.id === "1363171262314188951" || currentUser.is_admin) {
         currentUser.is_admin = true;
         currentUser.is_premium = true;
       }
       localStorage.setItem("ch_user", JSON.stringify(currentUser));
       localStorage.setItem("ch_token", data.token);
       updateNavbarAuthUI();
-      showToast("Logged in as " + currentUser.username + (currentUser.is_premium ? " (Premium)" : ""), "success");
+      const roleTitle = currentUser.is_admin
+        ? " (Admin)"
+        : ((currentUser.is_config_maker || currentUser.is_creator)
+          ? " (Config Maker)"
+          : (currentUser.is_premium ? " (Premium)" : ""));
+      showToast("Logged in as " + currentUser.username + roleTitle, "success");
     })
-    .catch(() => {
-      showToast("Login connection error.", "error");
+    .catch(err => {
+      console.error("Auth error:", err);
+      showToast("Login connection error: " + (err.message || "Network error"), "error");
     });
 }
 
@@ -253,9 +260,12 @@ function updateNavbarAuthUI() {
 
   if (currentUser) {
     btn.classList.add("logged-in");
-    if (currentUser.is_premium || currentUser.is_admin) {
+    const isConfigMaker = currentUser.is_config_maker || currentUser.is_creator;
+    const isPrem = currentUser.is_premium || currentUser.is_admin || isConfigMaker;
+    if (isPrem) {
       btn.classList.add("premium");
-      text.textContent = (currentUser.is_admin ? "👑 " : "⭐ ") + currentUser.username;
+      const prefix = currentUser.is_admin ? "👑 " : (isConfigMaker ? "🛠️ " : "⭐ ");
+      text.textContent = prefix + currentUser.username;
     } else {
       btn.classList.remove("premium");
       text.textContent = currentUser.username;
@@ -263,12 +273,17 @@ function updateNavbarAuthUI() {
     btn.title = "Click to log out";
 
     if (userBadgeWrap) {
-      const isPrem = currentUser.is_premium || currentUser.is_admin;
+      let chipHtml = '<span class="user-role-chip free-chip"><i class="fas fa-user"></i> Free Member</span>';
+      if (currentUser.is_admin) {
+        chipHtml = '<span class="user-role-chip admin-chip"><i class="fas fa-crown"></i> Admin</span>';
+      } else if (isConfigMaker) {
+        chipHtml = '<span class="user-role-chip config-maker-chip"><i class="fas fa-hammer"></i> Config Maker</span>';
+      } else if (currentUser.is_premium) {
+        chipHtml = '<span class="user-role-chip premium-chip"><i class="fas fa-star"></i> Verified Premium</span>';
+      }
       userBadgeWrap.innerHTML = `
         <span style="color:var(--text-2);">Logged in as <strong>${escapeHtml(currentUser.username)}</strong></span>
-        <span class="user-role-chip ${isPrem ? 'premium-chip' : 'free-chip'}">
-          <i class="fas ${isPrem ? 'fa-crown' : 'fa-user'}"></i> ${currentUser.is_admin ? 'Admin' : (isPrem ? 'Premium' : 'Free Member')}
-        </span>
+        ${chipHtml}
       `;
     }
   } else {
@@ -424,9 +439,12 @@ function renderReviews() {
       : "assets/cyslogo.png";
 
     const isOwner = currentUser && (currentUser.id === r.user_id || currentUser.is_admin);
-    const roleBadge = r.is_admin
-      ? '<span class="review-badge-admin"><i class="fas fa-bolt"></i> Admin</span>'
-      : '<span class="review-badge-premium"><i class="fas fa-crown"></i> Verified Premium</span>';
+    let roleBadge = '<span class="review-badge-premium"><i class="fas fa-crown"></i> Verified Premium</span>';
+    if (r.is_admin) {
+      roleBadge = '<span class="review-badge-admin"><i class="fas fa-bolt"></i> Admin</span>';
+    } else if (r.is_config_maker || r.is_creator || (r.author_role && (r.author_role.toLowerCase() === "creator" || r.author_role.toLowerCase().includes("maker")))) {
+      roleBadge = '<span class="review-badge-creator"><i class="fas fa-hammer"></i> Config Maker</span>';
+    }
 
     const timeAgo = formatTimeAgo(r.created_at);
 
@@ -482,12 +500,15 @@ window.openReviewModal = function () {
   const stateFree = document.getElementById("revStateFreeUser");
   const statePrem = document.getElementById("revStatePremiumUser");
 
+  const isConfigMaker = currentUser && (currentUser.is_config_maker || currentUser.is_creator);
+  const isVerified = currentUser && (currentUser.is_premium || currentUser.is_admin || isConfigMaker);
+
   // Determine user state
   if (!currentUser) {
     stateOut.classList.remove("hidden");
     stateFree.classList.add("hidden");
     statePrem.classList.add("hidden");
-  } else if (!currentUser.is_premium && !currentUser.is_admin) {
+  } else if (!isVerified) {
     // FREE USER (CANNOT SEND REVIEWS)
     stateOut.classList.add("hidden");
     stateFree.classList.remove("hidden");
@@ -501,7 +522,7 @@ window.openReviewModal = function () {
         : "assets/cyslogo.png";
     }
   } else {
-    // PREMIUM OR ADMIN USER (CAN SEND REVIEWS)
+    // PREMIUM, CONFIG MAKER, OR ADMIN USER (CAN SEND REVIEWS)
     stateOut.classList.add("hidden");
     stateFree.classList.add("hidden");
     statePrem.classList.remove("hidden");
@@ -515,9 +536,16 @@ window.openReviewModal = function () {
     }
     const roleEl = document.getElementById("revPremUserRole");
     if (roleEl) {
-      roleEl.innerHTML = currentUser.is_admin
-        ? '<i class="fas fa-bolt"></i> Verified Admin'
-        : '<i class="fas fa-crown"></i> Verified Premium';
+      if (currentUser.is_admin) {
+        roleEl.innerHTML = '<i class="fas fa-bolt"></i> Verified Admin';
+        roleEl.className = "user-role-chip admin-chip";
+      } else if (isConfigMaker) {
+        roleEl.innerHTML = '<i class="fas fa-hammer"></i> Config Maker';
+        roleEl.className = "user-role-chip config-maker-chip";
+      } else {
+        roleEl.innerHTML = '<i class="fas fa-crown"></i> Verified Premium';
+        roleEl.className = "user-role-chip premium-chip";
+      }
     }
 
     // Check if user already submitted a review
@@ -623,8 +651,9 @@ window.submitReview = async function (e) {
   }
 
   // STRICT FRONTEND VALIDATION
-  if (!currentUser.is_premium && !currentUser.is_admin) {
-    showToast("Only Premium/Donator users can submit reviews.", "error");
+  const isConfigMaker = currentUser.is_config_maker || currentUser.is_creator;
+  if (!currentUser.is_premium && !currentUser.is_admin && !isConfigMaker) {
+    showToast("Only Premium/Donator & Config Maker users can submit reviews.", "error");
     return;
   }
 
@@ -944,9 +973,8 @@ function initHeroParallax() {
   }, { passive: true });
 }
 
-fetchAllRepoInfo();
-
 document.addEventListener('DOMContentLoaded', () => {
+  fetchAllRepoInfo();
   loadUserFromStorage();
   handleOAuthCallback();
   initScrollProgress();
