@@ -262,6 +262,7 @@ window.startDiscordLogin = function () {
     redirect_uri: REDIRECT_URI,
     response_type: "code",
     scope: "identify guilds.members.read guilds",
+    prompt: "consent",
   });
   window.location.href = "https://discord.com/api/oauth2/authorize?" + params.toString();
 };
