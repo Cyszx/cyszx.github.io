@@ -794,6 +794,19 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
 }
 .btn-download-config:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(41,240,240,0.32); }
 
+.btn-edit-header {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.35rem 0.85rem;
+  font-family: var(--font-d); font-size: 0.78rem; font-weight: 800;
+  letter-spacing: 0.03em;
+  color: var(--prim); background: rgba(41,240,240,0.1); border: 1px solid rgba(41,240,240,0.35);
+  border-radius: var(--pill); cursor: pointer; transition: all 0.2s;
+}
+.btn-edit-header:hover {
+  background: rgba(41,240,240,0.22); border-color: var(--prim); transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(41,240,240,0.2);
+}
+
 .btn-edit-config {
   display: flex; align-items: center; justify-content: center; gap: 0.4rem;
   padding: 0.75rem 1.2rem;
