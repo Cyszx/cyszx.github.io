@@ -284,7 +284,6 @@ window.logoutUser = function () {
     currentUser = null;
     closeUserProfileModal();
     updateNavbarAuthUI();
-    updateLeaderboardUserBanner();
     showToast("Logged out successfully.", "success");
   }
 };
