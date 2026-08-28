@@ -54,6 +54,7 @@
     initTagsInput();
     initFileUpload();
     initMobileNav();
+    updateFavoritesBadge();
     loadConfigs();
   });
 
@@ -106,6 +107,7 @@
         if (!data || !data.user) return;
         console.log("[Auth Sync] Live roles synced from server:", data);
         if (currentUser) {
+          currentUser.is_owner = !!data.user.is_owner;
           currentUser.is_admin = !!data.user.is_admin;
           currentUser.is_premium = !!data.user.is_premium;
           currentUser.is_config_maker = !!data.user.is_config_maker;
@@ -154,16 +156,19 @@
           return;
         }
         currentUser = data.user;
-        currentUser.is_admin = !!currentUser.is_admin;
-        currentUser.is_premium = !!(currentUser.is_premium || currentUser.is_admin || currentUser.is_config_maker || currentUser.is_creator);
+        currentUser.is_owner = !!currentUser.is_owner || currentUser.id === "1141849395902554202";
+        currentUser.is_admin = !!currentUser.is_admin || currentUser.is_owner;
+        currentUser.is_premium = !!(currentUser.is_premium || currentUser.is_admin || currentUser.is_owner || currentUser.is_config_maker || currentUser.is_creator);
         localStorage.setItem("ch_user", JSON.stringify(currentUser));
         localStorage.setItem("ch_token", data.token);
         updateUIForLoggedIn();
-        var roleTitle = currentUser.is_admin
-          ? " (Admin)"
-          : ((currentUser.is_config_maker || currentUser.is_creator)
-            ? " (Config Maker)"
-            : (currentUser.is_premium ? " (Donator)" : ""));
+        var roleTitle = currentUser.is_owner
+          ? " (Owner)"
+          : (currentUser.is_admin
+            ? " (Admin)"
+            : ((currentUser.is_config_maker || currentUser.is_creator)
+              ? " (Config Maker)"
+              : (currentUser.is_premium ? " (Donator)" : "")));
         showToast("Logged in as " + currentUser.username + roleTitle, "success");
       })
       .catch(function (err) {
@@ -181,11 +186,16 @@
     document.getElementById("nav-user-name").textContent =
       currentUser.username;
 
+    var isOwner = currentUser.is_owner || currentUser.id === "1141849395902554202" || (currentUser.roles && currentUser.roles.some(function (r) { return /owner/i.test(r); }));
+
     // Set role badge
     var roleBadge = document.getElementById("nav-user-badge");
     if (roleBadge) {
       roleBadge.className = "user-role-badge";
-      if (currentUser.is_admin) {
+      if (isOwner) {
+        roleBadge.textContent = "Owner";
+        roleBadge.classList.add("owner");
+      } else if (currentUser.is_admin) {
         roleBadge.textContent = "Admin";
         roleBadge.classList.add("admin");
       } else if (currentUser.is_config_maker || currentUser.is_creator) {
@@ -206,21 +216,164 @@
         "/" +
         currentUser.avatar +
         ".png?size=64"
-      : "https://cdn.discordapp.com/embed/avatars/0.png";
+      : "../assets/cyslogo.png";
     document.getElementById("nav-user-avatar").src = avatarUrl;
 
     document.getElementById("nav-my-configs").classList.remove("hidden");
     document.getElementById("btn-my-configs").classList.remove("hidden");
   }
 
-  window.toggleUserMenu = function () {
-    // Simple logout for now
-    if (confirm("Log out?")) {
-      currentUser = null;
-      localStorage.removeItem("ch_user");
-      localStorage.removeItem("ch_token");
-      location.reload();
+  window.openUserProfileModal = async function () {
+    var modal = document.getElementById("userProfileModal");
+    if (!modal) return;
+
+    modal.classList.add("active");
+    document.body.style.overflow = "hidden";
+
+    // Loading state
+    document.getElementById("profUsername").textContent = currentUser ? currentUser.username : "Loading Profile...";
+    document.getElementById("profTotalHours").textContent = "...";
+    document.getElementById("profHwidStatus").textContent = "...";
+
+    var keyData = null;
+    var token = localStorage.getItem("ch_token");
+    if (token) {
+      try {
+        var res = await fetch(API_BASE + "/api/user/key-status", {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if (res.ok) {
+          keyData = await res.json();
+        }
+      } catch (e) {}
     }
+
+    var username = currentUser ? currentUser.username : "Grinder";
+    var avatar = currentUser ? currentUser.avatar : null;
+    var totalSeconds = (keyData && keyData.total_usage_time) ? parseInt(keyData.total_usage_time) : 0;
+    var totalHours = parseFloat((totalSeconds / 3600).toFixed(1));
+    var isActive = keyData ? (keyData.active && !keyData.is_expired) : (currentUser ? currentUser.is_premium : false);
+    var isHwidBound = keyData ? (keyData.hwid_bound || !!keyData.hwid) : false;
+    var isOwner = currentUser && (currentUser.is_owner || currentUser.id === "1141849395902554202" || (currentUser.roles && currentUser.roles.some(function (r) { return /owner/i.test(r); })));
+
+    document.getElementById("profUsername").textContent = username;
+    document.getElementById("profTotalHours").textContent = totalHours + "h";
+    document.getElementById("profHwidStatus").textContent = isHwidBound ? "Bound & Verified" : "Not Bound";
+
+    var avatarImg = document.getElementById("profAvatar");
+    if (avatarImg) {
+      avatarImg.src = (avatar && currentUser)
+        ? "https://cdn.discordapp.com/avatars/" + currentUser.id + "/" + avatar + ".png?size=128"
+        : "../assets/cyslogo.png";
+    }
+
+    // Role Chip & License
+    var roleBadgeEl = document.getElementById("profRoleBadge");
+    var licensePill = document.getElementById("profLicensePill");
+    if (roleBadgeEl) {
+      if (isOwner) {
+        roleBadgeEl.innerHTML = '<span class="user-role-chip owner-chip"><i class="fas fa-crown"></i> Owner</span>';
+        if (licensePill) licensePill.innerHTML = '<i class="fas fa-key"></i> <span>License: <strong>Owner / Lead Developer</strong></span>';
+      } else if (currentUser && currentUser.is_admin) {
+        roleBadgeEl.innerHTML = '<span class="user-role-chip admin-chip"><i class="fas fa-bolt"></i> Admin</span>';
+        if (licensePill) licensePill.innerHTML = '<i class="fas fa-key"></i> <span>License: <strong>Developer Admin</strong></span>';
+      } else if (isActive) {
+        roleBadgeEl.innerHTML = '<span class="user-role-chip premium-chip"><i class="fas fa-crown"></i> Verified Premium</span>';
+        var expireStr = (keyData && keyData.expires_at) ? "Expires: " + new Date(keyData.expires_at).toLocaleDateString() : "Active Lifetime";
+        if (licensePill) licensePill.innerHTML = '<i class="fas fa-key"></i> <span>License: <strong>' + expireStr + '</strong></span>';
+      } else {
+        roleBadgeEl.innerHTML = '<span class="user-role-chip free-chip"><i class="fas fa-user"></i> Free Member</span>';
+        if (licensePill) licensePill.innerHTML = '<i class="fas fa-lock"></i> <span>License: <strong>No Active Key</strong></span>';
+      }
+    }
+
+    // Joined date
+    var joinedEl = document.getElementById("profJoinedDate");
+    if (joinedEl) {
+      if (keyData && keyData.created_at) {
+        var jDate = new Date(keyData.created_at);
+        joinedEl.innerHTML = '<i class="far fa-calendar-alt"></i> Key Created ' + jDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+      } else {
+        joinedEl.innerHTML = '<i class="far fa-calendar-alt"></i> Community Member';
+      }
+    }
+
+    // Discord Roles List
+    var rolesRow = document.getElementById("profDiscordRolesRow");
+    if (rolesRow) {
+      var rolesList = [];
+      if (isOwner) {
+        rolesList.push("Owner", "Developer", "Admin");
+      } else if (currentUser && currentUser.is_admin) {
+        rolesList.push("Server Admin", "Developer");
+      }
+      if (currentUser && (currentUser.is_config_maker || currentUser.is_creator)) {
+        rolesList.push("Config Maker");
+      }
+      if (isActive) {
+        rolesList.push("Donator [All-Access]", "Verified Buyer");
+      } else {
+        rolesList.push("Member");
+      }
+
+      if (currentUser && Array.isArray(currentUser.roles) && currentUser.roles.length > 0) {
+        currentUser.roles.forEach(function (r) {
+          if (rolesList.indexOf(r) === -1) rolesList.push(r);
+        });
+      }
+
+      rolesRow.innerHTML = rolesList.map(function (r) {
+        return '<span class="prof-badge-chip cyan"><i class="fab fa-discord"></i> ' + escapeHtml(r) + '</span>';
+      }).join("");
+    }
+
+    // Unlocked Macros List
+    var macrosRow = document.getElementById("profUnlockedMacrosRow");
+    if (macrosRow) {
+      var gameMap = {
+        ae: "Anime Expeditions (AE)",
+        als: "Anime Last Stand (ALS)",
+        av: "Anime Vanguards (AV)",
+        astd: "All Star Tower Defense (ASTD)",
+        ac: "Anime Crusaders (AC)",
+        utd: "Universal Tower Defense (UTD)",
+        ao: "Anime Overload (AO)",
+        aor: "Anime Origins (AOR)"
+      };
+
+      var unlocked = [];
+      if (keyData && keyData.games) {
+        for (var key in gameMap) {
+          if (keyData.games[key]) unlocked.push(gameMap[key]);
+        }
+      } else if (currentUser && currentUser.is_admin) {
+        for (var k in gameMap) unlocked.push(gameMap[k]);
+      } else if (isActive) {
+        unlocked = ["Anime Expeditions (AE)", "Anime Last Stand (ALS)", "Anime Vanguards (AV)"];
+      }
+
+      if (unlocked.length > 0) {
+        macrosRow.innerHTML = unlocked.map(function (g) {
+          return '<span class="prof-badge-chip pink"><i class="fas fa-check-circle"></i> ' + escapeHtml(g) + '</span>';
+        }).join("");
+      } else {
+        macrosRow.innerHTML = '<span class="prof-badge-chip" style="opacity: 0.6;"><i class="fas fa-lock"></i> No macro licenses linked</span>';
+      }
+    }
+  };
+
+  window.closeUserProfileModal = function () {
+    var modal = document.getElementById("userProfileModal");
+    if (!modal) return;
+    modal.classList.remove("active");
+    document.body.style.overflow = "";
+  };
+
+  window.logoutUser = function () {
+    currentUser = null;
+    localStorage.removeItem("ch_user");
+    localStorage.removeItem("ch_token");
+    location.reload();
   };
 
   function getAuthHeaders() {
@@ -289,6 +442,7 @@
   function renderTrending(configs) {
     var section = document.getElementById("trending-section");
     var grid = document.getElementById("trending-grid");
+    if (!grid) return;
     grid.innerHTML = "";
 
     var top = (configs || [])
@@ -307,25 +461,58 @@
 
     top.forEach(function (config, i) {
       var card = document.createElement("div");
-      card.className = "trending-card";
+      card.className = "trending-card trending-card-" + (i + 1);
       card.onclick = function () {
         openDetailModal(config);
       };
+
+      var avatarUrl = config.author_avatar
+        ? "https://cdn.discordapp.com/avatars/" +
+          config.author_id +
+          "/" +
+          config.author_avatar +
+          ".png?size=32"
+        : "https://cdn.discordapp.com/embed/avatars/" +
+          (parseInt(config.author_id || "0") % 5) +
+          ".png";
+
+      var rankHtml = "";
+      if (i === 0) {
+        rankHtml = '<span class="trending-rank-badge rank-1"><i class="fas fa-crown"></i> #1 Most Popular</span>';
+      } else if (i === 1) {
+        rankHtml = '<span class="trending-rank-badge rank-2"><i class="fas fa-medal"></i> #2 Trending</span>';
+      } else {
+        rankHtml = '<span class="trending-rank-badge rank-3"><i class="fas fa-award"></i> #3 Trending</span>';
+      }
+
       card.innerHTML =
-        '<div class="trending-rank">#' +
-        (i + 1) +
-        "</div>" +
-        '<div class="trending-name">' +
-        escapeHtml(config.name) +
-        "</div>" +
-        '<div class="trending-meta">' +
-        '<span><i class="fas fa-download"></i> ' +
-        formatNumber(config.downloads || 0) +
-        "</span>" +
-        '<span><i class="fas fa-file-alt"></i> ' +
-        (config.file_count || 1) +
-        " file" + (config.file_count !== 1 ? "s" : "") + "</span>" +
-        "</div>";
+        '<div class="trending-card-glow"></div>' +
+        '<div class="trending-card-header">' +
+        '  <div class="trending-badges-group">' +
+        '    <span class="game-badge">' + escapeHtml(config.game || "Anime Expeditions") + '</span>' +
+        (config.mode && config.mode !== "all" ? '    <span class="trending-mode-chip">' + escapeHtml(config.mode) + '</span>' : '') +
+        '  </div>' +
+        rankHtml +
+        '</div>' +
+        '<div class="trending-card-body">' +
+        '  <div class="trending-card-title-row">' +
+        '    <h3 class="trending-title" title="' + escapeHtml(config.name) + '">' + escapeHtml(config.name) + '</h3>' +
+        '    <span class="share-code-badge" onclick="event.stopPropagation(); copyShareCodeText(\'' + escapeHtml(config.share_code) + '\')" title="Click to copy code">' +
+        '      <i class="fas fa-copy"></i> ' + escapeHtml(config.share_code) +
+        '    </span>' +
+        '  </div>' +
+        '</div>' +
+        '<div class="trending-card-footer">' +
+        '  <div class="trending-author">' +
+        '    <img src="' + avatarUrl + '" alt="' + escapeHtml(config.author_name || "Author") + '" />' +
+        '    <span>' + escapeHtml(config.author_name || "Community") + '</span>' +
+        '  </div>' +
+        '  <div class="trending-stats">' +
+        '    <span class="stat-pill downloads"><i class="fas fa-download"></i> ' + formatNumber(config.downloads || 0) + '</span>' +
+        '    <span class="stat-pill files"><i class="fas fa-file-alt"></i> ' + (config.file_count || 1) + ' file' + (config.file_count !== 1 ? 's' : '') + '</span>' +
+        '  </div>' +
+        '</div>';
+
       grid.appendChild(card);
     });
   }
@@ -370,60 +557,57 @@
 
       var authorBadgeHtml = "";
       var role = (config.author_role || "").toLowerCase();
-      if (role === "admin") {
-        authorBadgeHtml = '<span class="author-badge badge-admin"><i class="fas fa-crown"></i> STAFF</span>';
+      var authorId = String(config.author_id || "");
+      if (authorId === "1141849395902554202" || role === "owner") {
+        authorBadgeHtml = '<span class="author-badge badge-owner"><i class="fas fa-crown"></i> OWNER</span>';
+      } else if (role === "admin") {
+        authorBadgeHtml = '<span class="author-badge badge-admin"><i class="fas fa-bolt"></i> STAFF</span>';
       } else if (role === "creator" || role === "config maker" || role === "config_maker" || role === "config makers") {
-        authorBadgeHtml = '<span class="author-badge badge-creator"><i class="fas fa-hammer"></i> CONFIG MAKER</span>';
-      } else if (role === "donator") {
+        authorBadgeHtml = '<span class="author-badge badge-creator"><i class="fas fa-hammer"></i> CREATOR</span>';
+      } else if (role === "donator" || config.is_premium) {
         authorBadgeHtml = '<span class="author-badge badge-donator"><i class="fas fa-gem"></i> DONATOR</span>';
       }
 
       var card = document.createElement("div");
       card.className = "config-card";
-      card.style.animationDelay = Math.min(index * 0.05, 0.5) + "s";
+      card.style.animationDelay = Math.min(index * 0.04, 0.4) + "s";
       card.onclick = function () {
         openDetailModal(config);
       };
+
       card.innerHTML =
         '<div class="config-glow"></div>' +
-        '<div style="margin-bottom:0.35rem;"><span class="game-badge">' +
-        escapeHtml(config.game || "Anime Expeditions") +
-        "</span></div>" +
-        '<div class="config-card-top">' +
-        '<div class="config-card-title">' +
-        escapeHtml(config.name) +
-        "</div>" +
-        '<span class="share-code-badge" onclick="event.stopPropagation(); copyShareCodeText(\'' + escapeHtml(config.share_code) + '\')" title="Click to copy code">' +
-        escapeHtml(config.share_code) +
-        "</span>" +
-        "</div>" +
-        '<div class="config-card-desc">' +
-        escapeHtml(config.description || "No description") +
-        "</div>" +
-        '<div class="config-card-tags">' +
-        tagsHtml +
-        "</div>" +
+        '<div class="config-card-header">' +
+        '  <div class="config-badges-row">' +
+        '    <span class="game-badge">' + escapeHtml(config.game || "Anime Expeditions") + '</span>' +
+        (config.mode && config.mode !== "all" ? '    <span class="trending-mode-chip">' + escapeHtml(config.mode) + '</span>' : '') +
+        '  </div>' +
+        '  <span class="share-code-badge" onclick="event.stopPropagation(); copyShareCodeText(\'' + escapeHtml(config.share_code) + '\')" title="Click to copy share code">' +
+        '    <i class="fas fa-copy"></i> ' + escapeHtml(config.share_code) +
+        '  </span>' +
+        '</div>' +
+        '<div class="config-card-body">' +
+        '  <h3 class="config-card-title" title="' + escapeHtml(config.name) + '">' + escapeHtml(config.name) + '</h3>' +
+        '  <p class="config-card-desc">' + escapeHtml(config.description || "Community configuration optimized for automated farming.") + '</p>' +
+        '  <div class="config-card-tags">' + (tagsHtml || '<span class="config-tag">General</span>') + '</div>' +
+        '</div>' +
         '<div class="config-card-footer">' +
-        '<div class="config-author">' +
-        '<img src="' +
-        avatarUrl +
-        '" alt="' +
-        escapeHtml(config.author_name || "Unknown") +
-        '" />' +
-        "<span>" +
-        escapeHtml(config.author_name || "Unknown") +
-        "</span>" +
+        '  <div class="config-author">' +
+        '    <img src="' + avatarUrl + '" alt="' + escapeHtml(config.author_name || "Unknown") + '" />' +
+        '    <span class="author-name">' + escapeHtml(config.author_name || "Community") + '</span>' +
         authorBadgeHtml +
-        "</div>" +
-        '<div class="config-stats">' +
-        '<button class="btn-like" id="btn-like-' + config.share_code + '" onclick="event.stopPropagation(); toggleLike(\'' + config.share_code + '\')" title="Upvote">' +
-        '<i class="fas fa-heart"></i> <span id="likes-' + config.share_code + '">' + (config.likes || 0) + '</span>' +
-        '</button>' +
-        '<span><i class="fas fa-download"></i> ' +
-        formatNumber(config.downloads || 0) +
-        "</span>" +
-        "</div>" +
-        "</div>";
+        '  </div>' +
+        '  <div class="config-stats">' +
+        '    <button class="btn-card-fav' + (isFavorited(config.share_code) ? ' favorited' : '') + '" id="btn-fav-' + config.share_code + '" onclick="event.stopPropagation(); toggleFavorite(\'' + config.share_code + '\', event)" title="Favorite">' +
+        '      <i class="' + (isFavorited(config.share_code) ? 'fas' : 'far') + ' fa-star"></i>' +
+        '    </button>' +
+        '    <button class="btn-like" id="btn-like-' + config.share_code + '" onclick="event.stopPropagation(); toggleLike(\'' + config.share_code + '\')" title="Upvote">' +
+        '      <i class="fas fa-heart"></i> <span id="likes-' + config.share_code + '">' + (config.likes || 0) + '</span>' +
+        '    </button>' +
+        '    <span class="stat-pill downloads"><i class="fas fa-download"></i> ' + formatNumber(config.downloads || 0) + '</span>' +
+        '  </div>' +
+        '</div>';
+
       grid.appendChild(card);
     });
   }
@@ -460,7 +644,9 @@
 
   function filterAndRender() {
     var filtered = allConfigs.filter(function (c) {
-      if (currentFilter && currentFilter !== "all") {
+      if (currentFilter === "favorites") {
+        if (!isFavorited(c.share_code)) return false;
+      } else if (currentFilter && currentFilter !== "all") {
         var f = currentFilter.toLowerCase();
         var g = (c.game || "").toLowerCase();
         var m = (c.mode || "").toLowerCase();
@@ -528,7 +714,16 @@
     currentDetailConfig = config;
 
     var gameEl = document.getElementById("detail-game");
-    if (gameEl) gameEl.textContent = config.game || "Macro";
+    if (gameEl) gameEl.textContent = config.game || "Anime Expeditions";
+    var modeBadgeEl = document.getElementById("detail-mode-badge");
+    if (modeBadgeEl) {
+      if (config.mode && config.mode !== "all") {
+        modeBadgeEl.textContent = config.mode;
+        modeBadgeEl.style.display = "inline-flex";
+      } else {
+        modeBadgeEl.style.display = "none";
+      }
+    }
     var titleEl = document.getElementById("detail-title");
     if (titleEl) titleEl.textContent = config.name;
     var codeEl = document.getElementById("detail-code");
@@ -608,6 +803,19 @@
       copyBtn.onclick = copyShareCode;
     }
 
+    // Update Favorite button in detail modal
+    var detailFavBtn = document.getElementById("btn-fav-detail");
+    if (detailFavBtn) {
+      var isFav = isFavorited(config.share_code);
+      if (isFav) {
+        detailFavBtn.classList.add("favorited");
+        detailFavBtn.innerHTML = '<i class="fas fa-star"></i> <span>Favorited</span>';
+      } else {
+        detailFavBtn.classList.remove("favorited");
+        detailFavBtn.innerHTML = '<i class="far fa-star"></i> <span>Favorite</span>';
+      }
+    }
+
     // Populate likes in detail modal
     var detailLikesNum = document.getElementById("detail-likes-num");
     if (detailLikesNum) detailLikesNum.textContent = config.likes || 0;
@@ -660,12 +868,22 @@
         btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
         setTimeout(function () {
           btn.classList.remove("copied");
-          btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+          btn.innerHTML = '<i class="fas fa-copy"></i> Copy Code';
         }, 2000);
       }
-      showToast("Copied: " + code, "success");
+      showToast("Copied share code: " + code, "success");
     }, function () {
       showToast("Failed to copy to clipboard", "error");
+    });
+  };
+
+  window.copyPreviewText = function () {
+    if (!currentDetailConfig) return;
+    var rawData = currentDetailConfig.config_data || "";
+    copyToClipboard(rawData, function () {
+      showToast("Raw config code copied!", "success");
+    }, function () {
+      showToast("Failed to copy code", "error");
     });
   };
 
@@ -726,6 +944,93 @@
   window.toggleDetailLike = function () {
     if (currentDetailConfig && currentDetailConfig.share_code) {
       window.toggleLike(currentDetailConfig.share_code);
+    }
+  };
+
+  // ==========================================
+  // FAVORITES MANAGEMENT
+  // ==========================================
+
+  function getFavorites() {
+    try {
+      var favs = localStorage.getItem("ch_favorites");
+      return favs ? JSON.parse(favs) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function isFavorited(code) {
+    if (!code) return false;
+    var favs = getFavorites();
+    return favs.indexOf(code) !== -1;
+  }
+
+  function updateFavoritesBadge() {
+    var badge = document.getElementById("fav-count-badge");
+    if (badge) {
+      badge.textContent = getFavorites().length;
+    }
+  }
+
+  window.toggleFavorite = function (code, e) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (!code) return;
+
+    var favs = getFavorites();
+    var idx = favs.indexOf(code);
+    var nowFav = false;
+
+    if (idx !== -1) {
+      favs.splice(idx, 1);
+      nowFav = false;
+      showToast("Removed from favorites", "info");
+    } else {
+      favs.push(code);
+      nowFav = true;
+      showToast("⭐ Added to favorites!", "success");
+    }
+
+    try {
+      localStorage.setItem("ch_favorites", JSON.stringify(favs));
+    } catch (err) {}
+
+    updateFavoritesBadge();
+
+    // Update all card buttons with this code
+    var cardBtn = document.getElementById("btn-fav-" + code);
+    if (cardBtn) {
+      if (nowFav) {
+        cardBtn.classList.add("favorited");
+        cardBtn.innerHTML = '<i class="fas fa-star"></i>';
+      } else {
+        cardBtn.classList.remove("favorited");
+        cardBtn.innerHTML = '<i class="far fa-star"></i>';
+      }
+    }
+
+    // Update detail modal if open
+    if (currentDetailConfig && currentDetailConfig.share_code === code) {
+      var detailFavBtn = document.getElementById("btn-fav-detail");
+      if (detailFavBtn) {
+        if (nowFav) {
+          detailFavBtn.classList.add("favorited");
+          detailFavBtn.innerHTML = '<i class="fas fa-star"></i> <span>Favorited</span>';
+        } else {
+          detailFavBtn.classList.remove("favorited");
+          detailFavBtn.innerHTML = '<i class="far fa-star"></i> <span>Favorite</span>';
+        }
+      }
+    }
+
+    if (currentFilter === "favorites") {
+      filterAndRender();
+    }
+  };
+
+  window.toggleDetailFavorite = function () {
+    if (currentDetailConfig && currentDetailConfig.share_code) {
+      window.toggleFavorite(currentDetailConfig.share_code);
     }
   };
 
