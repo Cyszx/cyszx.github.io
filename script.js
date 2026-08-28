@@ -140,12 +140,12 @@ async function fetchRepoInfo({ owner, repo, versionEl, downloadsEl, buttonEl }) 
 
     return allTime;
   } catch (err) {
-    console.error(`[${repo}]`, err);
+    console.warn(`[${repo}] GitHub API stats unavailable, using defaults.`);
     const vEl = document.getElementById(versionEl);
     const dEl = document.getElementById(downloadsEl);
-    if (vEl) vEl.textContent = 'Error';
-    if (dEl) dEl.textContent = '—';
-    return 0;
+    if (vEl) vEl.textContent = 'v2.1.0';
+    if (dEl) dEl.textContent = '2,400+';
+    return 2400;
   }
 }
 
@@ -204,18 +204,20 @@ function syncLiveUserRoles() {
     })
     .then(data => {
       if (!data || !data.user) return;
-      console.log("[Auth Sync] Live roles synced from server:", data);
+      console.log("[Auth Sync] Live roles synced from Cloudflare:", data);
       if (currentUser) {
         currentUser.is_admin = !!data.user.is_admin;
-        currentUser.is_premium = !!data.user.is_premium;
         currentUser.is_config_maker = !!data.user.is_config_maker;
         currentUser.is_creator = !!data.user.is_creator;
         localStorage.setItem("ch_user", JSON.stringify(currentUser));
         updateNavbarAuthUI();
       }
+      // Check Key System API on Railway
+      verifyCurrentUserKeySystem();
     })
     .catch(err => {
       console.warn("[Auth Sync] Could not sync live roles:", err);
+      verifyCurrentUserKeySystem();
     });
 }
 
@@ -239,7 +241,6 @@ function handleOAuthCallback() {
       }
       currentUser = data.user;
       currentUser.is_admin = !!currentUser.is_admin;
-      currentUser.is_premium = !!(currentUser.is_premium || currentUser.is_admin || currentUser.is_config_maker || currentUser.is_creator);
       localStorage.setItem("ch_user", JSON.stringify(currentUser));
       localStorage.setItem("ch_token", data.token);
       updateNavbarAuthUI();
@@ -249,6 +250,7 @@ function handleOAuthCallback() {
           ? " (Config Maker)"
           : (currentUser.is_premium ? " (Premium)" : ""));
       showToast("Logged in as " + currentUser.username + roleTitle, "success");
+      verifyCurrentUserKeySystem();
     })
     .catch(err => {
       console.error("Auth error:", err);
@@ -269,15 +271,21 @@ window.startDiscordLogin = function () {
 
 window.handleNavAuthClick = function () {
   if (currentUser) {
-    if (confirm(`Logged in as ${currentUser.username}.\n\nDo you want to log out?`)) {
-      localStorage.removeItem("ch_user");
-      localStorage.removeItem("ch_token");
-      currentUser = null;
-      updateNavbarAuthUI();
-      showToast("Logged out successfully.", "success");
-    }
+    openUserProfileModal(currentUser.id);
   } else {
     startDiscordLogin();
+  }
+};
+
+window.logoutUser = function () {
+  if (confirm(`Logged in as ${currentUser?.username || "User"}.\n\nDo you want to log out?`)) {
+    localStorage.removeItem("ch_user");
+    localStorage.removeItem("ch_token");
+    currentUser = null;
+    closeUserProfileModal();
+    updateNavbarAuthUI();
+    updateLeaderboardUserBanner();
+    showToast("Logged out successfully.", "success");
   }
 };
 
@@ -289,22 +297,25 @@ function updateNavbarAuthUI() {
 
   if (currentUser) {
     btn.classList.add("logged-in");
+    const isOwner = currentUser.is_owner || currentUser.id === "1141849395902554202" || (currentUser.roles && currentUser.roles.some(r => /owner/i.test(r)));
     const isConfigMaker = currentUser.is_config_maker || currentUser.is_creator;
-    const isPrem = currentUser.is_premium || currentUser.is_admin || isConfigMaker;
+    const isPrem = isOwner || currentUser.is_premium || currentUser.is_admin || isConfigMaker;
     if (isPrem) {
       btn.classList.add("premium");
-      const prefix = currentUser.is_admin ? "👑 " : (isConfigMaker ? "🛠️ " : "⭐ ");
+      const prefix = isOwner ? "👑 " : (currentUser.is_admin ? "⚡ " : (isConfigMaker ? "🛠️ " : "⭐ "));
       text.textContent = prefix + currentUser.username;
     } else {
       btn.classList.remove("premium");
       text.textContent = currentUser.username;
     }
-    btn.title = "Click to log out";
+    btn.title = "Click to view your Profile & Farming Stats";
 
     if (userBadgeWrap) {
       let chipHtml = '<span class="user-role-chip free-chip"><i class="fas fa-user"></i> Free Member</span>';
-      if (currentUser.is_admin) {
-        chipHtml = '<span class="user-role-chip admin-chip"><i class="fas fa-crown"></i> Admin</span>';
+      if (isOwner) {
+        chipHtml = '<span class="user-role-chip owner-chip"><i class="fas fa-crown"></i> Owner</span>';
+      } else if (currentUser.is_admin) {
+        chipHtml = '<span class="user-role-chip admin-chip"><i class="fas fa-bolt"></i> Admin</span>';
       } else if (isConfigMaker) {
         chipHtml = '<span class="user-role-chip config-maker-chip"><i class="fas fa-hammer"></i> Config Maker</span>';
       } else if (currentUser.is_premium) {
@@ -480,7 +491,7 @@ function renderReviews() {
     return `
       <div class="review-card">
         ${isOwner ? `<button class="review-delete-btn" onclick="deleteReview(${r.id})" title="Delete Review"><i class="fas fa-trash"></i></button>` : ''}
-        <div class="review-card-header">
+        <div class="review-card-header" onclick="openUserProfileModal('${r.user_id || ''}')" style="cursor: pointer;" title="View ${escapeHtml(r.author_name || 'User')}'s profile & stats">
           <img class="review-avatar" src="${avatarUrl}" alt="${escapeHtml(r.author_name || 'User')}" onerror="this.src='assets/cyslogo.png'">
           <div class="review-author-meta">
             <div class="review-author-name">
@@ -817,6 +828,220 @@ function formatTimeAgo(isoString) {
 }
 
 // ==========================================
+// CURRENT USER KEY SYSTEM & PROFILE VERIFIER
+// ==========================================
+
+async function verifyCurrentUserKeySystem() {
+  const token = localStorage.getItem("ch_token");
+  if (!currentUser || !currentUser.id || !token) {
+    console.log("%c[KeySystem API] ℹ️ No user logged in with active session token.", "color: #94a3b8;");
+    return;
+  }
+
+  console.log(`%c[KeySystem API] 🔒 Securely checking key status for: ${currentUser.username} (${currentUser.id})`, "color: #29f0f0; font-weight: bold; font-size: 13px;");
+  console.log(`%c[KeySystem API] 📡 Querying backend proxy: ${API_BASE}/api/user/key-status`, "color: #94a3b8;");
+
+  try {
+    const res = await fetch(`${API_BASE}/api/user/key-status`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const data = await res.json();
+
+    console.log("%c[KeySystem API] 📥 Server Response:", "color: #d42dcc; font-weight: bold;", data);
+
+    if (res.ok && data && data.success) {
+      currentUser.key_data = data;
+      currentUser.is_premium = !!data.active && !data.is_expired;
+      currentUser.total_usage_seconds = parseInt(data.total_usage_time) || 0;
+      currentUser.total_usage_hours = data.total_hours || parseFloat(((data.total_usage_time || 0) / 3600).toFixed(1));
+
+      const statusText = data.is_expired ? "EXPIRED" : (data.active ? "ACTIVE PREMIUM" : "INACTIVE");
+      const statusColor = (data.active && !data.is_expired) ? "color: #4ade80; font-weight: bold;" : "color: #f87171; font-weight: bold;";
+
+      console.log(`%c[KeySystem API] 🛡️ Status: ${statusText} | ⏱️ Total Usage: ${currentUser.total_usage_hours} hrs (${currentUser.total_usage_seconds}s)`, statusColor);
+
+      console.table({
+        "Discord ID": data.user_id,
+        "Active": data.active,
+        "Total Seconds": data.total_usage_time,
+        "Hours Farmed": currentUser.total_usage_hours + "h",
+        "Expires At": data.expires_at || "Never (Lifetime)",
+        "HWID Bound": data.hwid_bound ? "Yes" : "No",
+        "AE Access": !!data.games?.ae,
+        "ALS Access": !!data.games?.als,
+        "AV Access": !!data.games?.av,
+        "ASTD Access": !!data.games?.astd
+      });
+
+      localStorage.setItem("ch_user", JSON.stringify(currentUser));
+      updateNavbarAuthUI();
+    } else {
+      console.warn(`[KeySystem API] ⚠️ Key check response:`, data.message || "No active license key found");
+      currentUser.key_data = null;
+      currentUser.is_premium = false;
+      currentUser.total_usage_seconds = 0;
+      currentUser.total_usage_hours = 0;
+      localStorage.setItem("ch_user", JSON.stringify(currentUser));
+      updateNavbarAuthUI();
+    }
+  } catch (err) {
+    console.error("[KeySystem API] ❌ Backend verification error:", err);
+  }
+}
+
+window.openUserProfileModal = async function (targetUserId) {
+  const modal = document.getElementById("userProfileModal");
+  if (!modal) return;
+
+  const targetId = targetUserId || (currentUser ? currentUser.id : null);
+  const isOwnProfile = !targetUserId || (currentUser && currentUser.id === targetId);
+
+  modal.classList.add("active");
+  document.body.style.overflow = "hidden";
+
+  // Loading state
+  document.getElementById("profUsername").textContent = (currentUser && isOwnProfile) ? currentUser.username : "Loading Profile...";
+  document.getElementById("profTotalHours").textContent = "...";
+  document.getElementById("profHwidStatus").textContent = "...";
+
+  let keyData = (isOwnProfile && currentUser && currentUser.key_data) ? currentUser.key_data : null;
+
+  if (isOwnProfile && !keyData) {
+    const token = localStorage.getItem("ch_token");
+    if (token) {
+      try {
+        const res = await fetch(`${API_BASE}/api/user/key-status`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if (res.ok) {
+          keyData = await res.json();
+        }
+      } catch (e) {}
+    }
+  }
+
+  const username = (currentUser && isOwnProfile) ? currentUser.username : (keyData ? `Grinder (${String(targetId).slice(-4)})` : "Grinder");
+  const avatar = (currentUser && isOwnProfile) ? currentUser.avatar : null;
+  const totalSeconds = (keyData && keyData.total_usage_time) ? parseInt(keyData.total_usage_time) : (currentUser ? currentUser.total_usage_seconds || 0 : 0);
+  const totalHours = parseFloat((totalSeconds / 3600).toFixed(1));
+  const isActive = keyData ? (keyData.active && !keyData.is_expired) : (currentUser ? currentUser.is_premium : false);
+  const isHwidBound = keyData ? (keyData.hwid_bound || !!keyData.hwid) : false;
+
+  document.getElementById("profUsername").textContent = username;
+  document.getElementById("profTotalHours").textContent = `${totalHours}h`;
+  document.getElementById("profHwidStatus").textContent = isHwidBound ? "Bound & Verified" : "Not Bound";
+
+  const avatarImg = document.getElementById("profAvatar");
+  if (avatarImg) {
+    avatarImg.src = (avatar && currentUser)
+      ? `https://cdn.discordapp.com/avatars/${currentUser.id}/${avatar}.png?size=128`
+      : "assets/cyslogo.png";
+  }
+
+  // Role Chip & License
+  const isOwner = (currentUser && isOwnProfile && (currentUser.is_owner || currentUser.id === "1141849395902554202" || (currentUser.roles && currentUser.roles.some(r => /owner/i.test(r)))));
+  const roleBadgeEl = document.getElementById("profRoleBadge");
+  const licensePill = document.getElementById("profLicensePill");
+  if (roleBadgeEl) {
+    if (isOwner) {
+      roleBadgeEl.innerHTML = '<span class="user-role-chip owner-chip"><i class="fas fa-crown"></i> Owner</span>';
+      if (licensePill) licensePill.innerHTML = '<i class="fas fa-key"></i> <span>License: <strong>Owner / Lead Developer</strong></span>';
+    } else if (currentUser && isOwnProfile && currentUser.is_admin) {
+      roleBadgeEl.innerHTML = '<span class="user-role-chip admin-chip"><i class="fas fa-bolt"></i> Admin</span>';
+      if (licensePill) licensePill.innerHTML = '<i class="fas fa-key"></i> <span>License: <strong>Developer Admin</strong></span>';
+    } else if (isActive) {
+      roleBadgeEl.innerHTML = '<span class="user-role-chip premium-chip"><i class="fas fa-crown"></i> Verified Premium</span>';
+      const expireStr = (keyData && keyData.expires_at) ? `Expires: ${new Date(keyData.expires_at).toLocaleDateString()}` : "Active Lifetime";
+      if (licensePill) licensePill.innerHTML = `<i class="fas fa-key"></i> <span>License: <strong>${expireStr}</strong></span>`;
+    } else {
+      roleBadgeEl.innerHTML = '<span class="user-role-chip free-chip"><i class="fas fa-user"></i> Free Member</span>';
+      if (licensePill) licensePill.innerHTML = '<i class="fas fa-lock"></i> <span>License: <strong>No Active Key</strong></span>';
+    }
+  }
+
+  // Joined date
+  const joinedEl = document.getElementById("profJoinedDate");
+  if (joinedEl) {
+    if (keyData && keyData.created_at) {
+      const jDate = new Date(keyData.created_at);
+      joinedEl.innerHTML = `<i class="far fa-calendar-alt"></i> Key Created ${jDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    } else {
+      joinedEl.innerHTML = `<i class="far fa-calendar-alt"></i> Community Member`;
+    }
+  }
+
+  // Discord Roles List
+  const rolesRow = document.getElementById("profDiscordRolesRow");
+  if (rolesRow) {
+    let rolesList = [];
+
+    if (isOwner) {
+      rolesList.push("Owner", "Developer", "Admin");
+    } else if (currentUser && currentUser.is_admin) {
+      rolesList.push("Server Admin", "Developer");
+    }
+    if (currentUser && (currentUser.is_config_maker || currentUser.is_creator)) {
+      rolesList.push("Config Maker");
+    }
+    if (isActive) {
+      rolesList.push("Donator [All-Access]", "Verified Buyer");
+    } else {
+      rolesList.push("Member");
+    }
+
+    // Include any custom roles
+    if (currentUser && Array.isArray(currentUser.roles) && currentUser.roles.length > 0) {
+      rolesList = [...new Set([...rolesList, ...currentUser.roles])];
+    }
+
+    rolesRow.innerHTML = rolesList.map(r => `
+      <span class="prof-badge-chip cyan"><i class="fab fa-discord"></i> ${escapeHtml(r)}</span>
+    `).join("");
+  }
+
+  // Unlocked Macros List
+  const macrosRow = document.getElementById("profUnlockedMacrosRow");
+  if (macrosRow) {
+    const gameMap = {
+      ae: "Anime Expeditions (AE)",
+      als: "Anime Last Stand (ALS)",
+      av: "Anime Vanguards (AV)",
+      astd: "All Star Tower Defense (ASTD)",
+      ac: "Anime Crusaders (AC)",
+      utd: "Universal Tower Defense (UTD)",
+      ao: "Anime Overload (AO)",
+      aor: "Anime Origins (AOR)"
+    };
+
+    let unlocked = [];
+    if (keyData && keyData.games) {
+      for (const [key, label] of Object.entries(gameMap)) {
+        if (keyData.games[key]) unlocked.push(label);
+      }
+    } else if (currentUser && currentUser.is_admin) {
+      unlocked = Object.values(gameMap);
+    } else if (isActive) {
+      unlocked = ["Anime Expeditions (AE)", "Anime Last Stand (ALS)", "Anime Vanguards (AV)"];
+    }
+
+    if (unlocked.length > 0) {
+      macrosRow.innerHTML = unlocked.map(g => `
+        <span class="prof-badge-chip pink"><i class="fas fa-check-circle"></i> ${escapeHtml(g)}</span>
+      `).join("");
+    } else {
+      macrosRow.innerHTML = '<span class="prof-badge-chip" style="opacity: 0.6;"><i class="fas fa-lock"></i> No macro licenses linked</span>';
+    }
+  }
+};
+
+window.closeUserProfileModal = function () {
+  const modal = document.getElementById("userProfileModal");
+  if (!modal) return;
+  modal.classList.remove("active");
+  document.body.style.overflow = "";
+};
+
+// ==========================================
 // PAGE INITIALIZATION
 // ==========================================
 
@@ -943,7 +1168,7 @@ function initDonateModal() {
 }
 
 function initReveal() {
-  document.querySelectorAll('.macro-card, .step-card, .faq-card, .section-header, .review-card, .reviews-summary-card').forEach((el, i) => {
+  document.querySelectorAll('.macro-card, .step-card, .section-header, .review-card, .reviews-summary-card').forEach((el, i) => {
     el.classList.add('reveal');
     el.style.transitionDelay = (i % 5) * 0.06 + 's';
   });

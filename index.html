@@ -35,9 +35,10 @@
       <div class="nav-links" id="navLinks">
         <a href="#macros" class="nav-link" data-section="macros"><i class="fas fa-download"></i><span>Macros</span></a>
         <a href="configs/" class="nav-link"><i class="fas fa-th-large"></i><span>Configs</span></a>
+        <a href="#leaderboard" class="nav-link" data-section="leaderboard"><i class="fas fa-trophy"></i><span>Leaderboard</span></a>
+        <a href="guides.html" class="nav-link"><i class="fas fa-book-open"></i><span>Guides</span></a>
         <a href="#reviews" class="nav-link" data-section="reviews"><i class="fas fa-star"></i><span>Reviews</span></a>
         <a href="#setup" class="nav-link" data-section="setup"><i class="fas fa-cog"></i><span>Setup</span></a>
-        <a href="#faq" class="nav-link" data-section="faq"><i class="fas fa-question-circle"></i><span>FAQ</span></a>
         <a href="https://discord.gg/cys" class="nav-link discord-link" target="_blank"><i class="fab fa-discord"></i><span>Discord</span></a>
       </div>
       <div class="nav-auth-wrapper">
@@ -399,55 +400,6 @@
     </div>
   </section>
 
-  <section class="page-section" id="faq">
-    <div class="section-inner">
-      <div class="section-header">
-        <h2 class="section-title">FAQ</h2>
-        <p class="section-sub">Everything you need to know.</p>
-      </div>
-      <div class="faq-grid">
-
-        <div class="faq-card">
-          <div class="faq-icon"><i class="fas fa-play-circle"></i></div>
-          <h3>Macro Basics</h3>
-          <p>Learn the basics of using the macro</p>
-          <video controls class="faq-video" preload="none"><source src="assets/vids/Basics.mp4" type="video/mp4"></video>
-        </div>
-
-        <div class="faq-card">
-          <div class="faq-icon"><i class="fab fa-discord"></i></div>
-          <h3>Discord Webhooks</h3>
-          <p>Set up notifications to your discord</p>
-          <video controls class="faq-video" preload="none"><source src="assets/vids/Webhooks.mp4" type="video/mp4"></video>
-        </div>
-
-        <div class="faq-card">
-          <div class="faq-icon"><i class="fas fa-file-import"></i></div>
-          <h3>Import Configs</h3>
-          <p>Use configs made by our community!</p>
-          <video controls class="faq-video" preload="none"><source src="assets/vids/ConfigGuide.mp4" type="video/mp4"></video>
-        </div>
-
-        <div class="faq-card faq-wide">
-          <div class="faq-icon"><i class="fas fa-list-ol"></i></div>
-          <h3>How to Install Configs</h3>
-          <ol class="faq-steps">
-            <li>Download the .txt config file from Discord</li>
-            <li>Copy the downloaded file</li>
-            <li>Navigate to your macro's "Settings" folder</li>
-            <li>Paste into the appropriate subfolder (raids/legends/dungeons) or main Settings folder for custom configs</li>
-            <li>Open the macro and select your config!</li>
-          </ol>
-          <div class="faq-note">
-            <i class="fas fa-info-circle"></i>
-            <span>Raids, legends, and portals must start in lobby. Other configs start in-game.</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-brand">
@@ -609,6 +561,67 @@
             </button>
           </div>
         </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- USER PROFILE & USAGE STATS MODAL -->
+  <div class="user-profile-modal" id="userProfileModal" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" id="userProfileModalBackdrop" onclick="closeUserProfileModal()"></div>
+    <div class="modal-content profile-modal-content">
+      <button class="modal-close" id="profileModalClose" onclick="closeUserProfileModal()" aria-label="Close"><i class="fas fa-times"></i></button>
+
+      <!-- Profile Header Hero -->
+      <div class="profile-hero-card">
+        <div class="profile-avatar-wrap">
+          <img id="profAvatar" src="assets/cyslogo.png" alt="Avatar" onerror="this.src='assets/cyslogo.png'">
+        </div>
+        <div class="profile-header-info">
+          <div class="profile-name-row">
+            <h2 id="profUsername">User</h2>
+            <div id="profRoleBadge"><span class="user-role-chip premium-chip"><i class="fas fa-crown"></i> Verified Premium</span></div>
+          </div>
+          <p class="profile-joined-text" id="profJoinedDate"><i class="far fa-calendar-alt"></i> Community Member</p>
+          <div class="profile-license-pill" id="profLicensePill">
+            <i class="fas fa-key"></i> <span>License: <strong>Active Lifetime</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats Duo -->
+      <div class="profile-stats-grid profile-stats-duo">
+        <div class="prof-stat-box">
+          <div class="stat-icon-wrap icon-cyan"><i class="fas fa-clock"></i></div>
+          <div class="prof-stat-val" id="profTotalHours">0.0h</div>
+          <div class="prof-stat-lbl">Total Usage Time</div>
+        </div>
+        <div class="prof-stat-box">
+          <div class="stat-icon-wrap icon-gold"><i class="fas fa-desktop"></i></div>
+          <div class="prof-stat-val" id="profHwidStatus">Bound</div>
+          <div class="prof-stat-lbl">HWID Status</div>
+        </div>
+      </div>
+
+      <!-- Discord Server Roles -->
+      <div class="profile-section-block">
+        <h3 class="prof-section-title"><i class="fab fa-discord"></i> Discord Server Roles</h3>
+        <div class="profile-badges-row" id="profDiscordRolesRow">
+          <!-- Populated dynamically from live Discord roles -->
+        </div>
+      </div>
+
+      <!-- Unlocked Macros Access -->
+      <div class="profile-section-block">
+        <h3 class="prof-section-title"><i class="fas fa-layer-group"></i> Key System Access</h3>
+        <div class="profile-badges-row" id="profUnlockedMacrosRow">
+          <!-- Populated from key system permissions -->
+        </div>
+      </div>
+
+      <!-- Bottom Actions -->
+      <div class="profile-footer-actions">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</button>
       </div>
 
     </div>
