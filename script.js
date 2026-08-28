@@ -523,7 +523,8 @@ window.openReviewModal = function () {
     stateFree.classList.remove("hidden");
     statePrem.classList.add("hidden");
 
-    document.getElementById("revFreeUserName").textContent = currentUser.username;
+    const freeUserEl = document.getElementById("revFreeUserName");
+    if (freeUserEl) freeUserEl.textContent = currentUser.username;
     const avatar = document.getElementById("revFreeUserAvatar");
     if (avatar) {
       avatar.src = currentUser.avatar
@@ -536,7 +537,8 @@ window.openReviewModal = function () {
     stateFree.classList.add("hidden");
     statePrem.classList.remove("hidden");
 
-    document.getElementById("revPremUserName").textContent = currentUser.username;
+    const premUserEl = document.getElementById("revPremUserName");
+    if (premUserEl) premUserEl.textContent = currentUser.username;
     const avatar = document.getElementById("revPremUserAvatar");
     if (avatar) {
       avatar.src = currentUser.avatar
@@ -920,8 +922,8 @@ window.openUserProfileModal = async function (targetUserId, reviewId) {
     const isPublic = user.is_public !== false;
     updateProfilePrivacyUI(isPublic);
 
-    usernameEl.textContent = user.username;
-    totalHoursEl.textContent = "...";
+    if (usernameEl) usernameEl.textContent = user.username;
+    if (totalHoursEl) totalHoursEl.textContent = "...";
 
     let keyData = user.key_data || null;
     if (!keyData) {
@@ -943,7 +945,7 @@ window.openUserProfileModal = async function (targetUserId, reviewId) {
     const totalHours = parseFloat((totalSeconds / 3600).toFixed(1));
     const isActive = keyData ? (keyData.active && !keyData.is_expired) : !!user.is_premium;
 
-    totalHoursEl.textContent = `${totalHours}h`;
+    if (totalHoursEl) totalHoursEl.textContent = `${totalHours}h`;
 
     if (avatarImg) {
       avatarImg.src = user.avatar
@@ -1042,8 +1044,8 @@ window.openUserProfileModal = async function (targetUserId, reviewId) {
       : '<i class="far fa-calendar-alt"></i> Verified Community Member';
 
     // Show initial data immediately
-    usernameEl.textContent = authorName;
-    totalHoursEl.textContent = "...";
+    if (usernameEl) usernameEl.textContent = authorName;
+    if (totalHoursEl) totalHoursEl.textContent = "...";
     if (avatarImg) avatarImg.src = avatarUrl;
 
     if (roleBadgeEl) {
@@ -1111,7 +1113,7 @@ window.openUserProfileModal = async function (targetUserId, reviewId) {
         if (res.ok) {
           const profileData = await res.json();
           if (profileData && profileData.user) {
-            if (profileData.user.username) usernameEl.textContent = profileData.user.username;
+            if (profileData.user.username && usernameEl) usernameEl.textContent = profileData.user.username;
             if (profileData.user.avatar && avatarImg) {
               avatarImg.src = `https://cdn.discordapp.com/avatars/${profileData.user.id}/${profileData.user.avatar}.png?size=128`;
             }
@@ -1124,23 +1126,23 @@ window.openUserProfileModal = async function (targetUserId, reviewId) {
             const isTargetPrivate = profileData.stats?.is_private || profileData.user?.is_public === false;
             if (isTargetPrivate) {
               if (tagTextEl) tagTextEl.textContent = "Verified Reviewer Profile • Private";
-              totalHoursEl.innerHTML = '<span style="color: var(--text-3); font-size: 0.95rem; font-weight: 600;"><i class="fas fa-eye-slash"></i> Private</span>';
+              if (totalHoursEl) totalHoursEl.innerHTML = '<span style="color: var(--text-3); font-size: 0.95rem; font-weight: 600;"><i class="fas fa-eye-slash"></i> Private</span>';
               if (macrosRow) {
                 macrosRow.innerHTML = '<span class="prof-badge-chip" style="opacity: 0.6;"><i class="fas fa-eye-slash"></i> Hidden by user</span>';
               }
             } else {
               const hours = (profileData.stats && profileData.stats.total_hours != null) ? profileData.stats.total_hours : 0;
-              totalHoursEl.textContent = `${hours}h`;
+              if (totalHoursEl) totalHoursEl.textContent = `${hours}h`;
             }
           }
         } else {
-          totalHoursEl.textContent = "0.0h";
+          if (totalHoursEl) totalHoursEl.textContent = "0.0h";
         }
       } catch (e) {
-        totalHoursEl.textContent = "0.0h";
+        if (totalHoursEl) totalHoursEl.textContent = "0.0h";
       }
     } else {
-      totalHoursEl.textContent = "0.0h";
+      if (totalHoursEl) totalHoursEl.textContent = "0.0h";
     }
   }
 };
