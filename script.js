@@ -34,81 +34,7 @@ const REPOS = [
   { owner: 'Cyszx', repo: 'Cys-Task',          versionEl: 'taskVersion',  downloadsEl: 'taskDownloads',  buttonEl: 'taskButton'  },
 ];
 
-// Initial verified fallback reviews
-const FALLBACK_REVIEWS = [
-  {
-    id: 101,
-    author_name: "Cys",
-    author_avatar: null,
-    is_admin: true,
-    is_verified_premium: true,
-    game: "Anime Expeditions",
-    rating: 5,
-    title: "Continuous 24/7 Stability",
-    comment: "Engineered with sub-pixel template detection and OCR retry logic. Designed to handle all modes smoothly without getting stuck.",
-    created_at: new Date(Date.now() - 3600 * 1000 * 4).toISOString()
-  },
-  {
-    id: 102,
-    author_name: "Kaiser",
-    author_avatar: null,
-    is_admin: false,
-    is_verified_premium: true,
-    game: "Anime Expeditions",
-    rating: 5,
-    title: "Best AE Macro by Far",
-    comment: "Runs overnight for 12+ hours straight without a single missed wave or placement issue. Auto craft, bounties, and webhook screenshots work like magic.",
-    created_at: new Date(Date.now() - 3600 * 1000 * 28).toISOString()
-  },
-  {
-    id: 103,
-    author_name: "Shadow",
-    author_avatar: null,
-    is_admin: false,
-    is_verified_premium: true,
-    game: "Anime Last Stand",
-    rating: 5,
-    title: "Insanely fast and dependable",
-    comment: "Been using Cys macros since early ALS raids. The discord webhook integration with live session reports gives so much peace of mind.",
-    created_at: new Date(Date.now() - 3600 * 1000 * 72).toISOString()
-  },
-  {
-    id: 104,
-    author_name: "NexusRider",
-    author_avatar: null,
-    is_admin: false,
-    is_verified_premium: true,
-    game: "Anime Vanguards",
-    rating: 5,
-    title: "Unreal consistency in Cid Raids",
-    comment: "Placement timing and auto-upgrades are on point. Donator access was definitely worth every penny.",
-    created_at: new Date(Date.now() - 3600 * 1000 * 120).toISOString()
-  },
-  {
-    id: 105,
-    author_name: "Vortex",
-    author_avatar: null,
-    is_admin: false,
-    is_verified_premium: true,
-    game: "All Star Tower Defense",
-    rating: 5,
-    title: "Gauntlet automation is super smooth",
-    comment: "Never crashes, CPU usage is ultra low compared to other macro tools.",
-    created_at: new Date(Date.now() - 3600 * 1000 * 180).toISOString()
-  },
-  {
-    id: 106,
-    author_name: "Lunar",
-    author_avatar: null,
-    is_admin: false,
-    is_verified_premium: true,
-    game: "Anime Origins",
-    rating: 4,
-    title: "Great story & raid automation",
-    comment: "Super reliable overall, auto-challenge queue makes continuous farming completely effortless.",
-    created_at: new Date(Date.now() - 3600 * 1000 * 240).toISOString()
-  }
-];
+
 
 // ==========================================
 // GITHUB REPO STATS
@@ -209,6 +135,9 @@ function syncLiveUserRoles() {
         currentUser.is_admin = !!data.user.is_admin;
         currentUser.is_config_maker = !!data.user.is_config_maker;
         currentUser.is_creator = !!data.user.is_creator;
+        if (data.user.is_public !== undefined) {
+          currentUser.is_public = !!data.user.is_public;
+        }
         localStorage.setItem("ch_user", JSON.stringify(currentUser));
         updateNavbarAuthUI();
       }
@@ -366,21 +295,49 @@ async function loadReviews() {
       allReviews = data.reviews;
       updateReviewsOverview(data.stats);
     } else {
-      allReviews = FALLBACK_REVIEWS;
-      calculateAndRenderFallbackStats();
+      allReviews = [];
+      updateReviewsOverview({
+        total_reviews: 0,
+        average_rating: 0,
+        star_5: 0,
+        star_4: 0,
+        star_3: 0,
+        star_2: 0,
+        star_1: 0,
+      });
     }
   } catch (err) {
-    allReviews = FALLBACK_REVIEWS;
-    calculateAndRenderFallbackStats();
+    allReviews = [];
+    updateReviewsOverview({
+      total_reviews: 0,
+      average_rating: 0,
+      star_5: 0,
+      star_4: 0,
+      star_3: 0,
+      star_2: 0,
+      star_1: 0,
+    });
   }
 
   renderReviews();
 }
 
-function calculateAndRenderFallbackStats() {
+function calculateAndRenderStats() {
   const total = allReviews.length;
+  if (total === 0) {
+    updateReviewsOverview({
+      total_reviews: 0,
+      average_rating: 0,
+      star_5: 0,
+      star_4: 0,
+      star_3: 0,
+      star_2: 0,
+      star_1: 0,
+    });
+    return;
+  }
   const sum = allReviews.reduce((acc, r) => acc + (r.rating || 5), 0);
-  const avg = total > 0 ? (sum / total).toFixed(1) : "5.0";
+  const avg = (sum / total).toFixed(1);
 
   const star5 = allReviews.filter(r => r.rating === 5).length;
   const star4 = allReviews.filter(r => r.rating === 4).length;
@@ -401,31 +358,41 @@ function calculateAndRenderFallbackStats() {
 
 function updateReviewsOverview(stats) {
   if (!stats) return;
-  const total = stats.total_reviews || allReviews.length || 1;
-  const avg = parseFloat(stats.average_rating || 5.0).toFixed(1);
+  const total = stats.total_reviews !== undefined ? stats.total_reviews : allReviews.length;
+  const avg = total > 0 ? parseFloat(stats.average_rating || 5.0).toFixed(1) : "—";
 
   const avgEl = document.getElementById("reviewAvgScore");
   if (avgEl) avgEl.textContent = avg;
 
   const countEl = document.getElementById("reviewTotalCount");
-  if (countEl) countEl.textContent = `Based on ${total} verified reviews`;
+  if (countEl) {
+    countEl.textContent = total > 0 ? `Based on ${total} verified review${total === 1 ? '' : 's'}` : "No reviews submitted yet";
+  }
 
   const starOverviewEl = document.getElementById("reviewOverviewStars");
   if (starOverviewEl) {
-    const fullStars = Math.round(parseFloat(avg));
-    let starsHtml = "";
-    for (let i = 1; i <= 5; i++) {
-      starsHtml += `<i class="fas fa-star" style="color:${i <= fullStars ? '#fbbf24' : 'rgba(255,255,255,0.15)'};"></i>`;
+    if (total > 0) {
+      const fullStars = Math.round(parseFloat(avg));
+      let starsHtml = "";
+      for (let i = 1; i <= 5; i++) {
+        starsHtml += `<i class="fas fa-star" style="color:${i <= fullStars ? '#fbbf24' : 'rgba(255,255,255,0.15)'};"></i>`;
+      }
+      starOverviewEl.innerHTML = starsHtml;
+    } else {
+      let starsHtml = "";
+      for (let i = 1; i <= 5; i++) {
+        starsHtml += `<i class="far fa-star" style="color:rgba(255,255,255,0.2);"></i>`;
+      }
+      starOverviewEl.innerHTML = starsHtml;
     }
-    starOverviewEl.innerHTML = starsHtml;
   }
 
   // Update progress bars
-  const p5 = Math.round(((stats.star_5 || 0) / total) * 100);
-  const p4 = Math.round(((stats.star_4 || 0) / total) * 100);
-  const p3 = Math.round(((stats.star_3 || 0) / total) * 100);
-  const p2 = Math.round(((stats.star_2 || 0) / total) * 100);
-  const p1 = Math.round(((stats.star_1 || 0) / total) * 100);
+  const p5 = total > 0 ? Math.round(((stats.star_5 || 0) / total) * 100) : 0;
+  const p4 = total > 0 ? Math.round(((stats.star_4 || 0) / total) * 100) : 0;
+  const p3 = total > 0 ? Math.round(((stats.star_3 || 0) / total) * 100) : 0;
+  const p2 = total > 0 ? Math.round(((stats.star_2 || 0) / total) * 100) : 0;
+  const p1 = total > 0 ? Math.round(((stats.star_1 || 0) / total) * 100) : 0;
 
   const setBar = (id, pct, countId) => {
     const el = document.getElementById(id);
@@ -456,11 +423,14 @@ function renderReviews() {
   }
 
   if (filtered.length === 0) {
+    const isFiltered = currentReviewFilter !== "all";
     grid.innerHTML = `
-      <div style="grid-column: 1/-1; text-align: center; color: var(--text-2); padding: 3rem 1rem;">
-        <i class="fas fa-filter" style="font-size: 2rem; margin-bottom: 0.75rem; opacity: 0.4;"></i>
-        <h3>No reviews found</h3>
-        <p>No reviews match the selected filter.</p>
+      <div style="grid-column: 1/-1; text-align: center; color: var(--text-2); padding: 3.5rem 1rem;">
+        <i class="fas ${isFiltered ? 'fa-filter' : 'fa-comment-slash'}" style="font-size: 2.2rem; margin-bottom: 0.85rem; opacity: 0.4; color: var(--cyan);"></i>
+        <h3 style="color: #fff; margin-bottom: 0.4rem;">${isFiltered ? 'No reviews found' : 'No reviews yet'}</h3>
+        <p style="max-width: 440px; margin: 0 auto; color: var(--text-3); font-size: 0.9rem;">
+          ${isFiltered ? 'No reviews match the selected filter.' : 'No reviews have been posted yet. Verified Premium members can be the first to submit a review!'}
+        </p>
       </div>
     `;
     return;
@@ -490,7 +460,7 @@ function renderReviews() {
     return `
       <div class="review-card">
         ${isOwner ? `<button class="review-delete-btn" onclick="deleteReview(${r.id})" title="Delete Review"><i class="fas fa-trash"></i></button>` : ''}
-        <div class="review-card-header" onclick="openUserProfileModal('${r.user_id || ''}')" style="cursor: pointer;" title="View ${escapeHtml(r.author_name || 'User')}'s profile & stats">
+        <div class="review-card-header" onclick="openUserProfileModal('${r.user_id || ''}', ${r.id})" style="cursor: pointer;" title="View ${escapeHtml(r.author_name || 'User')}'s profile & stats">
           <img class="review-avatar" src="${avatarUrl}" alt="${escapeHtml(r.author_name || 'User')}" onerror="this.src='assets/cyslogo.png'">
           <div class="review-author-meta">
             <div class="review-author-name">
@@ -771,7 +741,7 @@ window.deleteReview = async function (reviewId) {
 
     showToast("Review deleted successfully.", "success");
     allReviews = allReviews.filter(r => r.id !== reviewId);
-    calculateAndRenderFallbackStats();
+    calculateAndRenderStats();
     renderReviews();
   } catch (err) {
     showToast(err.message, "error");
@@ -865,7 +835,6 @@ async function verifyCurrentUserKeySystem() {
         "Total Seconds": data.total_usage_time,
         "Hours Farmed": currentUser.total_usage_hours + "h",
         "Expires At": data.expires_at || "Never (Lifetime)",
-        "HWID Bound": data.hwid_bound ? "Yes" : "No",
         "AE Access": !!data.games?.ae,
         "ALS Access": !!data.games?.als,
         "AV Access": !!data.games?.av,
@@ -888,148 +857,330 @@ async function verifyCurrentUserKeySystem() {
   }
 }
 
-window.openUserProfileModal = async function (targetUserId) {
+window.openUserProfileModal = async function (targetUserId, reviewId) {
   const modal = document.getElementById("userProfileModal");
   if (!modal) return;
 
-  const targetId = targetUserId || (currentUser ? currentUser.id : null);
-  const isOwnProfile = !targetUserId || (currentUser && currentUser.id === targetId);
+  // Locate review if opened from a review card
+  const review = (allReviews && allReviews.length > 0)
+    ? allReviews.find(r => (reviewId !== undefined && reviewId !== null && r.id == reviewId) || (targetUserId && r.user_id && r.user_id == targetUserId))
+    : null;
+
+  // Determine if viewing own profile
+  const user = (typeof currentUser !== "undefined" && currentUser) || (typeof window !== "undefined" && window.currentUser) || null;
+  let isOwnProfile = false;
+  if (user) {
+    if (!targetUserId && (reviewId === undefined || reviewId === null)) {
+      isOwnProfile = true;
+    } else if (targetUserId && String(targetUserId) === String(user.id)) {
+      isOwnProfile = true;
+    } else if (review && review.user_id && String(review.user_id) === String(user.id)) {
+      isOwnProfile = true;
+    }
+  }
 
   modal.classList.add("active");
   document.body.style.overflow = "hidden";
 
-  // Loading state
-  document.getElementById("profUsername").textContent = (currentUser && isOwnProfile) ? currentUser.username : "Loading Profile...";
-  document.getElementById("profTotalHours").textContent = "...";
-  document.getElementById("profHwidStatus").textContent = "...";
-
-  let keyData = (isOwnProfile && currentUser && currentUser.key_data) ? currentUser.key_data : null;
-
-  if (isOwnProfile && !keyData) {
-    const token = localStorage.getItem("ch_token");
-    if (token) {
-      try {
-        const res = await fetch(`${API_BASE}/api/user/key-status`, {
-          headers: { "Authorization": "Bearer " + token }
-        });
-        if (res.ok) {
-          keyData = await res.json();
-        }
-      } catch (e) {}
-    }
-  }
-
-  const username = (currentUser && isOwnProfile) ? currentUser.username : (keyData ? `Grinder (${String(targetId).slice(-4)})` : "Grinder");
-  const avatar = (currentUser && isOwnProfile) ? currentUser.avatar : null;
-  const totalSeconds = (keyData && keyData.total_usage_time) ? parseInt(keyData.total_usage_time) : (currentUser ? currentUser.total_usage_seconds || 0 : 0);
-  const totalHours = parseFloat((totalSeconds / 3600).toFixed(1));
-  const isActive = keyData ? (keyData.active && !keyData.is_expired) : (currentUser ? currentUser.is_premium : false);
-  const isHwidBound = keyData ? (keyData.hwid_bound || !!keyData.hwid) : false;
-
-  document.getElementById("profUsername").textContent = username;
-  document.getElementById("profTotalHours").textContent = `${totalHours}h`;
-  document.getElementById("profHwidStatus").textContent = isHwidBound ? "Bound & Verified" : "Not Bound";
-
+  // Elements
+  const tagTextEl = document.getElementById("profModalTagText");
+  const usernameEl = document.getElementById("profUsername");
+  const totalHoursEl = document.getElementById("profTotalHours");
   const avatarImg = document.getElementById("profAvatar");
-  if (avatarImg) {
-    avatarImg.src = (avatar && currentUser)
-      ? `https://cdn.discordapp.com/avatars/${currentUser.id}/${avatar}.png?size=128`
-      : "assets/cyslogo.png";
-  }
-
-  // Role Chip & License
-  const isOwner = (currentUser && isOwnProfile && (currentUser.is_owner || currentUser.id === "1141849395902554202" || (currentUser.roles && currentUser.roles.some(r => /owner/i.test(r)))));
   const roleBadgeEl = document.getElementById("profRoleBadge");
   const licensePill = document.getElementById("profLicensePill");
-  if (roleBadgeEl) {
-    if (isOwner) {
-      roleBadgeEl.innerHTML = '<span class="user-role-chip owner-chip"><i class="fas fa-crown"></i> Owner</span>';
-      if (licensePill) licensePill.innerHTML = '<i class="fas fa-key"></i> <span>License: <strong>Owner / Lead Developer</strong></span>';
-    } else if (currentUser && isOwnProfile && currentUser.is_admin) {
-      roleBadgeEl.innerHTML = '<span class="user-role-chip admin-chip"><i class="fas fa-bolt"></i> Admin</span>';
-      if (licensePill) licensePill.innerHTML = '<i class="fas fa-key"></i> <span>License: <strong>Developer Admin</strong></span>';
-    } else if (isActive) {
-      roleBadgeEl.innerHTML = '<span class="user-role-chip premium-chip"><i class="fas fa-crown"></i> Verified Premium</span>';
-      const expireStr = (keyData && keyData.expires_at) ? `Expires: ${new Date(keyData.expires_at).toLocaleDateString()}` : "Active Lifetime";
-      if (licensePill) licensePill.innerHTML = `<i class="fas fa-key"></i> <span>License: <strong>${expireStr}</strong></span>`;
-    } else {
-      roleBadgeEl.innerHTML = '<span class="user-role-chip free-chip"><i class="fas fa-user"></i> Free Member</span>';
-      if (licensePill) licensePill.innerHTML = '<i class="fas fa-lock"></i> <span>License: <strong>No Active Key</strong></span>';
-    }
-  }
-
-  // Joined date
   const joinedEl = document.getElementById("profJoinedDate");
-  if (joinedEl) {
-    if (keyData && keyData.created_at) {
-      const jDate = new Date(keyData.created_at);
-      joinedEl.innerHTML = `<i class="far fa-calendar-alt"></i> Key Created ${jDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
-    } else {
-      joinedEl.innerHTML = `<i class="far fa-calendar-alt"></i> Community Member`;
-    }
-  }
-
-  // Discord Roles List
   const rolesRow = document.getElementById("profDiscordRolesRow");
-  if (rolesRow) {
-    let rolesList = [];
-
-    if (isOwner) {
-      rolesList.push("Owner", "Developer", "Admin");
-    } else if (currentUser && currentUser.is_admin) {
-      rolesList.push("Server Admin", "Developer");
-    }
-    if (currentUser && (currentUser.is_config_maker || currentUser.is_creator)) {
-      rolesList.push("Config Maker");
-    }
-    if (isActive) {
-      rolesList.push("Donator [All-Access]", "Verified Buyer");
-    } else {
-      rolesList.push("Member");
-    }
-
-    // Include any custom roles
-    if (currentUser && Array.isArray(currentUser.roles) && currentUser.roles.length > 0) {
-      rolesList = [...new Set([...rolesList, ...currentUser.roles])];
-    }
-
-    rolesRow.innerHTML = rolesList.map(r => `
-      <span class="prof-badge-chip cyan"><i class="fab fa-discord"></i> ${escapeHtml(r)}</span>
-    `).join("");
-  }
-
-  // Unlocked Macros List
   const macrosRow = document.getElementById("profUnlockedMacrosRow");
-  if (macrosRow) {
-    const gameMap = {
-      ae: "Anime Expeditions (AE)",
-      als: "Anime Last Stand (ALS)",
-      av: "Anime Vanguards (AV)",
-      astd: "All Star Tower Defense (ASTD)",
-      ac: "Anime Crusaders (AC)",
-      utd: "Universal Tower Defense (UTD)",
-      ao: "Anime Overload (AO)",
-      aor: "Anime Origins (AOR)"
-    };
+  const logoutBtn = document.getElementById("profLogoutBtn");
+  const closeBtn = document.getElementById("profCloseBtn");
+  const privacyBox = document.getElementById("profPrivacyBox");
+
+  const gameMap = {
+    ae: "Anime Expeditions (AE)",
+    als: "Anime Last Stand (ALS)",
+    av: "Anime Vanguards (AV)",
+    astd: "All Star Tower Defense (ASTD)",
+    ac: "Anime Crusaders (AC)",
+    utd: "Universal Tower Defense (UTD)",
+    ao: "Anime Overload (AO)",
+    aor: "Anime Origins (AOR)"
+  };
+
+  if (isOwnProfile && user) {
+    // -------------------------------------------------------------
+    // LOGGED-IN USER'S OWN PROFILE
+    // -------------------------------------------------------------
+    if (tagTextEl) tagTextEl.textContent = "Your Profile & Key Stats";
+    if (logoutBtn) logoutBtn.style.display = "inline-flex";
+    if (closeBtn) closeBtn.style.display = "none";
+    if (privacyBox) privacyBox.style.display = "flex";
+
+    // Update privacy toggle UI
+    const isPublic = user.is_public !== false;
+    updateProfilePrivacyUI(isPublic);
+
+    usernameEl.textContent = user.username;
+    totalHoursEl.textContent = "...";
+
+    let keyData = user.key_data || null;
+    if (!keyData) {
+      const token = localStorage.getItem("ch_token");
+      if (token) {
+        try {
+          const res = await fetch(`${API_BASE}/api/user/key-status`, {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (res.ok) {
+            keyData = await res.json();
+            user.key_data = keyData;
+          }
+        } catch (e) {}
+      }
+    }
+
+    const totalSeconds = (keyData && keyData.total_usage_time) ? parseInt(keyData.total_usage_time) : (user.total_usage_seconds || 0);
+    const totalHours = parseFloat((totalSeconds / 3600).toFixed(1));
+    const isActive = keyData ? (keyData.active && !keyData.is_expired) : !!user.is_premium;
+
+    totalHoursEl.textContent = `${totalHours}h`;
+
+    if (avatarImg) {
+      avatarImg.src = user.avatar
+        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
+        : "assets/cyslogo.png";
+    }
+
+    const isOwner = user.is_owner || user.id === "1141849395902554202" || (user.roles && user.roles.some(r => /owner/i.test(r)));
+    if (roleBadgeEl) {
+      if (isOwner) {
+        roleBadgeEl.innerHTML = '<span class="user-role-chip owner-chip"><i class="fas fa-crown"></i> Owner</span>';
+        if (licensePill) licensePill.innerHTML = '<i class="fas fa-key"></i> <span>License: <strong>Owner / Lead Developer</strong></span>';
+      } else if (user.is_admin) {
+        roleBadgeEl.innerHTML = '<span class="user-role-chip admin-chip"><i class="fas fa-bolt"></i> Admin</span>';
+        if (licensePill) licensePill.innerHTML = '<i class="fas fa-key"></i> <span>License: <strong>Developer Admin</strong></span>';
+      } else if (user.is_config_maker || user.is_creator) {
+        roleBadgeEl.innerHTML = '<span class="user-role-chip config-maker-chip"><i class="fas fa-hammer"></i> Config Maker</span>';
+        if (licensePill) licensePill.innerHTML = '<i class="fas fa-key"></i> <span>License: <strong>Verified Config Creator</strong></span>';
+      } else if (isActive) {
+        roleBadgeEl.innerHTML = '<span class="user-role-chip premium-chip"><i class="fas fa-crown"></i> Verified Premium</span>';
+        const expireStr = (keyData && keyData.expires_at) ? `Expires: ${new Date(keyData.expires_at).toLocaleDateString()}` : "Active Lifetime";
+        if (licensePill) licensePill.innerHTML = `<i class="fas fa-key"></i> <span>License: <strong>${expireStr}</strong></span>`;
+      } else {
+        roleBadgeEl.innerHTML = '<span class="user-role-chip free-chip"><i class="fas fa-user"></i> Free Member</span>';
+        if (licensePill) licensePill.innerHTML = '<i class="fas fa-lock"></i> <span>License: <strong>No Active Key</strong></span>';
+      }
+    }
+
+    if (joinedEl) {
+      if (keyData && keyData.created_at) {
+        const jDate = new Date(keyData.created_at);
+        joinedEl.innerHTML = `<i class="far fa-calendar-alt"></i> Key Created ${jDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      } else {
+        joinedEl.innerHTML = `<i class="far fa-calendar-alt"></i> Joined via Discord • Your Account`;
+      }
+    }
+
+    if (rolesRow) {
+      let rolesList = [];
+      if (isOwner) rolesList.push("Owner", "Developer", "Admin");
+      else if (user.is_admin) rolesList.push("Server Admin", "Developer");
+      if (user.is_config_maker || user.is_creator) rolesList.push("Config Maker");
+      if (isActive) rolesList.push("Donator [All-Access]", "Verified Buyer");
+      else rolesList.push("Member");
+      if (Array.isArray(user.roles) && user.roles.length > 0) {
+        rolesList = [...new Set([...rolesList, ...user.roles])];
+      }
+      rolesRow.innerHTML = rolesList.map(r => `
+        <span class="prof-badge-chip cyan"><i class="fab fa-discord"></i> ${escapeHtml(r)}</span>
+      `).join("");
+    }
+
+    if (macrosRow) {
+      let unlocked = [];
+      if (keyData && keyData.games) {
+        for (const [key, label] of Object.entries(gameMap)) {
+          if (keyData.games[key]) unlocked.push(label);
+        }
+      } else if (user.is_admin || isOwner) {
+        unlocked = Object.values(gameMap);
+      } else if (isActive) {
+        unlocked = ["Anime Expeditions (AE)", "Anime Last Stand (ALS)", "Anime Vanguards (AV)"];
+      }
+
+      if (unlocked.length > 0) {
+        macrosRow.innerHTML = unlocked.map(g => `
+          <span class="prof-badge-chip pink"><i class="fas fa-check-circle"></i> ${escapeHtml(g)}</span>
+        `).join("");
+      } else {
+        macrosRow.innerHTML = '<span class="prof-badge-chip" style="opacity: 0.6;"><i class="fas fa-lock"></i> No macro licenses linked</span>';
+      }
+    }
+
+  } else {
+    // -------------------------------------------------------------
+    // OTHER USER'S PROFILE (E.G. CLICKED FROM REVIEWS)
+    // -------------------------------------------------------------
+    if (tagTextEl) tagTextEl.textContent = "Verified Reviewer Profile";
+    if (logoutBtn) logoutBtn.style.display = "none";
+    if (closeBtn) closeBtn.style.display = "inline-flex";
+    if (privacyBox) privacyBox.style.display = "none";
+
+    // Initial values from review metadata
+    let authorName = review ? (review.author_name || "Community Member") : (targetUserId ? `User (${String(targetUserId).slice(-4)})` : "Community Member");
+    let avatarUrl = (review && review.author_avatar && review.user_id)
+      ? `https://cdn.discordapp.com/avatars/${review.user_id}/${review.author_avatar}.png?size=128`
+      : "assets/cyslogo.png";
+
+    const isTargetOwner = (targetUserId === "1141849395902554202") || (review && (review.author_name === "Cys" || review.user_id === "1141849395902554202"));
+    const isTargetAdmin = isTargetOwner || Boolean(review && review.is_admin);
+    const isTargetConfigMaker = !isTargetOwner && !isTargetAdmin && Boolean(review && (review.is_config_maker || review.is_creator || (review.author_role && (review.author_role.toLowerCase() === "creator" || review.author_role.toLowerCase().includes("maker")))));
+    const isTargetPremium = isTargetOwner || isTargetAdmin || (review ? review.is_verified_premium !== false : true);
+
+    let joinedText = review && review.created_at
+      ? `<i class="far fa-calendar-alt"></i> Verified Reviewer • ${formatTimeAgo(review.created_at)}`
+      : '<i class="far fa-calendar-alt"></i> Verified Community Member';
+
+    // Show initial data immediately
+    usernameEl.textContent = authorName;
+    totalHoursEl.textContent = "...";
+    if (avatarImg) avatarImg.src = avatarUrl;
+
+    if (roleBadgeEl) {
+      if (isTargetOwner) {
+        roleBadgeEl.innerHTML = '<span class="user-role-chip owner-chip"><i class="fas fa-crown"></i> Owner</span>';
+        if (licensePill) licensePill.innerHTML = '<i class="fas fa-key"></i> <span>License: <strong>Owner / Lead Developer</strong></span>';
+      } else if (isTargetAdmin) {
+        roleBadgeEl.innerHTML = '<span class="user-role-chip admin-chip"><i class="fas fa-bolt"></i> Admin</span>';
+        if (licensePill) licensePill.innerHTML = '<i class="fas fa-key"></i> <span>License: <strong>Developer Admin</strong></span>';
+      } else if (isTargetConfigMaker) {
+        roleBadgeEl.innerHTML = '<span class="user-role-chip config-maker-chip"><i class="fas fa-hammer"></i> Config Maker</span>';
+        if (licensePill) licensePill.innerHTML = '<i class="fas fa-key"></i> <span>License: <strong>Verified Config Creator</strong></span>';
+      } else if (isTargetPremium) {
+        roleBadgeEl.innerHTML = '<span class="user-role-chip premium-chip"><i class="fas fa-crown"></i> Verified Premium</span>';
+        if (licensePill) licensePill.innerHTML = '<i class="fas fa-key"></i> <span>License: <strong>Active Lifetime</strong></span>';
+      } else {
+        roleBadgeEl.innerHTML = '<span class="user-role-chip free-chip"><i class="fas fa-user"></i> Free Member</span>';
+        if (licensePill) licensePill.innerHTML = '<i class="fas fa-lock"></i> <span>License: <strong>Community Member</strong></span>';
+      }
+    }
+
+    if (joinedEl) joinedEl.innerHTML = joinedText;
+
+    let rolesList = [];
+    if (isTargetOwner) rolesList = ["Owner", "Developer", "Admin", "Verified Buyer"];
+    else if (isTargetAdmin) rolesList = ["Server Admin", "Developer", "Verified Buyer"];
+    else if (isTargetConfigMaker) rolesList = ["Config Maker", "Donator [All-Access]", "Verified Buyer"];
+    else if (isTargetPremium) rolesList = ["Donator [All-Access]", "Verified Buyer"];
+    else rolesList = ["Community Member"];
+
+    if (rolesRow) {
+      rolesRow.innerHTML = rolesList.map(r => `
+        <span class="prof-badge-chip cyan"><i class="fab fa-discord"></i> ${escapeHtml(r)}</span>
+      `).join("");
+    }
 
     let unlocked = [];
-    if (keyData && keyData.games) {
-      for (const [key, label] of Object.entries(gameMap)) {
-        if (keyData.games[key]) unlocked.push(label);
-      }
-    } else if (currentUser && currentUser.is_admin) {
+    if (isTargetOwner || isTargetAdmin) {
       unlocked = Object.values(gameMap);
-    } else if (isActive) {
+    } else if (isTargetConfigMaker) {
+      unlocked = ["Anime Expeditions (AE)", "Anime Last Stand (ALS)", "Anime Vanguards (AV)", "All Star Tower Defense (ASTD)"];
+    } else {
       unlocked = ["Anime Expeditions (AE)", "Anime Last Stand (ALS)", "Anime Vanguards (AV)"];
+      if (review && review.game) {
+        const matching = Object.values(gameMap).find(g => g.toLowerCase().includes(review.game.toLowerCase()));
+        if (matching && !unlocked.includes(matching)) {
+          unlocked.push(matching);
+        } else if (!matching && !unlocked.includes(review.game)) {
+          unlocked.push(review.game);
+        }
+      }
     }
 
-    if (unlocked.length > 0) {
+    if (macrosRow) {
       macrosRow.innerHTML = unlocked.map(g => `
         <span class="prof-badge-chip pink"><i class="fas fa-check-circle"></i> ${escapeHtml(g)}</span>
       `).join("");
-    } else {
-      macrosRow.innerHTML = '<span class="prof-badge-chip" style="opacity: 0.6;"><i class="fas fa-lock"></i> No macro licenses linked</span>';
     }
+
+    // Query API for real-time live public stats & privacy status
+    const resolvedUserId = (review && review.user_id) || targetUserId;
+    if (resolvedUserId && /^\d{17,20}$/.test(String(resolvedUserId))) {
+      try {
+        const res = await fetch(`${API_BASE}/api/users/${encodeURIComponent(resolvedUserId)}/profile`);
+        if (res.ok) {
+          const profileData = await res.json();
+          if (profileData && profileData.user) {
+            if (profileData.user.username) usernameEl.textContent = profileData.user.username;
+            if (profileData.user.avatar && avatarImg) {
+              avatarImg.src = `https://cdn.discordapp.com/avatars/${profileData.user.id}/${profileData.user.avatar}.png?size=128`;
+            }
+            if (profileData.user.joined_at && joinedEl) {
+              const jDate = new Date(profileData.user.joined_at);
+              joinedEl.innerHTML = `<i class="far fa-calendar-alt"></i> Joined ${jDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+            }
+
+            // Check Privacy Setting
+            const isTargetPrivate = profileData.stats?.is_private || profileData.user?.is_public === false;
+            if (isTargetPrivate) {
+              if (tagTextEl) tagTextEl.textContent = "Verified Reviewer Profile • Private";
+              totalHoursEl.innerHTML = '<span style="color: var(--text-3); font-size: 0.95rem; font-weight: 600;"><i class="fas fa-eye-slash"></i> Private</span>';
+              if (macrosRow) {
+                macrosRow.innerHTML = '<span class="prof-badge-chip" style="opacity: 0.6;"><i class="fas fa-eye-slash"></i> Hidden by user</span>';
+              }
+            } else {
+              const hours = (profileData.stats && profileData.stats.total_hours != null) ? profileData.stats.total_hours : 0;
+              totalHoursEl.textContent = `${hours}h`;
+            }
+          }
+        } else {
+          totalHoursEl.textContent = "0.0h";
+        }
+      } catch (e) {
+        totalHoursEl.textContent = "0.0h";
+      }
+    } else {
+      totalHoursEl.textContent = "0.0h";
+    }
+  }
+};
+
+window.toggleProfilePrivacy = async function (isPublic) {
+  const user = (typeof currentUser !== "undefined" && currentUser) || (typeof window !== "undefined" && window.currentUser) || null;
+  if (!user) return;
+  user.is_public = isPublic;
+  if (typeof currentUser !== "undefined" && currentUser) currentUser.is_public = isPublic;
+  if (typeof window !== "undefined" && window.currentUser) window.currentUser.is_public = isPublic;
+  localStorage.setItem("ch_user", JSON.stringify(user));
+  updateProfilePrivacyUI(isPublic);
+
+  const token = localStorage.getItem("ch_token");
+  if (token) {
+    try {
+      const res = await fetch(`${API_BASE}/api/user/profile/settings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({ is_public: isPublic })
+      });
+      if (res.ok) {
+        showToast(isPublic ? "Farming stats are now Public." : "Farming stats are now Private.", "success");
+      }
+    } catch (e) {
+      console.warn("[Profile Privacy] Persist error:", e);
+    }
+  }
+};
+
+function updateProfilePrivacyUI(isPublic) {
+  const toggle = document.getElementById("profPrivacyToggle");
+  const badge = document.getElementById("profPrivacyStateBadge");
+  if (toggle) toggle.checked = isPublic;
+  if (badge) {
+    badge.textContent = isPublic ? "Public" : "Private";
+    badge.className = `privacy-state-pill ${isPublic ? 'is-public' : 'is-private'}`;
   }
 };
 

@@ -270,28 +270,28 @@
       <!-- Rating Overview Card -->
       <div class="reviews-summary-card">
         <div class="rating-overview-box">
-          <div class="rating-big-score" id="reviewAvgScore">4.9</div>
+          <div class="rating-big-score" id="reviewAvgScore">—</div>
           <div class="rating-overview-stars" id="reviewOverviewStars">
-            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+            <i class="far fa-star" style="color:rgba(255,255,255,0.2);"></i><i class="far fa-star" style="color:rgba(255,255,255,0.2);"></i><i class="far fa-star" style="color:rgba(255,255,255,0.2);"></i><i class="far fa-star" style="color:rgba(255,255,255,0.2);"></i><i class="far fa-star" style="color:rgba(255,255,255,0.2);"></i>
           </div>
-          <div class="rating-overview-count" id="reviewTotalCount">Based on 140+ reviews</div>
+          <div class="rating-overview-count" id="reviewTotalCount">No reviews submitted yet</div>
         </div>
 
         <div class="rating-breakdown-bars">
           <div class="rating-bar-row">
             <span class="bar-label">5 <i class="fas fa-star"></i></span>
-            <div class="bar-track"><div class="bar-fill" id="bar5" style="width: 94%;"></div></div>
-            <span class="bar-percent" id="barCount5">94%</span>
+            <div class="bar-track"><div class="bar-fill" id="bar5" style="width: 0%;"></div></div>
+            <span class="bar-percent" id="barCount5">0%</span>
           </div>
           <div class="rating-bar-row">
             <span class="bar-label">4 <i class="fas fa-star"></i></span>
-            <div class="bar-track"><div class="bar-fill" id="bar4" style="width: 5%;"></div></div>
-            <span class="bar-percent" id="barCount4">5%</span>
+            <div class="bar-track"><div class="bar-fill" id="bar4" style="width: 0%;"></div></div>
+            <span class="bar-percent" id="barCount4">0%</span>
           </div>
           <div class="rating-bar-row">
             <span class="bar-label">3 <i class="fas fa-star"></i></span>
-            <div class="bar-track"><div class="bar-fill" id="bar3" style="width: 1%;"></div></div>
-            <span class="bar-percent" id="barCount3">1%</span>
+            <div class="bar-track"><div class="bar-fill" id="bar3" style="width: 0%;"></div></div>
+            <span class="bar-percent" id="barCount3">0%</span>
           </div>
           <div class="rating-bar-row">
             <span class="bar-label">2 <i class="fas fa-star"></i></span>
@@ -571,6 +571,11 @@
     <div class="modal-content profile-modal-content">
       <button class="modal-close" id="profileModalClose" onclick="closeUserProfileModal()" aria-label="Close"><i class="fas fa-times"></i></button>
 
+      <!-- Profile Modal Header Tag -->
+      <div class="profile-modal-tag" id="profModalTag" style="font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-3); margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.45rem;">
+        <i class="fas fa-id-badge" style="color: var(--cyan);"></i> <span id="profModalTagText">Member Profile</span>
+      </div>
+
       <!-- Profile Header Hero -->
       <div class="profile-hero-card">
         <div class="profile-avatar-wrap">
@@ -588,18 +593,29 @@
         </div>
       </div>
 
-      <!-- Quick Stats Duo -->
-      <div class="profile-stats-grid profile-stats-duo">
+      <!-- Quick Stats -->
+      <div class="profile-stats-grid">
         <div class="prof-stat-box">
           <div class="stat-icon-wrap icon-cyan"><i class="fas fa-clock"></i></div>
           <div class="prof-stat-val" id="profTotalHours">0.0h</div>
           <div class="prof-stat-lbl">Total Usage Time</div>
         </div>
-        <div class="prof-stat-box">
-          <div class="stat-icon-wrap icon-gold"><i class="fas fa-desktop"></i></div>
-          <div class="prof-stat-val" id="profHwidStatus">Bound</div>
-          <div class="prof-stat-lbl">HWID Status</div>
+      </div>
+
+      <!-- Privacy Toggle for Account Owner -->
+      <div class="profile-privacy-box" id="profPrivacyBox" style="display: none;">
+        <div class="privacy-text-col">
+          <div class="privacy-title-row">
+            <i class="fas fa-shield-alt" style="color: var(--cyan);"></i>
+            <span>Public Usage Time</span>
+            <span class="privacy-state-pill is-public" id="profPrivacyStateBadge">Public</span>
+          </div>
+          <p class="privacy-hint">Allow other community members to see your total hours and macro activity.</p>
         </div>
+        <label class="privacy-switch" title="Toggle public or private usage time">
+          <input type="checkbox" id="profPrivacyToggle" onchange="toggleProfilePrivacy(this.checked)">
+          <span class="privacy-slider"></span>
+        </label>
       </div>
 
       <!-- Discord Server Roles -->
@@ -619,8 +635,9 @@
       </div>
 
       <!-- Bottom Actions -->
-      <div class="profile-footer-actions">
-        <button type="button" class="btn btn-secondary btn-sm" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      <div class="profile-footer-actions" id="profFooterActions">
+        <button type="button" class="btn btn-secondary btn-sm" id="profLogoutBtn" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="profCloseBtn" onclick="closeUserProfileModal()" style="display: none;"><i class="fas fa-times"></i> Close</button>
       </div>
 
     </div>

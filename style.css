@@ -1362,12 +1362,12 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   border-radius: 100px;
 }
 
-/* Stats Duo */
+/* Stats Grid */
 .profile-stats-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 1.25rem;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.5rem;
 }
 .prof-stat-box {
   background: var(--surf);
@@ -1403,6 +1403,83 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   font-size: 0.7rem;
   color: var(--text-3);
   text-transform: uppercase;
+}
+
+/* Profile Privacy Setting Box */
+.profile-privacy-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.5rem;
+}
+.privacy-text-col { flex: 1; }
+.privacy-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.2rem;
+}
+.privacy-state-pill {
+  font-size: 0.68rem;
+  padding: 0.12rem 0.5rem;
+  border-radius: var(--pill);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.privacy-state-pill.is-public {
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.35);
+}
+.privacy-state-pill.is-private {
+  background: rgba(244, 114, 182, 0.15);
+  color: #f472b6;
+  border: 1px solid rgba(244, 114, 182, 0.35);
+}
+.privacy-hint {
+  font-size: 0.74rem;
+  color: var(--text-3);
+  margin: 0;
+}
+.privacy-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.privacy-switch input { opacity: 0; width: 0; height: 0; }
+.privacy-slider {
+  position: absolute; inset: 0;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  transition: 0.25s ease;
+  border: 1px solid var(--border);
+}
+.privacy-slider:before {
+  position: absolute; content: "";
+  height: 16px; width: 16px;
+  left: 3px; bottom: 3px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: 0.25s ease;
+}
+.privacy-switch input:checked + .privacy-slider {
+  background-color: var(--cyan);
+  border-color: var(--cyan);
+}
+.privacy-switch input:checked + .privacy-slider:before {
+  transform: translateX(20px);
 }
 
 /* Badges Row */
