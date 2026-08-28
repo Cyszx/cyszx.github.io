@@ -233,7 +233,6 @@
     // Loading state
     document.getElementById("profUsername").textContent = currentUser ? currentUser.username : "Loading Profile...";
     document.getElementById("profTotalHours").textContent = "...";
-    document.getElementById("profHwidStatus").textContent = "...";
 
     var keyData = null;
     var token = localStorage.getItem("ch_token");
@@ -253,12 +252,10 @@
     var totalSeconds = (keyData && keyData.total_usage_time) ? parseInt(keyData.total_usage_time) : 0;
     var totalHours = parseFloat((totalSeconds / 3600).toFixed(1));
     var isActive = keyData ? (keyData.active && !keyData.is_expired) : (currentUser ? currentUser.is_premium : false);
-    var isHwidBound = keyData ? (keyData.hwid_bound || !!keyData.hwid) : false;
     var isOwner = currentUser && (currentUser.is_owner || currentUser.id === "1141849395902554202" || (currentUser.roles && currentUser.roles.some(function (r) { return /owner/i.test(r); })));
 
     document.getElementById("profUsername").textContent = username;
     document.getElementById("profTotalHours").textContent = totalHours + "h";
-    document.getElementById("profHwidStatus").textContent = isHwidBound ? "Bound & Verified" : "Not Bound";
 
     var avatarImg = document.getElementById("profAvatar");
     if (avatarImg) {
