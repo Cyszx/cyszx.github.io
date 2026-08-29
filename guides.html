@@ -14,6 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sour+Gummy:ital,wght@0,100..900;1,100..900&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" type="image/x-icon" href="assets/cyslogo.png" />
 
@@ -31,11 +32,88 @@
       font-size: clamp(2.4rem, 5vw, 3.6rem);
       margin-bottom: 0.8rem;
     }
-    .guides-hero p {
+    .guides-hero-subtitle {
       color: var(--text-2, #94a3b8);
       font-size: 1.05rem;
-      max-width: 680px;
-      margin: 0 auto 1.8rem;
+      max-width: 620px;
+      margin: 0 auto 1.6rem;
+      line-height: 1.6;
+    }
+
+    .hero-action-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.9rem;
+      margin: 0 auto 0.5rem;
+      flex-wrap: wrap;
+    }
+    .btn-hero-post {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.72rem 1.6rem;
+      background: linear-gradient(135deg, var(--prim, #29f0f0), #38bdf8);
+      color: #0b0f19;
+      border: none;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(41, 240, 240, 0.35);
+      transition: all 0.22s ease;
+      font-family: inherit;
+    }
+    .btn-hero-post:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 26px rgba(41, 240, 240, 0.5);
+      color: #000;
+    }
+    .btn-hero-browse {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.72rem 1.4rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      text-decoration: none;
+      font-family: inherit;
+    }
+    .btn-hero-browse:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-nav-new-guide {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.42rem 0.95rem;
+      background: rgba(41, 240, 240, 0.1);
+      border: 1px solid rgba(41, 240, 240, 0.35);
+      color: var(--prim, #29f0f0);
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .btn-nav-new-guide:hover {
+      background: var(--prim, #29f0f0);
+      color: #0b0f19;
+      box-shadow: 0 0 16px rgba(41, 240, 240, 0.4);
+    }
+    @media (max-width: 600px) {
+      .btn-nav-new-guide span { display: none; }
+      .btn-nav-new-guide { padding: 0.42rem 0.6rem; }
     }
 
     .staff-bulletin-banner {
@@ -342,8 +420,60 @@
     }
 
     /* =============================================
-       GUIDE READER MODAL
+       MODAL OVERLAY & READER / EDITOR
        ============================================= */
+    .modal-overlay {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 99999 !important;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: rgba(4, 7, 15, 0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-sizing: border-box;
+    }
+
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .modal-close:hover {
+      background: rgba(255, 94, 152, 0.18);
+      border-color: rgba(255, 94, 152, 0.45);
+      color: #ff5e98;
+      transform: rotate(90deg);
+    }
+
+    @keyframes modalPop {
+      from {
+        opacity: 0;
+        transform: scale(0.94) translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
     .guide-reader-box {
       background: #0f172a;
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -356,7 +486,133 @@
       overflow: hidden;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(41, 240, 240, 0.15);
       animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      z-index: 100000;
     }
+
+    /* Confirm Dialog Styles */
+    .confirm-dialog-box {
+      background: linear-gradient(165deg, rgba(18, 24, 40, 0.98) 0%, rgba(9, 13, 24, 0.99) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 1.25rem;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(245, 158, 11, 0.15);
+    }
+    .btn-confirm-opt {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.85rem 1.1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.6);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s ease;
+      width: 100%;
+      text-align: left;
+    }
+    .btn-confirm-opt:hover {
+      transform: translateY(-2px);
+    }
+    .btn-opt-save-private {
+      border-color: rgba(41, 240, 240, 0.35);
+      background: rgba(41, 240, 240, 0.08);
+    }
+    .btn-opt-save-private:hover {
+      background: rgba(41, 240, 240, 0.16);
+      box-shadow: 0 0 20px rgba(41, 240, 240, 0.2);
+    }
+    .btn-opt-save-private i {
+      font-size: 1.25rem;
+      color: var(--prim, #29f0f0);
+    }
+
+    .btn-opt-discard {
+      border-color: rgba(255, 94, 152, 0.25);
+      background: rgba(255, 94, 152, 0.06);
+    }
+    .btn-opt-discard:hover {
+      background: rgba(255, 94, 152, 0.14);
+      box-shadow: 0 0 20px rgba(255, 94, 152, 0.2);
+    }
+    .btn-opt-discard i {
+      font-size: 1.25rem;
+      color: #ff5e98;
+    }
+
+    .btn-opt-continue {
+      border-color: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .btn-opt-continue:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .btn-opt-continue i {
+      font-size: 1.25rem;
+      color: #94a3b8;
+    }
+
+    /* Audit Log Viewer Styles */
+    .log-item-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: border-color 0.2s;
+    }
+    .log-item-card:hover {
+      border-color: rgba(41, 240, 240, 0.25);
+    }
+    .log-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .log-item-user {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.9rem;
+    }
+    .log-item-badge {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .log-badge-owner {
+      background: rgba(255, 215, 0, 0.15);
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      color: #ffd700;
+    }
+    .log-badge-staff {
+      background: rgba(41, 240, 240, 0.15);
+      border: 1px solid rgba(41, 240, 240, 0.4);
+      color: var(--prim, #29f0f0);
+    }
+    .log-item-time {
+      font-size: 0.75rem;
+      color: var(--text-3, #64748b);
+    }
+    .log-item-changes {
+      font-size: 0.84rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      border-left: 3px solid var(--prim, #29f0f0);
+    }
+
     .guide-reader-header {
       padding: 1.25rem 1.75rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -371,6 +627,11 @@
       flex: 1;
     }
 
+    /* Utility Hidden Class */
+    .hidden {
+      display: none !important;
+    }
+
     /* Video Player Embed */
     .guide-video-container {
       position: relative;
@@ -381,6 +642,9 @@
       margin-bottom: 1.5rem;
       background: #000;
       border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .guide-video-container.hidden {
+      display: none !important;
     }
     .guide-video-container iframe,
     .guide-video-container video {
@@ -463,6 +727,60 @@
       margin: 1rem 0;
       color: #fef3c7;
     }
+    .guide-content-rendered .alert-note {
+      border-left: 3px solid #38bdf8;
+      background: rgba(56, 189, 248, 0.08);
+      padding: 0.75rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1rem 0;
+      color: #e0f2fe;
+    }
+    .guide-content-rendered a {
+      color: var(--prim, #29f0f0);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color 0.2s;
+    }
+    .guide-content-rendered a:hover {
+      color: #fff;
+    }
+    .guide-content-rendered img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      margin: 1rem 0;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    .guide-content-rendered table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.2rem 0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 0.9rem;
+    }
+    .guide-content-rendered th {
+      background: rgba(41, 240, 240, 0.1);
+      color: #fff;
+      padding: 0.65rem 0.9rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: left;
+      font-weight: 700;
+    }
+    .guide-content-rendered td {
+      padding: 0.6rem 0.9rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .guide-content-rendered tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .guide-content-rendered hr {
+      border: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin: 1.5rem 0;
+    }
 
     .guide-reader-footer {
       padding: 1rem 1.75rem;
@@ -483,12 +801,13 @@
     }
 
     /* =============================================
-       STAFF GUIDE EDITOR MODAL
+       STAFF GUIDE EDITOR MODAL & LIVE PREVIEW
        ============================================= */
     .editor-tabs {
       display: flex;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       margin-bottom: 1.2rem;
+      gap: 0.5rem;
     }
     .editor-tab {
       padding: 0.6rem 1.2rem;
@@ -501,10 +820,66 @@
       font-family: inherit;
       font-size: 0.88rem;
       transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .editor-tab:hover {
+      color: #fff;
     }
     .editor-tab.active {
       color: var(--prim, #29f0f0);
       border-bottom-color: var(--prim, #29f0f0);
+    }
+
+    /* Split View Container */
+    .editor-workspace {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .editor-workspace.split-active {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: stretch;
+    }
+    @media (max-width: 900px) {
+      .editor-workspace.split-active {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .editor-split-live-pane {
+      background: rgba(10, 16, 30, 0.6);
+      border: 1px solid rgba(41, 240, 240, 0.25);
+      border-radius: 12px;
+      padding: 1.25rem;
+      overflow-y: auto;
+      max-height: 620px;
+      box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Instant Markdown Live Bar in Write Tab */
+    .editor-inline-live-box {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.45);
+      padding: 1rem;
+      margin-top: 1rem;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .inline-live-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #fff;
     }
 
     .editor-toolbar {
@@ -586,7 +961,15 @@
         <a href="index.html#setup" class="nav-link"><i class="fas fa-cog"></i><span>Setup</span></a>
         <a href="https://discord.gg/cys" class="nav-link discord-link" target="_blank"><i class="fab fa-discord"></i><span>Discord</span></a>
       </div>
-      <div class="nav-auth-wrapper">
+      <div class="nav-auth-wrapper" style="display: flex; align-items: center; gap: 0.6rem;">
+        <button class="btn-quick-staff hidden" id="btnNavAuditLogs" onclick="viewAllGuideLogs()" style="border-radius: 999px; font-size: 0.8rem; padding: 0.4rem 0.8rem; border-color: rgba(41,240,240,0.35); color: var(--prim, #29f0f0);" title="View all staff edit logs">
+          <i class="fas fa-clipboard-list"></i>
+          <span>Edit Logs</span>
+        </button>
+        <button class="btn-nav-new-guide hidden" id="btnNavNewGuide" onclick="openGuideEditor()" title="Create and post a guide">
+          <i class="fas fa-plus-circle"></i>
+          <span>New Guide</span>
+        </button>
         <button class="nav-auth-btn" id="navAuthBtn" onclick="handleNavAuthClick()">
           <i class="fab fa-discord"></i>
           <span id="navAuthText">Login</span>
@@ -600,14 +983,24 @@
   <section class="guides-hero">
     <div class="staff-bulletin-banner">
       <i class="fas fa-shield-alt"></i>
-      <span><strong>Staff Bulletin:</strong> Official walkthroughs & video tutorials verified by Cys Staff.</span>
+      <span><strong>Staff Bulletin:</strong> Official walkthroughs &amp; video tutorials verified by Cys Staff.</span>
     </div>
     <h1>Staff <span class="accent">Guides &amp; Videos</span></h1>
-    <p>Browse step-by-step video tutorials, resolution calibrations, and macro strategies prepared by developers and staff.</p>
+    <p class="guides-hero-subtitle">Browse step-by-step tutorials about Cys Macros.</p>
+    <div class="hero-action-buttons">
+      <button class="btn-hero-post hidden" id="btnHeroNewGuide" onclick="openGuideEditor()">
+        <i class="fas fa-plus-circle"></i>
+        <span>New Guide Post</span>
+      </button>
+      <a href="#guidesControlsBar" class="btn-hero-browse">
+        <i class="fas fa-arrow-down"></i>
+        <span>Browse Guides</span>
+      </a>
+    </div>
   </section>
 
   <!-- Controls: Search, Filters, Staff New Guide Button -->
-  <div class="guides-controls-bar">
+  <div class="guides-controls-bar" id="guidesControlsBar">
     <div class="guides-search-row">
       <div class="guides-search-input-wrap">
         <i class="fas fa-search"></i>
@@ -665,6 +1058,7 @@
           <span>Read-only staff guide. Need help? Ask in our <a href="https://discord.gg/cys" target="_blank" style="color: var(--prim, #29f0f0); text-decoration: underline;">Discord Support</a>.</span>
         </div>
         <div class="guide-staff-actions hidden" id="readerStaffActions">
+          <button class="btn-quick-staff" id="btnReaderHistory" onclick="viewCurrentGuideLogs()" title="View edit audit history"><i class="fas fa-history"></i> History</button>
           <button class="btn-quick-staff" id="btnReaderEdit" onclick="editCurrentGuide()"><i class="fas fa-edit"></i> Edit</button>
           <button class="btn-quick-staff" id="btnReaderToggleVis" onclick="toggleCurrentGuideVisibility()"><i class="fas fa-eye"></i> Visibility</button>
           <button class="btn-quick-staff btn-quick-del" id="btnReaderDelete" onclick="deleteCurrentGuide()"><i class="fas fa-trash"></i> Delete</button>
@@ -674,100 +1068,115 @@
   </div>
 
   <!-- STAFF GUIDE EDITOR / CREATOR MODAL -->
-  <div class="modal-overlay" id="guideEditorModal" onclick="handleOverlayClick(event, 'guideEditorModal')">
-    <div class="guide-reader-box" style="max-width: 860px;" onclick="event.stopPropagation()">
+  <div class="modal-overlay" id="guideEditorModal" onclick="attemptCloseGuideEditor(event)">
+    <div class="guide-reader-box" id="editorDialogBox" style="max-width: 860px; transition: max-width 0.25s ease;" onclick="event.stopPropagation()">
       <div class="guide-reader-header">
         <div>
           <h2 id="editorModalHeading" style="font-size: 1.3rem; color: #fff; font-weight: 700;">Create Guide Post</h2>
-          <span style="font-size: 0.78rem; color: var(--text-3, #64748b);">Staff Authoring &bull; Preview live before publishing</span>
+          <span style="font-size: 0.78rem; color: var(--text-3, #64748b);">Staff Authoring</span>
         </div>
-        <button class="modal-close" onclick="closeModal('guideEditorModal')" aria-label="Close">
+        <button class="modal-close" onclick="attemptCloseGuideEditor()" aria-label="Close">
           <i class="fas fa-times"></i>
         </button>
       </div>
 
       <div class="guide-reader-body">
-        <!-- Tab navigation: Write vs Live Preview -->
+        <!-- Tab navigation: Write vs Split View vs Preview -->
         <div class="editor-tabs">
           <button class="editor-tab active" id="tabBtnWrite" onclick="switchEditorTab('write')"><i class="fas fa-pen"></i> Write</button>
-          <button class="editor-tab" id="tabBtnPreview" onclick="switchEditorTab('preview')"><i class="fas fa-eye"></i> 👁️ Live Preview</button>
+          <button class="editor-tab" id="tabBtnSplit" onclick="switchEditorTab('split')"><i class="fas fa-columns"></i> Split View</button>
+          <button class="editor-tab" id="tabBtnPreview" onclick="switchEditorTab('preview')"><i class="fas fa-eye"></i> Preview</button>
         </div>
 
-        <!-- Write Tab Content -->
-        <div id="editorWriteTab">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-            <div>
-              <label style="font-size: 0.8rem; font-weight: 700; color: #e2e8f0; display: block; margin-bottom: 0.35rem;">Guide Title <span style="color: #ff5e98;">*</span></label>
-              <input type="text" id="editorTitle" class="guides-search-input" style="border-radius: 8px; padding-left: 0.9rem;" placeholder="e.g. Anime Expeditions: Full Story & Auto-Craft Walkthrough" maxlength="150" required />
+        <!-- Write / Split Container -->
+        <div id="editorWorkspace" class="editor-workspace">
+          <div class="editor-write-pane" id="editorWritePane">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 700; color: #e2e8f0; display: block; margin-bottom: 0.35rem;">Guide Title <span style="color: #ff5e98;">*</span></label>
+                <input type="text" id="editorTitle" class="guides-search-input" style="border-radius: 8px; padding-left: 0.9rem;" placeholder="e.g. Anime Expeditions: Full Story & Auto-Craft Walkthrough" maxlength="150" required />
+              </div>
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 700; color: #e2e8f0; display: block; margin-bottom: 0.35rem;">Game / Category <span style="color: #ff5e98;">*</span></label>
+                <select id="editorGame" class="guides-search-input" style="border-radius: 8px; padding-left: 0.9rem;">
+                  <option value="Anime Expeditions">Anime Expeditions</option>
+                  <option value="Anime Last Stand">Anime Last Stand</option>
+                  <option value="Anime Vanguards">Anime Vanguards</option>
+                  <option value="Anime Origins">Anime Origins</option>
+                  <option value="All Star Tower Defense">All Star Tower Defense</option>
+                  <option value="Anime Guardians">Anime Guardians</option>
+                  <option value="Cys Task">Cys Task</option>
+                  <option value="Setup & Troubleshooting">Setup &amp; Troubleshooting</option>
+                  <option value="General">General</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label style="font-size: 0.8rem; font-weight: 700; color: #e2e8f0; display: block; margin-bottom: 0.35rem;">Game / Category <span style="color: #ff5e98;">*</span></label>
-              <select id="editorGame" class="guides-search-input" style="border-radius: 8px; padding-left: 0.9rem;">
-                <option value="Anime Expeditions">Anime Expeditions</option>
-                <option value="Anime Last Stand">Anime Last Stand</option>
-                <option value="Anime Vanguards">Anime Vanguards</option>
-                <option value="Anime Origins">Anime Origins</option>
-                <option value="All Star Tower Defense">All Star Tower Defense</option>
-                <option value="Anime Guardians">Anime Guardians</option>
-                <option value="Cys Task">Cys Task</option>
-                <option value="Setup & Troubleshooting">Setup &amp; Troubleshooting</option>
-                <option value="General">General</option>
-              </select>
+
+            <div style="margin-bottom: 1rem;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #e2e8f0; display: block; margin-bottom: 0.35rem;">Video URL (YouTube, Streamable, MP4) <span style="font-size: 0.72rem; color: var(--text-3); font-weight: 400;">Optional</span></label>
+              <input type="url" id="editorVideoUrl" class="guides-search-input" style="border-radius: 8px; padding-left: 0.9rem;" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." />
             </div>
-          </div>
 
-          <div style="margin-bottom: 1rem;">
-            <label style="font-size: 0.8rem; font-weight: 700; color: #e2e8f0; display: block; margin-bottom: 0.35rem;">Video URL (YouTube, Streamable, MP4) <span style="font-size: 0.72rem; color: var(--text-3); font-weight: 400;">Optional</span></label>
-            <input type="url" id="editorVideoUrl" class="guides-search-input" style="border-radius: 8px; padding-left: 0.9rem;" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." />
-          </div>
+            <div style="margin-bottom: 1rem;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #e2e8f0; display: block; margin-bottom: 0.35rem;">Summary Excerpt (Brief 1-2 sentence preview)</label>
+              <input type="text" id="editorSummary" class="guides-search-input" style="border-radius: 8px; padding-left: 0.9rem;" placeholder="Brief summary shown on guide feed cards..." maxlength="300" />
+            </div>
 
-          <div style="margin-bottom: 1rem;">
-            <label style="font-size: 0.8rem; font-weight: 700; color: #e2e8f0; display: block; margin-bottom: 0.35rem;">Summary Excerpt (Brief 1-2 sentence preview)</label>
-            <input type="text" id="editorSummary" class="guides-search-input" style="border-radius: 8px; padding-left: 0.9rem;" placeholder="Brief summary shown on guide feed cards..." maxlength="300" />
-          </div>
+            <!-- Markdown helper toolbar -->
+            <div class="editor-toolbar">
+              <button type="button" class="toolbar-btn" onclick="insertMd('**', '**')"><i class="fas fa-bold"></i> Bold</button>
+              <button type="button" class="toolbar-btn" onclick="insertMd('*', '*')"><i class="fas fa-italic"></i> Italic</button>
+              <button type="button" class="toolbar-btn" onclick="insertMd('## ', '')"><i class="fas fa-heading"></i> Heading</button>
+              <button type="button" class="toolbar-btn" onclick="insertMd('`', '`')"><i class="fas fa-code"></i> Code</button>
+              <button type="button" class="toolbar-btn" onclick="insertMd('\n```\n', '\n```\n')"><i class="fas fa-file-code"></i> Block</button>
+              <button type="button" class="toolbar-btn" onclick="insertMd('- ', '')"><i class="fas fa-list-ul"></i> List</button>
+              <button type="button" class="toolbar-btn" onclick="insertMd('> [!TIP]\n> ', '')"><i class="fas fa-lightbulb"></i> Tip</button>
+              <button type="button" class="toolbar-btn" onclick="insertMd('> [!WARNING]\n> ', '')"><i class="fas fa-exclamation-triangle"></i> Warn</button>
+              <button type="button" class="toolbar-btn" onclick="insertMd('> [!NOTE]\n> ', '')"><i class="fas fa-info-circle"></i> Note</button>
+            </div>
 
-          <!-- Markdown helper toolbar -->
-          <div class="editor-toolbar">
-            <button type="button" class="toolbar-btn" onclick="insertMd('**', '**')"><i class="fas fa-bold"></i> Bold</button>
-            <button type="button" class="toolbar-btn" onclick="insertMd('*', '*')"><i class="fas fa-italic"></i> Italic</button>
-            <button type="button" class="toolbar-btn" onclick="insertMd('## ', '')"><i class="fas fa-heading"></i> Heading</button>
-            <button type="button" class="toolbar-btn" onclick="insertMd('`', '`')"><i class="fas fa-code"></i> Code</button>
-            <button type="button" class="toolbar-btn" onclick="insertMd('\n```\n', '\n```\n')"><i class="fas fa-file-code"></i> Block</button>
-            <button type="button" class="toolbar-btn" onclick="insertMd('- ', '')"><i class="fas fa-list-ul"></i> List</button>
-            <button type="button" class="toolbar-btn" onclick="insertMd('> [!TIP]\n> ', '')"><i class="fas fa-lightbulb"></i> Tip</button>
-            <button type="button" class="toolbar-btn" onclick="insertMd('> [!WARNING]\n> ', '')"><i class="fas fa-exclamation-triangle"></i> Warn</button>
-          </div>
+            <div style="margin-bottom: 1.2rem;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #e2e8f0; display: block; margin-bottom: 0.35rem;">Guide Content (Markdown) <span style="color: #ff5e98;">*</span></label>
+              <textarea id="editorContent" class="guides-search-input" style="border-radius: 8px; min-height: 220px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; padding: 0.9rem;" placeholder="Write your guide using Markdown formatting, step-by-step instructions, and tips..."></textarea>
+            </div>
 
-          <div style="margin-bottom: 1.2rem;">
-            <label style="font-size: 0.8rem; font-weight: 700; color: #e2e8f0; display: block; margin-bottom: 0.35rem;">Guide Content (Markdown) <span style="color: #ff5e98;">*</span></label>
-            <textarea id="editorContent" class="guides-search-input" style="border-radius: 8px; min-height: 220px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; padding: 0.9rem;" placeholder="Write your guide using Markdown formatting, step-by-step instructions, and tips..."></textarea>
-          </div>
-
-          <!-- Visibility & Pinned Settings -->
-          <div class="visibility-toggle-group">
-            <div>
-              <span style="font-size: 0.8rem; font-weight: 700; color: #e2e8f0; display: block; margin-bottom: 0.4rem;">Post Visibility:</span>
-              <div style="display: flex; gap: 1.2rem;">
-                <label class="toggle-label">
-                  <input type="radio" name="guideVisibility" id="visPublic" value="1" checked />
-                  <span><i class="fas fa-globe" style="color: var(--prim, #29f0f0);"></i> Public (All Users)</span>
-                </label>
-                <label class="toggle-label">
-                  <input type="radio" name="guideVisibility" id="visPrivate" value="0" />
-                  <span><i class="fas fa-lock" style="color: #ff5e98;"></i> Private (Staff Only Draft)</span>
+            <!-- Visibility & Pinned Settings -->
+            <div class="visibility-toggle-group" style="margin-top: 1.2rem;">
+              <div>
+                <span style="font-size: 0.8rem; font-weight: 700; color: #e2e8f0; display: block; margin-bottom: 0.4rem;">Post Visibility:</span>
+                <div style="display: flex; gap: 1.2rem;">
+                  <label class="toggle-label">
+                    <input type="radio" name="guideVisibility" id="visPublic" value="1" checked />
+                    <span><i class="fas fa-globe" style="color: var(--prim, #29f0f0);"></i> Public (All Users)</span>
+                  </label>
+                  <label class="toggle-label">
+                    <input type="radio" name="guideVisibility" id="visPrivate" value="0" />
+                    <span><i class="fas fa-lock" style="color: #ff5e98;"></i> Private (Staff Only Draft)</span>
+                  </label>
+                </div>
+              </div>
+              <div style="margin-left: auto;">
+                <label class="toggle-label" style="margin-top: 1rem;">
+                  <input type="checkbox" id="editorPinned" />
+                  <span><i class="fas fa-thumbtack" style="color: #ffd700;"></i> Pin Guide to Top</span>
                 </label>
               </div>
             </div>
-            <div style="margin-left: auto;">
-              <label class="toggle-label" style="margin-top: 1rem;">
-                <input type="checkbox" id="editorPinned" />
-                <span><i class="fas fa-thumbtack" style="color: #ffd700;"></i> Pin Guide to Top</span>
-              </label>
+          </div>
+
+          <!-- Split View Live Preview Pane (Right side) -->
+          <div class="editor-split-live-pane hidden" id="editorSplitLivePane">
+            <div class="inline-live-header">
+              <span>Preview</span>
+              <span id="splitWordCount" style="font-size: 0.72rem; color: #94a3b8;">0 words</span>
             </div>
+            <div class="guide-badge-group" id="splitBadgeGroup" style="margin-bottom: 0.5rem;"></div>
+            <h3 id="splitTitle" style="font-size: 1.2rem; color: #fff; font-weight: 700; margin: 0 0 0.8rem 0;"></h3>
+            <div class="guide-content-rendered" id="splitRenderedContent"></div>
           </div>
         </div>
 
-        <!-- Live Preview Tab Content -->
+        <!-- Full Preview Tab Content -->
         <div id="editorPreviewTab" class="hidden">
           <div style="border: 1px dashed rgba(41, 240, 240, 0.3); border-radius: 12px; padding: 1.5rem; background: rgba(15, 23, 42, 0.4);">
             <div class="guide-badge-group" id="previewBadgeGroup" style="margin-bottom: 0.5rem;"></div>
@@ -779,11 +1188,79 @@
       </div>
 
       <div class="guide-reader-footer">
-        <button class="btn-quick-staff" onclick="closeModal('guideEditorModal')">Cancel</button>
+        <button class="btn-quick-staff" onclick="attemptCloseGuideEditor()">Cancel</button>
         <button class="btn-new-guide" id="btnSaveGuide" onclick="saveGuide()">
           <i class="fas fa-paper-plane"></i>
           <span id="btnSaveGuideText">Publish Guide</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UNSAVED CHANGES CONFIRMATION MODAL -->
+  <div class="modal-overlay" id="editorUnsavedConfirmModal" style="z-index: 100010 !important;" onclick="handleOverlayClick(event, 'editorUnsavedConfirmModal')">
+    <div class="guide-reader-box confirm-dialog-box" style="max-width: 480px; padding: 2rem; text-align: center;" onclick="event.stopPropagation()">
+      <div class="confirm-icon-wrap" style="width: 58px; height: 58px; border-radius: 50%; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 1.2rem;">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <h3 style="font-size: 1.35rem; color: #fff; font-weight: 700; margin-bottom: 0.5rem;">Unsaved Changes</h3>
+      <p style="font-size: 0.92rem; color: #94a3b8; line-height: 1.5; margin-bottom: 1.6rem;">
+        You have unsaved changes in this guide. Are you sure you want to exit? You can save it as a private draft or discard changes.
+      </p>
+      
+      <div class="confirm-options-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <!-- Option 1: Save & Keep Private -->
+        <button type="button" class="btn-confirm-opt btn-opt-save-private" onclick="saveAsPrivateDraftAndExit()">
+          <i class="fas fa-lock"></i>
+          <div>
+            <div style="font-weight: 700; color: #fff; font-size: 0.92rem;">Save &amp; Keep Private</div>
+            <div style="font-size: 0.76rem; color: #94a3b8;">Save as an unpublished staff-only draft</div>
+          </div>
+        </button>
+
+        <!-- Option 2: Discard and Exit -->
+        <button type="button" class="btn-confirm-opt btn-opt-discard" onclick="discardAndExitEditor()">
+          <i class="fas fa-trash-alt"></i>
+          <div>
+            <div style="font-weight: 700; color: #ff5e98; font-size: 0.92rem;">Discard &amp; Exit</div>
+            <div style="font-size: 0.76rem; color: #94a3b8;">Lose all unsaved changes and close editor</div>
+          </div>
+        </button>
+
+        <!-- Option 3: Keep Editing -->
+        <button type="button" class="btn-confirm-opt btn-opt-continue" onclick="closeModal('editorUnsavedConfirmModal')">
+          <i class="fas fa-arrow-left"></i>
+          <div>
+            <div style="font-weight: 700; color: #e2e8f0; font-size: 0.92rem;">Keep Editing</div>
+            <div style="font-size: 0.76rem; color: #94a3b8;">Return to your guide without losing text</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GUIDE AUDIT LOGS MODAL -->
+  <div class="modal-overlay" id="guideLogsModal" style="z-index: 100020 !important;" onclick="handleOverlayClick(event, 'guideLogsModal')">
+    <div class="guide-reader-box" style="max-width: 680px;" onclick="event.stopPropagation()">
+      <div class="guide-reader-header">
+        <div>
+          <h2 id="logsModalHeading" style="font-size: 1.25rem; color: #fff; font-weight: 700;">
+            <i class="fas fa-clipboard-list" style="color: var(--prim, #29f0f0); margin-right: 0.4rem;"></i>
+            Guide Edit History
+          </h2>
+          <span style="font-size: 0.78rem; color: var(--text-3, #64748b);">Recorded changelog of staff edits and modifications</span>
+        </div>
+        <button class="modal-close" onclick="closeModal('guideLogsModal')" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="guide-reader-body" style="max-height: 60vh; overflow-y: auto;">
+        <div id="guideLogsList" style="display: flex; flex-direction: column; gap: 0.85rem;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+      <div class="guide-reader-footer" style="justify-content: flex-end;">
+        <button class="btn-quick-staff" onclick="closeModal('guideLogsModal')">Close</button>
       </div>
     </div>
   </div>
@@ -851,24 +1328,45 @@
       }
     }
 
+    function isStaffMember(user) {
+      if (!user) return false;
+      return user.is_admin === true || user.is_staff === true || user.is_owner === true;
+    }
+
+    function canEditGuide(guide) {
+      if (!currentUser || !guide) return false;
+      const isOwnerOrAdmin = currentUser.is_admin === true || currentUser.is_owner === true;
+      const currentUserId = String(currentUser.id || currentUser.sub || "");
+      const isCreator = currentUserId && String(guide.author_id || "") === currentUserId;
+      return isOwnerOrAdmin || isCreator;
+    }
+
     function updateNavAuthUI() {
       const navBtn = document.getElementById("navAuthBtn");
       const navText = document.getElementById("navAuthText");
-      const btnOpenNew = document.getElementById("btnOpenNewGuide");
+      const isStaff = isStaffMember(currentUser);
 
       if (currentUser) {
         if (navText) navText.textContent = currentUser.username || "Staff";
         if (navBtn) navBtn.classList.add("logged-in");
-
-        const isStaff = currentUser.is_admin === true || currentUser.is_staff === true;
-        if (btnOpenNew) {
-          if (isStaff) btnOpenNew.classList.remove("hidden");
-          else btnOpenNew.classList.add("hidden");
-        }
       } else {
         if (navText) navText.textContent = "Login";
         if (navBtn) navBtn.classList.remove("logged-in");
-        if (btnOpenNew) btnOpenNew.classList.add("hidden");
+      }
+
+      // Hide or show "+ New Guide" buttons based on whether staff is logged in
+      const navNewGuide = document.getElementById("btnNavNewGuide");
+      const heroNewGuide = document.getElementById("btnHeroNewGuide");
+      const openNewGuide = document.getElementById("btnOpenNewGuide");
+
+      if (isStaff) {
+        if (navNewGuide) navNewGuide.classList.remove("hidden");
+        if (heroNewGuide) heroNewGuide.classList.remove("hidden");
+        if (openNewGuide) openNewGuide.classList.remove("hidden");
+      } else {
+        if (navNewGuide) navNewGuide.classList.add("hidden");
+        if (heroNewGuide) heroNewGuide.classList.add("hidden");
+        if (openNewGuide) openNewGuide.classList.add("hidden");
       }
     }
 
@@ -970,8 +1468,29 @@
         allGuides = [];
       }
 
-      filterAndRenderGuides();
-    }
+      // Merge local guides only if not already present on server
+      try {
+        let local = JSON.parse(localStorage.getItem("cys_local_guides") || "[]");
+        if (Array.isArray(local) && local.length > 0) {
+          const remoteIds = new Set(allGuides.map((g) => String(g.id)));
+          const remoteTitles = new Set(allGuides.map((g) => (g.title || "").trim().toLowerCase()));
+
+          // Filter out any local guides that match existing remote guides (by ID or title)
+          const uniqueLocal = local.filter((g) => {
+            if (remoteIds.has(String(g.id))) return false;
+            const normTitle = (g.title || "").trim().toLowerCase();
+            if (normTitle && remoteTitles.has(normTitle)) return false;
+            return true;
+          });
+
+          // Clean up local storage if duplicate copies were removed
+          if (uniqueLocal.length !== local.length) {
+            localStorage.setItem("cys_local_guides", JSON.stringify(uniqueLocal));
+          }
+
+          allGuides = [...uniqueLocal, ...allGuides];
+        }
+      } catch (e) {}
 
       filterAndRenderGuides();
     }
@@ -1044,18 +1563,19 @@
           : `assets/cyslogo.png`;
 
         let staffControlsHtml = "";
-        if (isStaff) {
+        const canEdit = canEditGuide(guide);
+        if (canEdit) {
           staffControlsHtml = `
             <div class="guide-staff-quick-actions" onclick="event.stopPropagation()">
-              <button class="btn-quick-staff" onclick="editGuideById(${guide.id})"><i class="fas fa-edit"></i> Edit</button>
-              <button class="btn-quick-staff" onclick="toggleVisibilityById(${guide.id})"><i class="fas ${isPrivate ? 'fa-eye' : 'fa-eye-slash'}"></i> ${isPrivate ? 'Make Public' : 'Make Private'}</button>
-              <button class="btn-quick-staff btn-quick-del" onclick="deleteGuideById(${guide.id})"><i class="fas fa-trash"></i></button>
+              <button class="btn-quick-staff" onclick="editGuideById('${guide.id}')"><i class="fas fa-edit"></i> Edit</button>
+              <button class="btn-quick-staff" onclick="toggleVisibilityById('${guide.id}')"><i class="fas ${isPrivate ? 'fa-eye' : 'fa-eye-slash'}"></i> ${isPrivate ? 'Make Public' : 'Make Private'}</button>
+              <button class="btn-quick-staff btn-quick-del" onclick="deleteGuideById('${guide.id}')"><i class="fas fa-trash"></i></button>
             </div>
           `;
         }
 
         return `
-          <div class="${cardClass}" onclick="openGuideReader(${guide.id})">
+          <div class="${cardClass}" onclick="openGuideReader('${guide.id}')">
             <div class="guide-card-header">
               <div class="guide-badge-group">
                 <span class="guide-game-pill">${escapeHtml(guide.game || 'General')}</span>
@@ -1088,7 +1608,7 @@
     // ==========================================
 
     function openGuideReader(guideId) {
-      const guide = allGuides.find((g) => g.id === guideId);
+      const guide = allGuides.find((g) => String(g.id) === String(guideId));
       if (!guide) return;
 
       currentViewingGuide = guide;
@@ -1106,9 +1626,13 @@
         ${isPrivate ? '<span class="guide-private-pill"><i class="fas fa-lock"></i> Private Draft</span>' : ''}
       `;
 
+      const lastEditedMeta = guide.last_edited_by_name 
+        ? ` &bull; <span style="color: var(--prim, #29f0f0);"><i class="fas fa-history"></i> Edited by <strong>${escapeHtml(guide.last_edited_by_name)}</strong></span>`
+        : "";
+
       document.getElementById("readerTitle").textContent = guide.title;
       document.getElementById("readerAuthorMeta").innerHTML = `
-        Authored by <strong>${escapeHtml(guide.author_name || 'Staff')}</strong> &bull; ${formatDate(guide.created_at)} &bull; ${(guide.views || 0).toLocaleString()} views
+        Authored by <strong>${escapeHtml(guide.author_name || 'Staff')}</strong> &bull; ${formatDate(guide.created_at)} &bull; ${(guide.views || 0).toLocaleString()} views${lastEditedMeta}
       `;
 
       // Video Embed
@@ -1117,12 +1641,15 @@
         const embedHtml = generateVideoEmbed(guide.video_url);
         if (embedHtml) {
           videoContainer.innerHTML = embedHtml;
+          videoContainer.style.display = "block";
           videoContainer.classList.remove("hidden");
         } else {
+          videoContainer.style.display = "none";
           videoContainer.classList.add("hidden");
           videoContainer.innerHTML = "";
         }
       } else {
+        videoContainer.style.display = "none";
         videoContainer.classList.add("hidden");
         videoContainer.innerHTML = "";
       }
@@ -1130,11 +1657,11 @@
       // Markdown Render
       document.getElementById("readerContent").innerHTML = renderMarkdown(guide.content);
 
-      // Staff actions in reader modal
-      const isStaff = currentUser && (currentUser.is_admin || currentUser.is_staff);
+      // Staff actions in reader modal - only creator or owner can edit/delete
+      const canEdit = canEditGuide(guide);
       const staffActions = document.getElementById("readerStaffActions");
       if (staffActions) {
-        if (isStaff) staffActions.classList.remove("hidden");
+        if (canEdit) staffActions.classList.remove("hidden");
         else staffActions.classList.add("hidden");
       }
 
@@ -1146,18 +1673,30 @@
 
     function editCurrentGuide() {
       if (!currentViewingGuide) return;
+      if (!canEditGuide(currentViewingGuide)) {
+        showToast("Access Denied: Only the creator of this post or the owner can edit it.", "error");
+        return;
+      }
       closeModal("guideReaderModal");
       openGuideEditor(currentViewingGuide.id);
     }
 
     async function toggleCurrentGuideVisibility() {
       if (!currentViewingGuide) return;
+      if (!canEditGuide(currentViewingGuide)) {
+        showToast("Access Denied: Only the creator or owner can change visibility.", "error");
+        return;
+      }
       await toggleVisibilityById(currentViewingGuide.id);
       openGuideReader(currentViewingGuide.id);
     }
 
     async function deleteCurrentGuide() {
       if (!currentViewingGuide) return;
+      if (!canEditGuide(currentViewingGuide)) {
+        showToast("Access Denied: Only the creator or owner can delete this guide.", "error");
+        return;
+      }
       if (await deleteGuideById(currentViewingGuide.id)) {
         closeModal("guideReaderModal");
       }
@@ -1168,6 +1707,11 @@
     // ==========================================
 
     function openGuideEditor(guideId = null) {
+      if (!isStaffMember(currentUser)) {
+        showToast("Staff login required to post or edit guides.", "error");
+        return;
+      }
+
       editingGuideId = guideId;
       const heading = document.getElementById("editorModalHeading");
       const btnSaveText = document.getElementById("btnSaveGuideText");
@@ -1176,8 +1720,12 @@
       switchEditorTab("write");
 
       if (guideId) {
-        const guide = allGuides.find((g) => g.id === guideId);
+        const guide = allGuides.find((g) => String(g.id) === String(guideId));
         if (!guide) return;
+        if (!canEditGuide(guide)) {
+          showToast("Access Denied: Only the creator of this post or the owner can edit it.", "error");
+          return;
+        }
 
         if (heading) heading.textContent = "Edit Guide Post";
         if (btnSaveText) btnSaveText.textContent = "Save Changes";
@@ -1207,65 +1755,166 @@
         document.getElementById("visPublic").checked = true;
       }
 
+      // Attach instant real-time input listeners
+      const contentEl = document.getElementById("editorContent");
+      if (contentEl && !contentEl.dataset.hasLiveListener) {
+        contentEl.dataset.hasLiveListener = "true";
+        contentEl.addEventListener("input", updateLivePreview);
+        contentEl.addEventListener("keyup", updateLivePreview);
+        document.getElementById("editorTitle")?.addEventListener("input", updateLivePreview);
+        document.getElementById("editorGame")?.addEventListener("change", updateLivePreview);
+        document.getElementById("editorVideoUrl")?.addEventListener("input", updateLivePreview);
+        document.getElementById("editorPinned")?.addEventListener("change", updateLivePreview);
+        document.getElementById("visPublic")?.addEventListener("change", updateLivePreview);
+        document.getElementById("visPrivate")?.addEventListener("change", updateLivePreview);
+      }
+
       openModal("guideEditorModal");
+      updateLivePreview();
+    }
+
+    function filterByPillar(pillar) {
+      const searchInput = document.getElementById("guideSearchInput");
+      if (pillar === 'video') {
+        if (searchInput) {
+          searchInput.value = "video";
+          currentSearch = "video";
+        }
+        currentCategory = "all";
+        document.querySelectorAll(".guide-chip").forEach(c => {
+          c.classList.toggle("active", c.getAttribute("data-category") === "all");
+        });
+        filterAndRenderGuides();
+      } else if (pillar === 'calibration') {
+        if (searchInput) { searchInput.value = ""; currentSearch = ""; }
+        const chip = document.querySelector('.guide-chip[data-category="Setup & Troubleshooting"]');
+        if (chip) chip.click();
+      } else if (pillar === 'macro') {
+        if (searchInput) { searchInput.value = ""; currentSearch = ""; }
+        const chip = document.querySelector('.guide-chip[data-category="all"]');
+        if (chip) chip.click();
+      }
     }
 
     function editGuideById(id) {
+      const guide = allGuides.find((g) => String(g.id) === String(id));
+      if (!guide) return;
+      if (!canEditGuide(guide)) {
+        showToast("Access Denied: Only the creator of this post or the owner can edit it.", "error");
+        return;
+      }
       openGuideEditor(id);
     }
 
     function switchEditorTab(tab) {
-      const tabWrite = document.getElementById("editorWriteTab");
       const tabPreview = document.getElementById("editorPreviewTab");
+      const workspace = document.getElementById("editorWorkspace");
+      const splitPane = document.getElementById("editorSplitLivePane");
+      const dialogBox = document.getElementById("editorDialogBox");
       const btnWrite = document.getElementById("tabBtnWrite");
+      const btnSplit = document.getElementById("tabBtnSplit");
       const btnPreview = document.getElementById("tabBtnPreview");
 
-      if (tab === "preview") {
-        btnWrite.classList.remove("active");
+      btnWrite.classList.remove("active");
+      if (btnSplit) btnSplit.classList.remove("active");
+      btnPreview.classList.remove("active");
+
+      if (tab === "split") {
+        if (btnSplit) btnSplit.classList.add("active");
+        if (workspace) {
+          workspace.classList.add("split-active");
+          workspace.classList.remove("hidden");
+        }
+        if (splitPane) splitPane.classList.remove("hidden");
+        if (dialogBox) dialogBox.style.maxWidth = "1120px";
+        if (tabPreview) tabPreview.classList.add("hidden");
+        updateLivePreview();
+      } else if (tab === "preview") {
         btnPreview.classList.add("active");
-        tabWrite.classList.add("hidden");
-        tabPreview.classList.remove("hidden");
+        if (workspace) {
+          workspace.classList.remove("split-active");
+          workspace.classList.add("hidden");
+        }
+        if (splitPane) splitPane.classList.add("hidden");
+        if (dialogBox) dialogBox.style.maxWidth = "860px";
+        if (tabPreview) tabPreview.classList.remove("hidden");
         updateLivePreview();
       } else {
-        btnPreview.classList.remove("active");
+        // write tab
         btnWrite.classList.add("active");
-        tabPreview.classList.add("hidden");
-        tabWrite.classList.remove("hidden");
+        if (workspace) {
+          workspace.classList.remove("split-active");
+          workspace.classList.remove("hidden");
+        }
+        if (splitPane) splitPane.classList.add("hidden");
+        if (dialogBox) dialogBox.style.maxWidth = "860px";
+        if (tabPreview) tabPreview.classList.add("hidden");
+        updateLivePreview();
       }
     }
 
     function updateLivePreview() {
-      const title = document.getElementById("editorTitle").value.trim() || "Untitled Guide Preview";
-      const game = document.getElementById("editorGame").value || "General";
-      const videoUrl = document.getElementById("editorVideoUrl").value.trim();
-      const content = document.getElementById("editorContent").value.trim() || "*No guide content written yet.*";
+      const title = document.getElementById("editorTitle")?.value.trim() || "Untitled Guide Preview";
+      const game = document.getElementById("editorGame")?.value || "General";
+      const videoUrl = document.getElementById("editorVideoUrl")?.value.trim() || "";
+      const content = document.getElementById("editorContent")?.value || "";
       const isPublic = document.querySelector('input[name="guideVisibility"]:checked')?.value === "1";
-      const isPinned = document.getElementById("editorPinned").checked;
+      const isPinned = document.getElementById("editorPinned")?.checked || false;
 
-      document.getElementById("previewTitle").textContent = title;
-      document.getElementById("previewBadgeGroup").innerHTML = `
-        <span class="guide-game-pill">${escapeHtml(game)}</span>
-        ${isPinned ? '<span class="guide-pinned-pill"><i class="fas fa-thumbtack"></i> Pinned</span>' : ''}
-        ${videoUrl ? '<span class="guide-video-pill"><i class="fas fa-play-circle"></i> Video</span>' : ''}
-        ${!isPublic ? '<span class="guide-private-pill"><i class="fas fa-lock"></i> Private Draft</span>' : ''}
-      `;
+      const renderedHtml = renderMarkdown(content || "*No guide content written yet. Use markdown formatting above.*");
 
+      // Update Full Preview Tab
+      const previewTitle = document.getElementById("previewTitle");
+      if (previewTitle) previewTitle.textContent = title;
+      const previewBadgeGroup = document.getElementById("previewBadgeGroup");
+      if (previewBadgeGroup) {
+        previewBadgeGroup.innerHTML = `
+          <span class="guide-game-pill">${escapeHtml(game)}</span>
+          ${isPinned ? '<span class="guide-pinned-pill"><i class="fas fa-thumbtack"></i> Pinned</span>' : ''}
+          ${videoUrl ? '<span class="guide-video-pill"><i class="fas fa-play-circle"></i> Video</span>' : ''}
+          ${!isPublic ? '<span class="guide-private-pill"><i class="fas fa-lock"></i> Private Draft</span>' : ''}
+        `;
+      }
       const videoContainer = document.getElementById("previewVideoContainer");
-      if (videoUrl) {
-        const embedHtml = generateVideoEmbed(videoUrl);
-        if (embedHtml) {
-          videoContainer.innerHTML = embedHtml;
-          videoContainer.classList.remove("hidden");
+      if (videoContainer) {
+        if (videoUrl && videoUrl.trim()) {
+          const embedHtml = generateVideoEmbed(videoUrl);
+          if (embedHtml) {
+            videoContainer.innerHTML = embedHtml;
+            videoContainer.style.display = "block";
+            videoContainer.classList.remove("hidden");
+          } else {
+            videoContainer.style.display = "none";
+            videoContainer.classList.add("hidden");
+            videoContainer.innerHTML = "";
+          }
         } else {
+          videoContainer.style.display = "none";
           videoContainer.classList.add("hidden");
           videoContainer.innerHTML = "";
         }
-      } else {
-        videoContainer.classList.add("hidden");
-        videoContainer.innerHTML = "";
       }
+      const previewRendered = document.getElementById("previewRenderedContent");
+      if (previewRendered) previewRendered.innerHTML = renderedHtml;
 
-      document.getElementById("previewRenderedContent").innerHTML = renderMarkdown(content);
+      // Update Split View Pane
+      const splitTitle = document.getElementById("splitTitle");
+      if (splitTitle) splitTitle.textContent = title;
+      const splitBadgeGroup = document.getElementById("splitBadgeGroup");
+      if (splitBadgeGroup) {
+        splitBadgeGroup.innerHTML = `
+          <span class="guide-game-pill">${escapeHtml(game)}</span>
+          ${videoUrl ? '<span class="guide-video-pill"><i class="fas fa-play-circle"></i> Video</span>' : ''}
+        `;
+      }
+      const splitRendered = document.getElementById("splitRenderedContent");
+      if (splitRendered) splitRendered.innerHTML = renderedHtml;
+
+      const splitWordCount = document.getElementById("splitWordCount");
+      if (splitWordCount) {
+        const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+        splitWordCount.textContent = `${words} words`;
+      }
     }
 
     function insertMd(prefix, suffix) {
@@ -1280,6 +1929,9 @@
       textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
       textarea.focus();
       textarea.setSelectionRange(start + prefix.length, start + prefix.length + (selected.length || 4));
+
+      // Instantly update live preview!
+      updateLivePreview();
     }
 
     async function saveGuide() {
@@ -1319,6 +1971,7 @@
       const btnSave = document.getElementById("btnSaveGuide");
       btnSave.disabled = true;
 
+      let apiSaved = false;
       try {
         const url = editingGuideId ? `${API_BASE}/api/guides/${editingGuideId}` : `${API_BASE}/api/guides`;
         const method = editingGuideId ? "PUT" : "POST";
@@ -1329,42 +1982,98 @@
           body: JSON.stringify(payload)
         });
 
-        const data = await res.json();
-        if (data.error) {
-          showToast(data.error, "error");
-          btnSave.disabled = false;
-          return;
-        }
-
-        showToast(editingGuideId ? "Guide updated successfully!" : "Guide published!", "success");
-        closeModal("guideEditorModal");
-        fetchGuides();
-      } catch (err) {
-        // Fallback local update if offline
-        if (editingGuideId) {
-          const idx = allGuides.findIndex((g) => g.id === editingGuideId);
-          if (idx !== -1) {
-            allGuides[idx] = { ...allGuides[idx], ...payload };
+        if (res.ok) {
+          const data = await res.json();
+          if (!data.error) {
+            apiSaved = true;
           }
+        }
+      } catch (err) {
+        console.warn("API request unavailable, persisting locally:", err);
+      }
+
+      // Save locally only as an offline fallback if API request didn't succeed
+      if (!apiSaved) {
+        saveGuideToLocalStorage(payload, editingGuideId);
+      } else if (editingGuideId && String(editingGuideId).startsWith("local_")) {
+        // If it was a local draft that was just published to the cloud server, remove local copy
+        try {
+          let local = JSON.parse(localStorage.getItem("cys_local_guides") || "[]");
+          local = local.filter((g) => String(g.id) !== String(editingGuideId));
+          localStorage.setItem("cys_local_guides", JSON.stringify(local));
+        } catch (e) {}
+      }
+
+      showToast(editingGuideId ? "Guide updated successfully!" : "Guide published successfully!", "success");
+      closeModal("guideEditorModal");
+      await fetchGuides();
+
+      // Scroll smoothly to the guides feed so the user sees their post immediately!
+      setTimeout(() => {
+        const target = document.getElementById("guidesControlsBar") || document.getElementById("guidesGrid");
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 150);
+
+      btnSave.disabled = false;
+    }
+
+    function saveGuideToLocalStorage(guideData, guideId = null) {
+      try {
+        let local = JSON.parse(localStorage.getItem("cys_local_guides") || "[]");
+        if (!Array.isArray(local)) local = [];
+
+        if (guideId) {
+          const idx = local.findIndex((g) => String(g.id) === String(guideId));
+          if (idx !== -1) {
+            local[idx] = { ...local[idx], ...guideData, last_edited_by_name: currentUser?.username || "You", updated_at: new Date().toISOString() };
+          } else {
+            const inAll = allGuides.find((g) => String(g.id) === String(guideId));
+            if (inAll) {
+              local.unshift({ ...inAll, ...guideData, last_edited_by_name: currentUser?.username || "You", updated_at: new Date().toISOString() });
+            }
+          }
+          // Log local edit for history viewer
+          try {
+            let localLogs = JSON.parse(localStorage.getItem("cys_guide_edit_logs") || "[]");
+            if (!Array.isArray(localLogs)) localLogs = [];
+            localLogs.unshift({
+              id: "log_" + Date.now(),
+              guide_id: guideId,
+              guide_title: guideData.title,
+              editor_name: currentUser?.username || "You",
+              is_owner: (currentUser?.is_admin || currentUser?.is_owner) ? 1 : 0,
+              changes_summary: "Updated guide details and markdown content",
+              created_at: new Date().toISOString()
+            });
+            localStorage.setItem("cys_guide_edit_logs", JSON.stringify(localLogs.slice(0, 100)));
+          } catch (e) {}
         } else {
-          allGuides.unshift({
-            id: Date.now(),
-            author_name: currentUser?.username || "Staff",
+          const newGuide = {
+            id: "local_" + Date.now(),
+            author_id: currentUser?.id || "staff",
+            author_name: currentUser?.username || "Cys Staff",
             author_avatar: currentUser?.avatar || null,
             views: 1,
             created_at: new Date().toISOString(),
-            ...payload
-          });
+            ...guideData
+          };
+          local.unshift(newGuide);
         }
-        showToast("Saved guide locally!", "success");
-        closeModal("guideEditorModal");
-        filterAndRenderGuides();
-      } finally {
-        btnSave.disabled = false;
+        localStorage.setItem("cys_local_guides", JSON.stringify(local));
+      } catch (err) {
+        console.error("Failed to save guide locally:", err);
       }
     }
 
     async function toggleVisibilityById(guideId) {
+      const guide = allGuides.find((item) => String(item.id) === String(guideId));
+      if (guide && !canEditGuide(guide)) {
+        showToast("Access Denied: Only the creator of this post or the owner can change visibility.", "error");
+        return;
+      }
+
       const token = localStorage.getItem("ch_token");
       try {
         const res = await fetch(`${API_BASE}/api/guides/${guideId}/toggle-visibility`, {
@@ -1379,7 +2088,7 @@
         showToast(data.message, "success");
         fetchGuides();
       } catch (e) {
-        const g = allGuides.find((item) => item.id === guideId);
+        const g = allGuides.find((item) => String(item.id) === String(guideId));
         if (g) {
           g.is_public = g.is_public === 1 ? 0 : 1;
           showToast(g.is_public === 1 ? "Guide is now Public" : "Guide is now Private Draft", "success");
@@ -1389,29 +2098,36 @@
     }
 
     async function deleteGuideById(guideId) {
+      const guide = allGuides.find((item) => String(item.id) === String(guideId));
+      if (guide && !canEditGuide(guide)) {
+        showToast("Access Denied: Only the creator of this post or the owner can delete it.", "error");
+        return false;
+      }
+
       if (!confirm("Are you sure you want to delete this guide? This cannot be undone.")) {
         return false;
       }
       const token = localStorage.getItem("ch_token");
       try {
-        const res = await fetch(`${API_BASE}/api/guides/${guideId}`, {
+        await fetch(`${API_BASE}/api/guides/${guideId}`, {
           method: "DELETE",
           headers: token ? { Authorization: "Bearer " + token } : {}
         });
-        const data = await res.json();
-        if (data.error) {
-          showToast(data.error, "error");
-          return false;
+      } catch (e) {}
+
+      // Also remove from local storage
+      try {
+        let local = JSON.parse(localStorage.getItem("cys_local_guides") || "[]");
+        if (Array.isArray(local)) {
+          local = local.filter((g) => String(g.id) !== String(guideId));
+          localStorage.setItem("cys_local_guides", JSON.stringify(local));
         }
-        showToast("Guide deleted", "success");
-        fetchGuides();
-        return true;
-      } catch (e) {
-        allGuides = allGuides.filter((g) => g.id !== guideId);
-        showToast("Guide deleted", "success");
-        filterAndRenderGuides();
-        return true;
-      }
+      } catch (e) {}
+
+      allGuides = allGuides.filter((g) => String(g.id) !== String(guideId));
+      showToast("Guide deleted", "success");
+      filterAndRenderGuides();
+      return true;
     }
 
     // ==========================================
@@ -1444,12 +2160,45 @@
 
     function renderMarkdown(md) {
       if (!md) return "";
-      let html = escapeHtml(md);
 
-      // Alert blocks
-      html = html.replace(/&gt; \[!TIP\]\n&gt; (.*?)(?:\n|$)/gi, '<div class="alert-tip"><i class="fas fa-lightbulb"></i> <strong>Tip:</strong> $1</div>');
-      html = html.replace(/&gt; \[!WARNING\]\n&gt; (.*?)(?:\n|$)/gi, '<div class="alert-warn"><i class="fas fa-exclamation-triangle"></i> <strong>Warning:</strong> $1</div>');
-      html = html.replace(/&gt; (.*?)(?:\n|$)/g, '<blockquote>$1</blockquote>');
+      // Convert custom GitHub alert callouts first
+      let processed = md
+        .replace(/^> \[!TIP\]\s*\n((?:> .*(?:\n|$))+)/gim, (m, body) => {
+          const cleanBody = body.replace(/^> /gm, '');
+          return `<div class="alert-tip"><i class="fas fa-lightbulb"></i> <strong>Tip:</strong> ${cleanBody}</div>\n\n`;
+        })
+        .replace(/^> \[!WARNING\]\s*\n((?:> .*(?:\n|$))+)/gim, (m, body) => {
+          const cleanBody = body.replace(/^> /gm, '');
+          return `<div class="alert-warn"><i class="fas fa-exclamation-triangle"></i> <strong>Warning:</strong> ${cleanBody}</div>\n\n`;
+        })
+        .replace(/^> \[!NOTE\]\s*\n((?:> .*(?:\n|$))+)/gim, (m, body) => {
+          const cleanBody = body.replace(/^> /gm, '');
+          return `<div class="alert-note"><i class="fas fa-info-circle"></i> <strong>Note:</strong> ${cleanBody}</div>\n\n`;
+        })
+        .replace(/^> \[!TIP\] (.*$)/gim, '<div class="alert-tip"><i class="fas fa-lightbulb"></i> <strong>Tip:</strong> $1</div>')
+        .replace(/^> \[!WARNING\] (.*$)/gim, '<div class="alert-warn"><i class="fas fa-exclamation-triangle"></i> <strong>Warning:</strong> $1</div>')
+        .replace(/^> \[!NOTE\] (.*$)/gim, '<div class="alert-note"><i class="fas fa-info-circle"></i> <strong>Note:</strong> $1</div>');
+
+      // Use marked library if available for complete GitHub-Flavored Markdown support
+      if (typeof marked !== "undefined" && marked.parse) {
+        try {
+          marked.setOptions({
+            gfm: true,
+            breaks: true
+          });
+          return marked.parse(processed);
+        } catch (e) {
+          console.warn("marked parse error, using fallback:", e);
+        }
+      }
+
+      // Comprehensive Built-in Fallback Parser (Links, Images, Headings, Lists, Quotes, Code)
+      let html = escapeHtml(processed);
+
+      // Restore alert callout HTML tags
+      html = html
+        .replace(/&lt;div class=&quot;alert-(tip|warn|note)&quot;&gt;&lt;i class=&quot;fas fa-(lightbulb|exclamation-triangle|info-circle)&quot;&gt;&lt;\/i&gt; &lt;strong&gt;(.*?):&lt;\/strong&gt; (.*?)&lt;\/div&gt;/gi, 
+          '<div class="alert-$1"><i class="fas fa-$2"></i> <strong>$3:</strong> $4</div>');
 
       // Code blocks
       html = html.replace(/```([a-zA-Z0-9]*)\n([\s\S]*?)```/g, (match, lang, code) => {
@@ -1459,14 +2208,21 @@
       // Inline code
       html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
 
+      // Images ![alt](url)
+      html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%; border-radius:8px;" />');
+
+      // Links [text](url)
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:var(--prim,#29f0f0); text-decoration:underline;">$1</a>');
+
       // Headings
       html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
       html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
       html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
 
-      // Bold & Italic
+      // Bold & Italic & Strikethrough
       html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
       html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      html = html.replace(/~~([^~]+)~~/g, '<del>$1</del>');
 
       // Task lists & bullets
       html = html.replace(/^- \[x\] (.*$)/gim, '<li><i class="fas fa-check-circle" style="color:#10b981;"></i> $1</li>');
@@ -1476,10 +2232,11 @@
       // Paragraphs
       html = html.split('\n\n').map(p => {
         p = p.trim();
-        if (p.startsWith('<h') || p.startsWith('<pre') || p.startsWith('<div') || p.startsWith('<blockquote>') || p.startsWith('<li>')) {
+        if (!p) return '';
+        if (p.startsWith('<h') || p.startsWith('<pre') || p.startsWith('<div') || p.startsWith('<blockquote>') || p.startsWith('<li>') || p.startsWith('<table')) {
           return p;
         }
-        return p ? `<p>${p.replace(/\n/g, '<br/>')}</p>` : '';
+        return `<p>${p.replace(/\n/g, '<br/>')}</p>`;
       }).join('\n');
 
       return html;
@@ -1507,23 +2264,217 @@
 
     function openModal(id) {
       const modal = document.getElementById(id);
-      if (modal) modal.style.display = "flex";
-      document.body.style.overflow = "hidden";
+      if (modal) {
+        modal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+      }
     }
 
     function closeModal(id) {
       const modal = document.getElementById(id);
-      if (modal) modal.style.display = "none";
-      document.body.style.overflow = "";
+      if (modal) {
+        modal.style.display = "none";
+      }
+      const openOverlays = document.querySelectorAll(".modal-overlay[style*='display: flex']");
+      if (openOverlays.length === 0) {
+        document.body.style.overflow = "";
+      }
       if (id === "guideReaderModal") {
         const video = document.getElementById("readerVideoContainer");
         if (video) video.innerHTML = "";
       }
     }
 
+    let modalMouseDownTarget = null;
+    document.addEventListener("mousedown", (e) => {
+      modalMouseDownTarget = e.target;
+    }, true);
+
     function handleOverlayClick(e, id) {
+      if (modalMouseDownTarget !== e.target) return;
       if (e.target.id === id) closeModal(id);
     }
+
+    function hasUnsavedEditorContent() {
+      const title = document.getElementById("editorTitle")?.value.trim() || "";
+      const content = document.getElementById("editorContent")?.value.trim() || "";
+      const videoUrl = document.getElementById("editorVideoUrl")?.value.trim() || "";
+      const summary = document.getElementById("editorSummary")?.value.trim() || "";
+
+      if (editingGuideId) {
+        const original = allGuides.find((g) => String(g.id) === String(editingGuideId));
+        if (original) {
+          return (
+            title !== (original.title || "") ||
+            content !== (original.content || "") ||
+            videoUrl !== (original.video_url || "") ||
+            summary !== (original.summary || "")
+          );
+        }
+      }
+
+      return title.length > 0 || content.length > 0 || videoUrl.length > 0 || summary.length > 0;
+    }
+
+    function attemptCloseGuideEditor(event = null) {
+      if (event) {
+        // Prevent accidental close if click started inside the modal (e.g. text selection drag)
+        if (modalMouseDownTarget !== event.target) {
+          return;
+        }
+        if (event.target && event.target.id !== "guideEditorModal") {
+          return;
+        }
+      }
+
+      if (hasUnsavedEditorContent()) {
+        openModal("editorUnsavedConfirmModal");
+      } else {
+        forceCloseGuideEditor();
+      }
+    }
+
+    function forceCloseGuideEditor() {
+      closeModal("editorUnsavedConfirmModal");
+      closeModal("guideEditorModal");
+    }
+
+    function discardAndExitEditor() {
+      document.getElementById("editorTitle").value = "";
+      document.getElementById("editorContent").value = "";
+      document.getElementById("editorVideoUrl").value = "";
+      document.getElementById("editorSummary").value = "";
+      forceCloseGuideEditor();
+      showToast("Draft discarded", "info");
+    }
+
+    async function saveAsPrivateDraftAndExit() {
+      const titleInput = document.getElementById("editorTitle");
+      if (titleInput && !titleInput.value.trim()) {
+        titleInput.value = "Untitled Private Draft";
+      }
+      const visPrivate = document.getElementById("visPrivate");
+      if (visPrivate) visPrivate.checked = true;
+
+      closeModal("editorUnsavedConfirmModal");
+      await saveGuide();
+      showToast("Saved as private draft!", "success");
+    }
+
+    async function viewCurrentGuideLogs() {
+      if (!currentViewingGuide) return;
+      const heading = document.getElementById("logsModalHeading");
+      if (heading) {
+        heading.innerHTML = `<i class="fas fa-history" style="color: var(--prim, #29f0f0); margin-right: 0.4rem;"></i> Edit History: "${escapeHtml(currentViewingGuide.title)}"`;
+      }
+      openModal("guideLogsModal");
+      await fetchAndDisplayLogs(currentViewingGuide.id);
+    }
+
+    async function viewAllGuideLogs() {
+      if (!isStaffMember(currentUser)) {
+        showToast("Staff login required to view audit logs.", "error");
+        return;
+      }
+      const heading = document.getElementById("logsModalHeading");
+      if (heading) {
+        heading.innerHTML = `<i class="fas fa-clipboard-list" style="color: var(--prim, #29f0f0); margin-right: 0.4rem;"></i> All Staff Edit &amp; Audit Logs`;
+      }
+      openModal("guideLogsModal");
+      await fetchAndDisplayLogs();
+    }
+
+    async function fetchAndDisplayLogs(guideId = null) {
+      const container = document.getElementById("guideLogsList");
+      if (!container) return;
+      container.innerHTML = `<div style="text-align: center; padding: 2rem; color: #94a3b8;"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: var(--prim, #29f0f0);"></i><div style="margin-top: 0.5rem;">Loading audit logs...</div></div>`;
+
+      let serverLogs = [];
+      const token = localStorage.getItem("ch_token");
+      try {
+        const url = guideId ? `${API_BASE}/api/guides/${guideId}/logs` : `${API_BASE}/api/guides/logs`;
+        const res = await fetch(url, {
+          headers: token ? { Authorization: "Bearer " + token } : {}
+        });
+        if (res.ok) {
+          const data = await res.json();
+          serverLogs = data.logs || [];
+        }
+      } catch (e) {
+        console.warn("Could not fetch remote audit logs, using local logs:", e);
+      }
+
+      // Merge local logs
+      let localLogs = [];
+      try {
+        localLogs = JSON.parse(localStorage.getItem("cys_guide_edit_logs") || "[]");
+        if (!Array.isArray(localLogs)) localLogs = [];
+        if (guideId) {
+          localLogs = localLogs.filter((l) => String(l.guide_id) === String(guideId));
+        }
+      } catch (e) {}
+
+      const allLogs = [...serverLogs, ...localLogs].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+      if (allLogs.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 3rem 1rem; color: var(--text-2, #94a3b8);">
+            <i class="fas fa-clipboard-check" style="font-size: 2.2rem; color: #64748b; margin-bottom: 0.8rem; display: block;"></i>
+            <div style="font-weight: 700; color: #fff; font-size: 1.05rem;">No edit logs recorded yet</div>
+            <div style="font-size: 0.82rem; margin-top: 0.35rem; color: #94a3b8;">Revisions, edits, and status changes will automatically appear here.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = allLogs.map((log) => {
+        const isOwner = log.is_owner === 1 || log.is_owner === true;
+        const timeStr = formatDate(log.created_at) + " (" + new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ")";
+        return `
+          <div class="log-item-card">
+            <div class="log-item-header">
+              <div class="log-item-user">
+                <i class="fas fa-user-circle" style="color: var(--prim, #29f0f0); font-size: 1.1rem;"></i>
+                <span>${escapeHtml(log.editor_name || 'Staff')}</span>
+                <span class="log-item-badge ${isOwner ? 'log-badge-owner' : 'log-badge-staff'}">
+                  ${isOwner ? '<i class="fas fa-crown"></i> Owner' : '<i class="fas fa-shield-alt"></i> Staff'}
+                </span>
+              </div>
+              <div class="log-item-time"><i class="far fa-clock"></i> ${timeStr}</div>
+            </div>
+            ${log.guide_title ? `<div style="font-size: 0.85rem; font-weight: 600; color: #e2e8f0;"><span style="color: #94a3b8;">Guide:</span> "${escapeHtml(log.guide_title)}"</div>` : ''}
+            <div class="log-item-changes">
+              <i class="fas fa-pencil-alt" style="color: var(--prim, #29f0f0); margin-right: 0.35rem;"></i>
+              <strong>Changes:</strong> ${escapeHtml(log.changes_summary || 'Updated guide post')}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        const logsModal = document.getElementById("guideLogsModal");
+        if (logsModal && logsModal.style.display === "flex") {
+          closeModal("guideLogsModal");
+          return;
+        }
+
+        const confirmModal = document.getElementById("editorUnsavedConfirmModal");
+        if (confirmModal && confirmModal.style.display === "flex") {
+          closeModal("editorUnsavedConfirmModal");
+          return;
+        }
+
+        const editorModal = document.getElementById("guideEditorModal");
+        if (editorModal && editorModal.style.display === "flex") {
+          attemptCloseGuideEditor();
+          return;
+        }
+
+        closeModal("guideReaderModal");
+      }
+    });
 
     function showToast(message, type = "info") {
       const container = document.getElementById("toastContainer");
