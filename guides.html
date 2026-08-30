@@ -932,6 +932,549 @@
       accent-color: var(--prim, #29f0f0);
       cursor: pointer;
     }
+
+    #editorContent.editor-drag-over {
+      border-color: var(--prim, #29f0f0) !important;
+      box-shadow: 0 0 20px rgba(41, 240, 240, 0.45) !important;
+      background: rgba(41, 240, 240, 0.05) !important;
+    }
+
+    /* Editor Multi-Tab Builder Layout */
+    .editor-tabs-builder-wrap {
+      background: rgba(10, 15, 29, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 1.2rem;
+    }
+    .editor-tabs-builder-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1.1rem;
+      background: rgba(15, 23, 42, 0.85);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .btn-builder-add-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(41, 240, 240, 0.2), rgba(56, 189, 248, 0.25));
+      border: 1px solid rgba(41, 240, 240, 0.4);
+      color: var(--prim, #29f0f0);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .btn-builder-add-tab:hover {
+      background: linear-gradient(135deg, var(--prim, #29f0f0), #38bdf8);
+      color: #0b0f19;
+      box-shadow: 0 0 12px rgba(41, 240, 240, 0.35);
+    }
+    .editor-tabs-builder-body {
+      display: flex;
+      min-height: 380px;
+    }
+    .editor-builder-sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: rgba(0, 0, 0, 0.25);
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.75rem 0.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .editor-builder-tabs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .editor-builder-tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.18s;
+      font-family: inherit;
+      position: relative;
+    }
+    .editor-builder-tab-btn:hover {
+      background: rgba(41, 240, 240, 0.08);
+      color: #fff;
+    }
+    .editor-builder-tab-btn.active {
+      background: linear-gradient(135deg, rgba(41, 240, 240, 0.16), rgba(56, 189, 248, 0.08));
+      border-color: rgba(41, 240, 240, 0.4);
+      color: #fff;
+      font-weight: 600;
+    }
+    .editor-builder-tab-num {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      flex-shrink: 0;
+    }
+    .editor-builder-tab-btn.active .editor-builder-tab-num {
+      background: var(--prim, #29f0f0);
+      color: #0b0f19;
+    }
+    .editor-builder-tab-title {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .editor-builder-main {
+      flex: 1;
+      min-width: 0;
+      padding: 0.9rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .editor-builder-tab-header {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.8rem;
+      margin-bottom: 0.6rem;
+    }
+    .btn-builder-delete-tab {
+      padding: 0.45rem 0.8rem;
+      border-radius: 8px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #f87171;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .btn-builder-delete-tab:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.25);
+      color: #fff;
+    }
+    .btn-builder-delete-tab:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    @media (max-width: 768px) {
+      .editor-tabs-builder-body {
+        flex-direction: column;
+      }
+      .editor-builder-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .editor-builder-tabs-list {
+        flex-direction: row;
+        overflow-x: auto;
+      }
+      .editor-builder-tab-btn {
+        white-space: nowrap;
+      }
+    }
+
+    /* =============================================
+       DOCUMENTATION TABS & SIDEBAR STYLES
+       ============================================= */
+    .guide-reader-box.doc-style-modal {
+      max-width: 1080px;
+      width: 95%;
+      height: 90vh;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .reader-header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .reader-mode-switch {
+      display: inline-flex;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .btn-mode-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.28rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: #94a3b8;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .btn-mode-pill:hover {
+      color: #fff;
+    }
+    .btn-mode-pill.active {
+      background: linear-gradient(135deg, var(--prim, #29f0f0), #38bdf8);
+      color: #0b0f19;
+      font-weight: 700;
+      box-shadow: 0 0 12px rgba(41, 240, 240, 0.35);
+    }
+    .btn-reader-ctrl {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.7rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      color: #cbd5e1;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .btn-reader-ctrl:hover {
+      background: rgba(41, 240, 240, 0.12);
+      border-color: rgba(41, 240, 240, 0.35);
+      color: var(--prim, #29f0f0);
+    }
+    .btn-font-ctrl {
+      padding: 0.35rem 0.55rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+    .font-size-controls {
+      display: inline-flex;
+      gap: 3px;
+    }
+
+    /* Documentation Body 2-Column Layout */
+    .doc-layout-body {
+      display: flex;
+      gap: 1.25rem;
+      padding: 1.25rem 1.75rem;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* SIDEBAR ON THE LEFT */
+    .doc-sidebar {
+      width: 270px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: rgba(10, 15, 29, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 14px;
+      padding: 0.9rem;
+      min-height: 0;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    .doc-sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 0.75rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: var(--text-2, #94a3b8);
+    }
+    .doc-tabs-badge {
+      font-size: 0.68rem;
+      background: rgba(41, 240, 240, 0.15);
+      color: var(--prim, #29f0f0);
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .doc-sidebar-tabs {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 0.2rem;
+    }
+    .doc-sidebar-tab {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      color: #cbd5e1;
+      font-size: 0.84rem;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.18s ease;
+      position: relative;
+      font-family: inherit;
+    }
+    .doc-sidebar-tab:hover {
+      background: rgba(41, 240, 240, 0.08);
+      border-color: rgba(41, 240, 240, 0.25);
+      color: var(--prim, #29f0f0);
+      transform: translateX(2px);
+    }
+    .doc-sidebar-tab.active {
+      background: linear-gradient(135deg, rgba(41, 240, 240, 0.15), rgba(56, 189, 248, 0.08));
+      border-color: rgba(41, 240, 240, 0.45);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(41, 240, 240, 0.12);
+    }
+    .doc-tab-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(255, 255, 255, 0.06);
+      color: #94a3b8;
+      flex-shrink: 0;
+      transition: all 0.18s ease;
+    }
+    .doc-sidebar-tab.active .doc-tab-num {
+      background: var(--prim, #29f0f0);
+      color: #0b0f19;
+      font-weight: 800;
+      box-shadow: 0 0 10px rgba(41, 240, 240, 0.5);
+    }
+    .doc-tab-title {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .doc-sidebar-tab.active::after {
+      content: '';
+      position: absolute;
+      right: 8px;
+      width: 4px;
+      height: 16px;
+      border-radius: 99px;
+      background: var(--prim, #29f0f0);
+      box-shadow: 0 0 8px var(--prim, #29f0f0);
+    }
+
+    /* RIGHT CONTENT PANE */
+    .doc-main-panel {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+    }
+    .doc-top-breadcrumb-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1.4rem;
+      background: rgba(10, 15, 29, 0.65);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.8rem;
+    }
+    .doc-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #94a3b8;
+      font-weight: 500;
+      min-width: 0;
+    }
+    .doc-breadcrumb strong {
+      color: #fff;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .doc-active-tab-badge {
+      font-size: 0.72rem;
+      color: var(--prim, #29f0f0);
+      background: rgba(41, 240, 240, 0.12);
+      border: 1px solid rgba(41, 240, 240, 0.25);
+      padding: 0.12rem 0.5rem;
+      border-radius: 999px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .doc-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.6rem 2rem;
+    }
+    .doc-tab-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem 1.4rem;
+      background: rgba(10, 15, 29, 0.75);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      gap: 1rem;
+    }
+    .btn-tab-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.55rem 1.1rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .btn-tab-nav:hover:not(:disabled) {
+      background: rgba(41, 240, 240, 0.12);
+      border-color: rgba(41, 240, 240, 0.35);
+      color: var(--prim, #29f0f0);
+    }
+    .btn-tab-nav:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .btn-tab-nav-next {
+      background: linear-gradient(135deg, rgba(41, 240, 240, 0.15), rgba(56, 189, 248, 0.2));
+      border-color: rgba(41, 240, 240, 0.35);
+      color: var(--prim, #29f0f0);
+      margin-left: auto;
+    }
+    .btn-tab-nav-next:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--prim, #29f0f0), #38bdf8);
+      color: #0b0f19;
+      box-shadow: 0 4px 14px rgba(41, 240, 240, 0.3);
+    }
+
+    /* Scroll Mode overrides */
+    .doc-layout-body.full-scroll-active .doc-sidebar,
+    .doc-layout-body.full-scroll-active .doc-top-breadcrumb-bar,
+    .doc-layout-body.full-scroll-active .doc-tab-footer {
+      display: none !important;
+    }
+    .doc-layout-body.full-scroll-active .doc-main-panel {
+      background: transparent;
+      border: none;
+    }
+    .doc-layout-body.full-scroll-active .doc-scroll-area {
+      padding: 0.5rem 0.2rem;
+    }
+
+    /* Editor Toolbar Tab Button */
+    .btn-toolbar-tab {
+      background: rgba(41, 240, 240, 0.12) !important;
+      border-color: rgba(41, 240, 240, 0.3) !important;
+      color: var(--prim, #29f0f0) !important;
+      font-weight: 600;
+    }
+    .btn-toolbar-tab:hover {
+      background: rgba(41, 240, 240, 0.22) !important;
+    }
+
+    /* Split & Preview Tab Bars */
+    .split-tab-pills {
+      display: flex;
+      gap: 0.35rem;
+      overflow-x: auto;
+      padding: 0.4rem 0.6rem;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      margin-bottom: 0.8rem;
+    }
+    .btn-split-tab-pill {
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.18s;
+      font-family: inherit;
+    }
+    .btn-split-tab-pill:hover {
+      color: #fff;
+      background: rgba(41, 240, 240, 0.1);
+    }
+    .btn-split-tab-pill.active {
+      background: var(--prim, #29f0f0);
+      color: #0b0f19;
+      border-color: var(--prim, #29f0f0);
+      font-weight: 700;
+    }
+
+    @media (max-width: 820px) {
+      .doc-layout-body {
+        flex-direction: column;
+        padding: 1rem;
+      }
+      .doc-sidebar {
+        width: 100%;
+        max-height: 160px;
+      }
+      .doc-sidebar-tabs {
+        flex-direction: row;
+        overflow-x: auto;
+      }
+      .doc-sidebar-tab {
+        white-space: nowrap;
+      }
+      .doc-scroll-area {
+        padding: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1032,30 +1575,92 @@
 
   <!-- GUIDE READER MODAL -->
   <div class="modal-overlay" id="guideReaderModal" onclick="handleOverlayClick(event, 'guideReaderModal')">
-    <div class="guide-reader-box" onclick="event.stopPropagation()">
+    <div class="guide-reader-box doc-style-modal" id="guideReaderDialogBox" onclick="event.stopPropagation()">
+      <!-- Reader Header -->
       <div class="guide-reader-header">
-        <div>
-          <div class="guide-badge-group" id="readerBadgeGroup" style="margin-bottom: 0.5rem;"></div>
+        <div style="flex: 1; min-width: 0;">
+          <div class="guide-badge-group" id="readerBadgeGroup" style="margin-bottom: 0.45rem;"></div>
           <h2 id="readerTitle" style="font-size: 1.35rem; color: #fff; font-weight: 700; line-height: 1.3;"></h2>
           <div style="font-size: 0.78rem; color: var(--text-2, #94a3b8); margin-top: 0.35rem;" id="readerAuthorMeta"></div>
         </div>
-        <button class="modal-close" onclick="closeModal('guideReaderModal')" aria-label="Close">
-          <i class="fas fa-times"></i>
-        </button>
+
+        <!-- Controls: Mode Switcher, Font Size, Close -->
+        <div class="reader-header-controls">
+          <!-- View Mode Toggle: Tabbed Docs vs Full Scroll -->
+          <div class="reader-mode-switch" title="Toggle Documentation Tabs or Continuous Scroll">
+            <button class="btn-mode-pill active" id="btnModeDoc" onclick="setReaderMode('doc')" title="Documentation Tabs View">
+              <i class="fas fa-columns"></i> <span class="btn-text">Tabs View</span>
+            </button>
+            <button class="btn-mode-pill" id="btnModeScroll" onclick="setReaderMode('scroll')" title="Continuous Full Page View">
+              <i class="fas fa-stream"></i> <span class="btn-text">All in One</span>
+            </button>
+          </div>
+
+          <!-- Font Size Controls -->
+          <div class="font-size-controls" title="Adjust Reader Text Size">
+            <button class="btn-reader-ctrl btn-font-ctrl" onclick="changeReaderFontSize(-1)" title="Smaller text">A-</button>
+            <button class="btn-reader-ctrl btn-font-ctrl" onclick="changeReaderFontSize(1)" title="Larger text">A+</button>
+          </div>
+
+          <button class="modal-close" onclick="closeModal('guideReaderModal')" aria-label="Close Guide">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
       </div>
 
-      <div class="guide-reader-body">
-        <!-- Embedded Video Player (if present) -->
-        <div class="guide-video-container hidden" id="readerVideoContainer"></div>
+      <!-- MAIN DOCUMENTATION 2-COLUMN BODY -->
+      <div class="doc-layout-body" id="readerLayoutBody">
+        <!-- LEFT SIDEBAR: DOCUMENTATION TABS -->
+        <aside class="doc-sidebar" id="readerSidebar">
+          <div class="doc-sidebar-header">
+            <div style="display: flex; align-items: center; gap: 0.45rem;">
+              <i class="fas fa-book" style="color: var(--prim, #29f0f0);"></i>
+              <span>Sections</span>
+            </div>
+            <span class="doc-tabs-badge" id="docTabsBadge">1 Tab</span>
+          </div>
 
-        <!-- Rendered Guide Content -->
-        <div class="guide-content-rendered" id="readerContent"></div>
+          <div class="doc-sidebar-tabs" id="readerTabsList">
+            <!-- Populated with documentation tabs by JS -->
+          </div>
+        </aside>
+
+        <!-- RIGHT PANEL: MAIN DOCUMENTATION CONTENT -->
+        <section class="doc-main-panel">
+          <!-- Top Breadcrumb Strip -->
+          <div class="doc-top-breadcrumb-bar">
+            <div class="doc-breadcrumb">
+              <i class="fas fa-file-alt" style="color: var(--prim, #29f0f0);"></i>
+              <span id="docTabBreadcrumb">Overview</span>
+            </div>
+            <span class="doc-active-tab-badge" id="docActiveTabBadge">Tab 1 of 1</span>
+          </div>
+
+          <!-- Scrollable Document Area -->
+          <div class="doc-scroll-area" id="readerScrollArea">
+            <!-- Embedded Video Player (if present) -->
+            <div class="guide-video-container hidden" id="readerVideoContainer"></div>
+
+            <!-- Active Tab Rendered Markdown -->
+            <div class="guide-content-rendered doc-page-content" id="readerContent"></div>
+          </div>
+
+          <!-- Bottom Tab Navigation Footer -->
+          <div class="doc-tab-footer" id="readerTabFooter">
+            <button class="btn-tab-nav" id="btnPrevTab" onclick="prevDocTab()" disabled>
+              <i class="fas fa-chevron-left"></i> <span id="btnPrevTabLabel">Previous Tab</span>
+            </button>
+            <button class="btn-tab-nav btn-tab-nav-next" id="btnNextTab" onclick="nextDocTab()">
+              <span id="btnNextTabLabel">Next Tab</span> <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </section>
       </div>
 
       <div class="guide-reader-footer">
         <div class="guide-read-only-note">
           <i class="fas fa-lock"></i>
-          <span>Read-only staff guide. Need help? Ask in our <a href="https://discord.gg/cys" target="_blank" style="color: var(--prim, #29f0f0); text-decoration: underline;">Discord Support</a>.</span>
+          <span>Official Cys Documentation. Need help? Ask in our <a href="https://discord.gg/cys" target="_blank" style="color: var(--prim, #29f0f0); text-decoration: underline;">Discord Support</a>.</span>
         </div>
         <div class="guide-staff-actions hidden" id="readerStaffActions">
           <button class="btn-quick-staff" id="btnReaderHistory" onclick="viewCurrentGuideLogs()" title="View edit audit history"><i class="fas fa-history"></i> History</button>
@@ -1122,22 +1727,65 @@
               <input type="text" id="editorSummary" class="guides-search-input" style="border-radius: 8px; padding-left: 0.9rem;" placeholder="Brief summary shown on guide feed cards..." maxlength="300" />
             </div>
 
-            <!-- Markdown helper toolbar -->
-            <div class="editor-toolbar">
-              <button type="button" class="toolbar-btn" onclick="insertMd('**', '**')"><i class="fas fa-bold"></i> Bold</button>
-              <button type="button" class="toolbar-btn" onclick="insertMd('*', '*')"><i class="fas fa-italic"></i> Italic</button>
-              <button type="button" class="toolbar-btn" onclick="insertMd('## ', '')"><i class="fas fa-heading"></i> Heading</button>
-              <button type="button" class="toolbar-btn" onclick="insertMd('`', '`')"><i class="fas fa-code"></i> Code</button>
-              <button type="button" class="toolbar-btn" onclick="insertMd('\n```\n', '\n```\n')"><i class="fas fa-file-code"></i> Block</button>
-              <button type="button" class="toolbar-btn" onclick="insertMd('- ', '')"><i class="fas fa-list-ul"></i> List</button>
-              <button type="button" class="toolbar-btn" onclick="insertMd('> [!TIP]\n> ', '')"><i class="fas fa-lightbulb"></i> Tip</button>
-              <button type="button" class="toolbar-btn" onclick="insertMd('> [!WARNING]\n> ', '')"><i class="fas fa-exclamation-triangle"></i> Warn</button>
-              <button type="button" class="toolbar-btn" onclick="insertMd('> [!NOTE]\n> ', '')"><i class="fas fa-info-circle"></i> Note</button>
-            </div>
+            <!-- MULTI-TAB DOCUMENTATION CONTENT BUILDER -->
+            <div class="editor-tabs-builder-wrap">
+              <div class="editor-tabs-builder-header">
+                <div style="display: flex; align-items: center; gap: 0.55rem;">
+                  <i class="fas fa-layer-group" style="color: var(--prim, #29f0f0);"></i>
+                  <span style="font-size: 0.84rem; font-weight: 700; color: #fff;">Documentation Chapters / Tabs</span>
+                  <span class="doc-tabs-badge" id="editorTabsCountBadge">1 Tab</span>
+                </div>
+                <button type="button" class="btn-builder-add-tab" onclick="addNewEditorTab()" title="Add a new documentation section tab">
+                  <i class="fas fa-plus"></i> Add New Tab
+                </button>
+              </div>
 
-            <div style="margin-bottom: 1.2rem;">
-              <label style="font-size: 0.8rem; font-weight: 700; color: #e2e8f0; display: block; margin-bottom: 0.35rem;">Guide Content (Markdown) <span style="color: #ff5e98;">*</span></label>
-              <textarea id="editorContent" class="guides-search-input" style="border-radius: 8px; min-height: 220px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; padding: 0.9rem;" placeholder="Write your guide using Markdown formatting, step-by-step instructions, and tips..."></textarea>
+              <div class="editor-tabs-builder-body">
+                <!-- TABS LIST ON THE LEFT OF THE EDITOR -->
+                <div class="editor-builder-sidebar">
+                  <div class="editor-builder-tabs-list" id="editorTabsList">
+                    <!-- Populated by JS -->
+                  </div>
+                </div>
+
+                <!-- ACTIVE TAB WORKSPACE ON THE RIGHT -->
+                <div class="editor-builder-main">
+                  <div class="editor-builder-tab-header">
+                    <div style="flex: 1; min-width: 0;">
+                      <label style="font-size: 0.74rem; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 0.25rem;">Active Section / Tab Name</label>
+                      <input type="text" id="editorTabTitleInput" class="guides-search-input" style="border-radius: 8px; padding: 0.45rem 0.8rem; font-size: 0.88rem;" placeholder="e.g. Keybinds & UI Calibration" oninput="handleEditorTabTitleChange()" />
+                    </div>
+                    <button type="button" class="btn-builder-delete-tab" id="btnDeleteCurrentTab" onclick="deleteCurrentEditorTab()" title="Delete this section tab">
+                      <i class="fas fa-trash-alt"></i> Delete Tab
+                    </button>
+                  </div>
+
+                  <!-- Markdown helper toolbar for this active tab -->
+                  <div class="editor-toolbar" style="margin-top: 0.5rem; margin-bottom: 0.6rem;">
+                    <button type="button" class="toolbar-btn" onclick="triggerImageUpload()" title="Insert or paste an image without clutter"><i class="fas fa-image"></i> Paste Image</button>
+                    <input type="file" id="editorImageInput" accept="image/*" style="display:none;" onchange="handleImageFilePicker(event)" />
+                    <button type="button" class="toolbar-btn" onclick="insertMd('**', '**')"><i class="fas fa-bold"></i> Bold</button>
+                    <button type="button" class="toolbar-btn" onclick="insertMd('*', '*')"><i class="fas fa-italic"></i> Italic</button>
+                    <button type="button" class="toolbar-btn" onclick="insertMd('## ', '')"><i class="fas fa-heading"></i> Heading</button>
+                    <button type="button" class="toolbar-btn" onclick="insertMd('`', '`')"><i class="fas fa-code"></i> Code</button>
+                    <button type="button" class="toolbar-btn" onclick="insertMd('\n```\n', '\n```\n')"><i class="fas fa-file-code"></i> Block</button>
+                    <button type="button" class="toolbar-btn" onclick="insertMd('- ', '')"><i class="fas fa-list-ul"></i> List</button>
+                    <button type="button" class="toolbar-btn" onclick="insertMd('> [!TIP]\n> ', '')"><i class="fas fa-lightbulb"></i> Tip</button>
+                    <button type="button" class="toolbar-btn" onclick="insertMd('> [!WARNING]\n> ', '')"><i class="fas fa-exclamation-triangle"></i> Warn</button>
+                    <button type="button" class="toolbar-btn" onclick="insertMd('> [!NOTE]\n> ', '')"><i class="fas fa-info-circle"></i> Note</button>
+                  </div>
+
+                  <div style="position: relative; flex: 1; display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                      <span style="font-size: 0.74rem; font-weight: 600; color: #94a3b8;" id="editorActiveTabWordCount">0 words</span>
+                      <span style="font-size: 0.72rem; font-weight: 600; color: #a5f3fc; background: rgba(41, 240, 240, 0.1); border: 1px solid rgba(41, 240, 240, 0.25); padding: 0.15rem 0.6rem; border-radius: 999px;">
+                        <i class="fas fa-paste" style="color: var(--prim, #29f0f0);"></i> Clean Image Pasting (Ctrl+V) Supported
+                      </span>
+                    </div>
+                    <textarea id="editorContent" class="guides-search-input" style="border-radius: 8px; min-height: 240px; flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; padding: 0.9rem;" placeholder="Write markdown for this section. Paste screenshots (Ctrl+V) or drop image files directly here without giant walls of text!"></textarea>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Visibility & Pinned Settings -->
@@ -1167,9 +1815,13 @@
           <!-- Split View Live Preview Pane (Right side) -->
           <div class="editor-split-live-pane hidden" id="editorSplitLivePane">
             <div class="inline-live-header">
-              <span>Preview</span>
+              <span>Documentation Live Preview</span>
               <span id="splitWordCount" style="font-size: 0.72rem; color: #94a3b8;">0 words</span>
             </div>
+
+            <!-- Split Preview Tab Pills Bar -->
+            <div class="split-tab-pills" id="splitTabPills"></div>
+
             <div class="guide-badge-group" id="splitBadgeGroup" style="margin-bottom: 0.5rem;"></div>
             <h3 id="splitTitle" style="font-size: 1.2rem; color: #fff; font-weight: 700; margin: 0 0 0.8rem 0;"></h3>
             <div class="guide-content-rendered" id="splitRenderedContent"></div>
@@ -1178,11 +1830,38 @@
 
         <!-- Full Preview Tab Content -->
         <div id="editorPreviewTab" class="hidden">
-          <div style="border: 1px dashed rgba(41, 240, 240, 0.3); border-radius: 12px; padding: 1.5rem; background: rgba(15, 23, 42, 0.4);">
-            <div class="guide-badge-group" id="previewBadgeGroup" style="margin-bottom: 0.5rem;"></div>
-            <h2 id="previewTitle" style="font-size: 1.4rem; color: #fff; font-weight: 700; margin-bottom: 1rem;"></h2>
-            <div class="guide-video-container hidden" id="previewVideoContainer"></div>
-            <div class="guide-content-rendered" id="previewRenderedContent"></div>
+          <div style="max-width: 1040px; margin: 0 auto;">
+            <div class="doc-layout-body" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; min-height: 480px;">
+              <!-- Sidebar Preview -->
+              <aside class="doc-sidebar">
+                <div class="doc-sidebar-header">
+                  <div style="display: flex; align-items: center; gap: 0.45rem;">
+                    <i class="fas fa-book" style="color: var(--prim, #29f0f0);"></i>
+                    <span>Sections</span>
+                  </div>
+                  <span class="doc-tabs-badge" id="previewTabsBadge">1 Tab</span>
+                </div>
+                <div class="doc-sidebar-tabs" id="previewTabsList"></div>
+              </aside>
+
+              <!-- Main Content Preview -->
+              <section class="doc-main-panel">
+                <div class="doc-top-breadcrumb-bar">
+                  <div class="doc-breadcrumb">
+                    <i class="fas fa-file-alt" style="color: var(--prim, #29f0f0);"></i>
+                    <span id="previewBreadcrumb">Overview</span>
+                  </div>
+                  <span class="doc-active-tab-badge" id="previewActiveTabBadge">Tab 1 of 1</span>
+                </div>
+
+                <div class="doc-scroll-area">
+                  <div class="guide-badge-group" id="previewBadgeGroup" style="margin-bottom: 0.5rem;"></div>
+                  <h2 id="previewTitle" style="font-size: 1.35rem; color: #fff; font-weight: 700; margin-bottom: 0.8rem;"></h2>
+                  <div class="guide-video-container hidden" id="previewVideoContainer"></div>
+                  <div class="guide-content-rendered doc-page-content" id="previewRenderedContent"></div>
+                </div>
+              </section>
+            </div>
           </div>
         </div>
       </div>
@@ -1292,6 +1971,22 @@
     let currentViewingGuide = null;
     let editingGuideId = null;
 
+    // Documentation Reader & Left Sidebar Tabs State
+    let readerMode = localStorage.getItem("cys_guide_reader_mode") || "doc";
+    let readerCurrentTab = 1;
+    let readerTotalTabs = 1;
+    let readerTabsData = [];
+    let readerFontSize = parseInt(localStorage.getItem("cys_guide_font_size")) || 100;
+
+    // Editor Preview Active Tab State
+    let editorSplitActiveTab = 1;
+    let editorFullActiveTab = 1;
+
+    // Editor Multi-Tab Builder & Clean Attachments State
+    let editorTabs = [{ title: "Overview", content: "" }];
+    let editorActiveTabIdx = 0;
+    let editorAttachments = {};
+
     // ==========================================
     // INITIALIZATION
     // ==========================================
@@ -1335,10 +2030,12 @@
 
     function canEditGuide(guide) {
       if (!currentUser || !guide) return false;
-      const isOwnerOrAdmin = currentUser.is_admin === true || currentUser.is_owner === true;
+      // All staff members (Owner, Admin, Moderator) can edit and maintain guide posts
+      if (isStaffMember(currentUser)) return true;
+      // Authors can always edit their own posts
       const currentUserId = String(currentUser.id || currentUser.sub || "");
       const isCreator = currentUserId && String(guide.author_id || "") === currentUserId;
-      return isOwnerOrAdmin || isCreator;
+      return !!isCreator;
     }
 
     function updateNavAuthUI() {
@@ -1447,6 +2144,148 @@
     // GUIDES FETCH & RENDER
     // ==========================================
 
+    function getStarterGuides() {
+      return [
+        {
+          id: "local_starter_ae",
+          title: "Anime Expeditions: Complete Macro Mastery & Loop Dossier",
+          game: "Anime Expeditions",
+          author_id: "staff_cys",
+          author_name: "Cys Dev Team",
+          author_avatar: null,
+          summary: "Official documentation handbook detailing dungeon automation, keybindings, pixel OCR calibration, and loop error recovery across tabs.",
+          is_public: 1,
+          pinned: 1,
+          views: 3420,
+          created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
+          video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          content: `# Anime Expeditions: Operational Handbook
+Welcome to the official **Cys Macros** operational documentation for Anime Expeditions. Use the tabs on the left sidebar to navigate across setup, keybindings, automated dungeon grinding loops, and performance tuning.
+
+> [!NOTE]
+> Click any section tab on the left sidebar to instantly switch chapters. You can also use the **Previous Tab** and **Next Tab** buttons below or your keyboard's **←** / **→** / **↑** / **↓** arrow keys.
+
+### System Prerequisites
+- **Resolution**: 1920x1080 (100% Windows display scaling recommended).
+- **Game Graphics**: Manual slider set to level 2 or 3 for optimal pixel detection.
+- **AutoHotkey**: Version 1.1.36+ or Cys Macro Launcher v2.4.
+
+<!--tab: Keybinds & Calibration-->
+
+## Keybinds & UI Calibration
+
+Before launching the automation loop, ensure your in-game keybindings match the macro defaults:
+
+| Action | Recommended Keybind | Secondary Fallback |
+| :--- | :--- | :--- |
+| **Primary Skill** | \`Q\` | \`Num 1\` |
+| **Ultimate Ability** | \`R\` | \`Num 4\` |
+| **Dodge / Dash** | \`Space\` | \`Shift\` |
+| **Auto-Target Lock** | \`Tab\` | \`Middle Mouse\` |
+| **Inventory Quick-Open** | \`B\` | \`I\` |
+
+### Calibration Checklist
+- [x] Lock Roblox camera zoom to **Third-Person Middle** distance.
+- [x] Disable motion blur in Roblox client settings.
+- [x] Set in-game UI scale to **Default 1.0x**.
+
+> [!TIP]
+> Press \`F6\` at any time to pause execution or \`F12\` to instantly terminate the background macro loop.
+
+<!--tab: Automated Loops-->
+
+## Automated Dungeon & Crafting Loops
+
+The Anime Expeditions module features intelligent loop cycling that handles battle clears, reward collection, and inventory recycling.
+
+\`\`\`ini
+[DungeonProfile]
+AutoRestart=true
+RetryLimit=999
+SkillCycleOrder=Q,E,R,Q
+LootCollectionDelayMs=1200
+AutoSellRarityThreshold=Rare
+\`\`\`
+
+### Execution Flow:
+1. **Dungeon Entry**: The script detects lobby portal coordinates and auto-confirms queue.
+2. **Mob Aggro Wave**: Uses auto-target lock and executes optimized DPS cooldowns.
+3. **Boss Sequence**: Dodges ground AoE indicators automatically using pixel recognition.
+4. **Reward Screen**: Auto-clicks claim buttons and evaluates inventory thresholds.
+
+> [!WARNING]
+> Do not alt-tab or resize the game window during the dungeon entry sequence, as coordinate mapping relies on consistent window dimensions.
+
+<!--tab: Troubleshooting & FAQ-->
+
+## Performance Tuning & Troubleshooting
+
+If you experience misclicks or desync during peak server hours, review these common fixes:
+
+### 1. Macro Clicks Slightly Off-Target
+- Check your Windows Display Settings: **Scale must be set to 100%**.
+- Verify that your taskbar is not set to auto-hide or oversized.
+
+### 2. High Ping / Server Latency
+- Increase \`LootCollectionDelayMs\` to \`1800ms\` in the profile settings.
+- Enable **Aggressive Ping Compensation** in the Cys Macro Config Hub.
+
+### 3. Discord Community Support
+Need personalized help or custom profiles? Reach out to our verified staff in the official Discord server:
+- **Discord Server**: [discord.gg/cys](https://discord.gg/cys)
+- **Role Verification**: Check the \`#macro-help\` channel.`
+        },
+        {
+          id: "local_starter_setup",
+          title: "Cys Macros: Universal Setup & Calibration Guide",
+          game: "Setup & Troubleshooting",
+          author_id: "staff_cys",
+          author_name: "Staff Moderator",
+          author_avatar: null,
+          summary: "Essential initial setup steps, administrator privileges, DPI scaling calibration, and troubleshooting across tabs on the left sidebar.",
+          is_public: 1,
+          pinned: 0,
+          views: 1890,
+          created_at: new Date(Date.now() - 86400000 * 7).toISOString(),
+          video_url: "",
+          content: `# Universal Setup & Calibration Dossier
+Getting your system prepared ensures zero stutter, perfect click accuracy, and safe operation across all Roblox macro engines. Use the tabs on the left sidebar to view each setup phase.
+
+### Essential Checklist:
+- [x] Run macro launcher as **Administrator**.
+- [x] Verify your Windows DPI display scaling is **100%**.
+- [x] Disable Windows Game Bar overlays that steal window focus.
+
+<!--tab: Antivirus Whitelisting-->
+
+## Antivirus & Security Whitelisting
+
+Because AutoHotkey sends low-level virtual keystrokes and mouse events, Windows Defender or third-party antivirus utilities may flag automation scripts as false positives.
+
+> [!NOTE]
+> All Cys Macro releases are open-source and digitally reviewed. Adding an exclusion path takes less than 30 seconds.
+
+### Adding an Exclusion in Windows Defender:
+1. Open **Windows Security** from the Start Menu.
+2. Select **Virus & threat protection**.
+3. Under *Virus & threat protection settings*, click **Manage settings**.
+4. Scroll to *Exclusions* and click **Add or remove exclusions**.
+5. Select **Folder** and choose your Cys Macro directory.
+
+<!--tab: Display & Coordinates-->
+
+## Resolution & Coordinate Alignment
+
+Different monitor aspect ratios (16:9, 16:10, 21:9 Ultra-wide) place UI elements in varying positions:
+
+> [!TIP]
+> If using an Ultra-wide or 4K display, set Roblox to **Windowed 1920x1080** for 100% coordinate compatibility across all game modules.
+
+Need help configuring your monitor profile? Join our Discord server at [discord.gg/cys](https://discord.gg/cys).`
+        }
+      ];
+    }
+
     async function fetchGuides() {
       const token = localStorage.getItem("ch_token");
       const headers = token ? { Authorization: "Bearer " + token } : {};
@@ -1472,25 +2311,39 @@
       try {
         let local = JSON.parse(localStorage.getItem("cys_local_guides") || "[]");
         if (Array.isArray(local) && local.length > 0) {
-          const remoteIds = new Set(allGuides.map((g) => String(g.id)));
-          const remoteTitles = new Set(allGuides.map((g) => (g.title || "").trim().toLowerCase()));
-
-          // Filter out any local guides that match existing remote guides (by ID or title)
-          const uniqueLocal = local.filter((g) => {
-            if (remoteIds.has(String(g.id))) return false;
-            const normTitle = (g.title || "").trim().toLowerCase();
-            if (normTitle && remoteTitles.has(normTitle)) return false;
-            return true;
+          // Update any seeded starter guides to ensure they use the latest tabs layout
+          const starters = getStarterGuides();
+          local = local.map((g) => {
+            const starterMatch = starters.find((s) => s.id === g.id);
+            if (starterMatch && (!g.content || !g.content.includes("<!--tab:"))) {
+              return starterMatch;
+            }
+            return g;
           });
 
-          // Clean up local storage if duplicate copies were removed
-          if (uniqueLocal.length !== local.length) {
-            localStorage.setItem("cys_local_guides", JSON.stringify(uniqueLocal));
-          }
-
-          allGuides = [...uniqueLocal, ...allGuides];
+          // If a guide exists in local storage with local edits, let the local version take precedence so user edits and attachments are NEVER lost!
+          const localMap = new Map(local.map((g) => [String(g.id), g]));
+          allGuides = allGuides.map((remote) => {
+            if (localMap.has(String(remote.id))) {
+              const localVer = localMap.get(String(remote.id));
+              localMap.delete(String(remote.id));
+              return localVer;
+            }
+            return remote;
+          });
+          allGuides = [...localMap.values(), ...allGuides];
+          localStorage.setItem("cys_local_guides", JSON.stringify(allGuides));
         }
       } catch (e) {}
+
+      // If no guides exist at all (offline or new browser), seed high quality starter documentation guides!
+      if (allGuides.length === 0) {
+        const starters = getStarterGuides();
+        allGuides = [...starters];
+        try {
+          localStorage.setItem("cys_local_guides", JSON.stringify(starters));
+        } catch (e) {}
+      }
 
       filterAndRenderGuides();
     }
@@ -1604,7 +2457,135 @@
     }
 
     // ==========================================
-    // GUIDE READER
+    // ==========================================
+    // DOCUMENTATION TABS PARSER & ENGINE
+    // ==========================================
+
+    function extractGuideAttachments(rawMd) {
+      let attachments = {};
+      if (!rawMd) return { cleanMd: "", attachments };
+      const attachMatch = rawMd.match(/<!--attachments:([\s\S]*?)-->/);
+      let cleanMd = rawMd;
+      if (attachMatch) {
+        try {
+          attachments = JSON.parse(attachMatch[1]);
+        } catch (e) {
+          console.warn("Failed to parse guide attachments:", e);
+        }
+        cleanMd = rawMd.replace(/<!--attachments:[\s\S]*?-->/g, "").trim();
+      }
+      return { cleanMd, attachments };
+    }
+
+    function parseGuideTabs(rawMd) {
+      if (!rawMd || !rawMd.trim()) {
+        return [{ tabNum: 1, pageNum: 1, title: "Overview", content: "", attachments: {} }];
+      }
+
+      const { cleanMd, attachments } = extractGuideAttachments(rawMd);
+      const targetMd = cleanMd.trim();
+      if (!targetMd) {
+        return [{ tabNum: 1, pageNum: 1, title: "Overview", content: "", attachments }];
+      }
+
+      // 1. Explicit tab markers: <!--tab: Title-->, <!--tab-->, <!--page: Title-->, <!--pagebreak-->
+      const splitPattern = /(?:<!--\s*(?:tab|page)(?::\s*[^>]+?)?\s*-->|===tab(?::\s*[^=]+?)?===|<!--\s*pagebreak\s*-->|---page---|===page===)/gi;
+      if (splitPattern.test(targetMd)) {
+        // Collect explicit titles in order
+        const titles = [];
+        let m;
+        const titleMatcher = /(?:<!--\s*(?:tab|page)(?::\s*([^>]+?))?\s*-->|===tab(?::\s*([^=]+?))?===)/gi;
+        while ((m = titleMatcher.exec(targetMd)) !== null) {
+          titles.push((m[1] || m[2] || "").trim());
+        }
+
+        const segments = targetMd.split(splitPattern);
+        const tabs = [];
+        segments.forEach((seg, idx) => {
+          if (seg === undefined || seg === null) return;
+          const trimmed = seg.trim();
+          if (!trimmed && idx === 0) return;
+          if (!trimmed && idx > 0) return;
+
+          let title = "";
+          if (idx === 0) {
+            const headingMatch = trimmed.match(/^#{1,3}\s+(.+)$/m);
+            title = headingMatch ? headingMatch[1].replace(/[*_`]/g, "").trim() : "Overview";
+          } else {
+            title = titles[idx - 1] || "";
+            if (!title) {
+              const headingMatch = trimmed.match(/^#{1,3}\s+(.+)$/m);
+              title = headingMatch ? headingMatch[1].replace(/[*_`]/g, "").trim() : `Section ${tabs.length + 1}`;
+            }
+          }
+
+          tabs.push({
+            tabNum: tabs.length + 1,
+            pageNum: tabs.length + 1,
+            title: title,
+            content: trimmed,
+            attachments: attachments
+          });
+        });
+
+        if (tabs.length > 0) return tabs;
+      }
+
+      // 2. Intelligent Auto-Split by major headings (## Heading)
+      const lines = targetMd.split("\n");
+      const h2Count = lines.filter((l) => /^##\s+/.test(l)).length;
+      if (h2Count >= 2) {
+        const tabs = [];
+        let currentLines = [];
+        let currentTitle = "Overview";
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (/^##\s+/.test(line)) {
+            if (currentLines.join("\n").trim().length > 0) {
+              tabs.push({
+                tabNum: tabs.length + 1,
+                pageNum: tabs.length + 1,
+                title: currentTitle,
+                content: currentLines.join("\n").trim(),
+                attachments: attachments
+              });
+              currentLines = [];
+            }
+            currentTitle = line.replace(/^##\s+/, "").replace(/[*_`]/g, "").trim();
+          }
+          currentLines.push(line);
+        }
+        if (currentLines.join("\n").trim().length > 0) {
+          tabs.push({
+            tabNum: tabs.length + 1,
+            pageNum: tabs.length + 1,
+            title: currentTitle,
+            content: currentLines.join("\n").trim(),
+            attachments: attachments
+          });
+        }
+        if (tabs.length > 1) {
+          return tabs;
+        }
+      }
+
+      // 3. Fallback: single tab
+      const firstHeading = targetMd.match(/^#{1,3}\s+(.+)$/m);
+      return [{
+        tabNum: 1,
+        pageNum: 1,
+        title: firstHeading ? firstHeading[1].replace(/[*_`]/g, "").trim() : "Overview",
+        content: targetMd.trim(),
+        attachments: attachments
+      }];
+    }
+
+    // Alias for backward compatibility
+    const parseGuidePages = parseGuideTabs;
+
+    // ==========================================
+    // DOCUMENTATION READER CONTROLLER
     // ==========================================
 
     function openGuideReader(guideId) {
@@ -1635,7 +2616,7 @@
         Authored by <strong>${escapeHtml(guide.author_name || 'Staff')}</strong> &bull; ${formatDate(guide.created_at)} &bull; ${(guide.views || 0).toLocaleString()} views${lastEditedMeta}
       `;
 
-      // Video Embed
+      // Video Embed Setup
       const videoContainer = document.getElementById("readerVideoContainer");
       if (hasVideo) {
         const embedHtml = generateVideoEmbed(guide.video_url);
@@ -1654,8 +2635,25 @@
         videoContainer.innerHTML = "";
       }
 
-      // Markdown Render
-      document.getElementById("readerContent").innerHTML = renderMarkdown(guide.content);
+      // Extract clean attachments from guide content
+      const { cleanMd, attachments } = extractGuideAttachments(guide.content || "");
+      guide.attachments = attachments || {};
+      currentViewingGuide.attachments = attachments || {};
+
+      // Parse guide markdown into tabs
+      readerTabsData = parseGuideTabs(guide.content);
+      readerTotalTabs = readerTabsData.length;
+      readerCurrentTab = 1;
+
+      // Update mode switcher buttons
+      const btnDoc = document.getElementById("btnModeDoc");
+      const btnScroll = document.getElementById("btnModeScroll");
+      if (btnDoc) btnDoc.classList.toggle("active", readerMode === "doc");
+      if (btnScroll) btnScroll.classList.toggle("active", readerMode === "scroll");
+
+      // Render tab & content
+      renderDocTab();
+      applyReaderFontSize();
 
       // Staff actions in reader modal - only creator or owner can edit/delete
       const canEdit = canEditGuide(guide);
@@ -1667,14 +2665,166 @@
 
       openModal("guideReaderModal");
 
-      // Increment view on backend
+      // Increment view count on backend
       fetch(API_BASE + "/api/guides/" + guide.id).catch(() => {});
+    }
+
+    function renderDocTab() {
+      if (!currentViewingGuide) return;
+
+      const layoutBody = document.getElementById("readerLayoutBody");
+      const tabsList = document.getElementById("readerTabsList");
+      const tabsBadge = document.getElementById("docTabsBadge");
+      const breadcrumb = document.getElementById("docTabBreadcrumb");
+      const activeBadge = document.getElementById("docActiveTabBadge");
+      const contentEl = document.getElementById("readerContent");
+      const videoContainer = document.getElementById("readerVideoContainer");
+      const hasVideo = currentViewingGuide.video_url && currentViewingGuide.video_url.trim().length > 0;
+
+      const activeAttachments = currentViewingGuide.attachments || (readerTabsData[0] && readerTabsData[0].attachments) || {};
+
+      if (readerMode === "scroll") {
+        if (layoutBody) layoutBody.classList.add("full-scroll-active");
+        if (videoContainer && hasVideo) {
+          videoContainer.style.display = "block";
+          videoContainer.classList.remove("hidden");
+        }
+        if (contentEl) {
+          contentEl.innerHTML = renderMarkdown(currentViewingGuide.content, activeAttachments);
+        }
+        return;
+      }
+
+      // Tabbed Documentation Mode
+      if (layoutBody) layoutBody.classList.remove("full-scroll-active");
+
+      // 1. Render Left Sidebar Tabs
+      if (tabsBadge) {
+        tabsBadge.textContent = `${readerTotalTabs} ${readerTotalTabs === 1 ? 'Tab' : 'Tabs'}`;
+      }
+
+      if (tabsList) {
+        tabsList.innerHTML = readerTabsData.map((t) => `
+          <button type="button" class="doc-sidebar-tab ${t.tabNum === readerCurrentTab ? 'active' : ''}" 
+                  onclick="goToDocTab(${t.tabNum})"
+                  title="${escapeHtml(t.title)}">
+            <span class="doc-tab-num">${t.tabNum}</span>
+            <span class="doc-tab-title">${escapeHtml(t.title)}</span>
+          </button>
+        `).join("");
+      }
+
+      const activeTab = readerTabsData[readerCurrentTab - 1] || readerTabsData[0];
+      if (!activeTab) return;
+
+      // Keep video on Tab 1 or if available
+      if (videoContainer && hasVideo) {
+        if (readerCurrentTab === 1) {
+          videoContainer.style.display = "block";
+          videoContainer.classList.remove("hidden");
+        } else {
+          videoContainer.style.display = "none";
+          videoContainer.classList.add("hidden");
+        }
+      }
+
+      // 2. Update Breadcrumb & Header in Content Panel
+      if (breadcrumb) {
+        breadcrumb.innerHTML = `Section ${activeTab.tabNum} &bull; <strong>${escapeHtml(activeTab.title)}</strong>`;
+      }
+      if (activeBadge) {
+        activeBadge.textContent = `Tab ${readerCurrentTab} of ${readerTotalTabs}`;
+      }
+
+      // 3. Render Markdown Content with attachments
+      if (contentEl) {
+        contentEl.innerHTML = renderMarkdown(activeTab.content, activeTab.attachments || activeAttachments);
+      }
+
+      // 4. Update Bottom Navigation Buttons
+      const btnPrev = document.getElementById("btnPrevTab");
+      const btnNext = document.getElementById("btnNextTab");
+      const prevLabel = document.getElementById("btnPrevTabLabel");
+      const nextLabel = document.getElementById("btnNextTabLabel");
+
+      if (btnPrev) {
+        btnPrev.disabled = readerCurrentTab <= 1;
+        if (readerCurrentTab > 1) {
+          const prevTab = readerTabsData[readerCurrentTab - 2];
+          if (prevLabel) prevLabel.textContent = `Previous: ${prevTab.title}`;
+        } else {
+          if (prevLabel) prevLabel.textContent = `Previous Tab`;
+        }
+      }
+
+      if (btnNext) {
+        if (readerCurrentTab >= readerTotalTabs) {
+          btnNext.disabled = true;
+          if (nextLabel) nextLabel.innerHTML = `End of Guide <i class="fas fa-check"></i>`;
+        } else {
+          btnNext.disabled = false;
+          const nextTab = readerTabsData[readerCurrentTab];
+          if (nextLabel) nextLabel.innerHTML = `Next: ${escapeHtml(nextTab.title)}`;
+        }
+      }
+
+      // Scroll content area back to top smoothly
+      const scrollArea = document.getElementById("readerScrollArea");
+      if (scrollArea) scrollArea.scrollTop = 0;
+    }
+
+    function setReaderMode(mode) {
+      readerMode = mode;
+      localStorage.setItem("cys_guide_reader_mode", mode);
+
+      const btnDoc = document.getElementById("btnModeDoc");
+      const btnScroll = document.getElementById("btnModeScroll");
+      if (btnDoc) btnDoc.classList.toggle("active", mode === "doc");
+      if (btnScroll) btnScroll.classList.toggle("active", mode === "scroll");
+
+      renderDocTab();
+    }
+
+    function goToDocTab(tabNum) {
+      if (tabNum < 1 || tabNum > readerTotalTabs) return;
+      readerCurrentTab = tabNum;
+      renderDocTab();
+    }
+
+    function nextDocTab() {
+      if (readerCurrentTab < readerTotalTabs) {
+        goToDocTab(readerCurrentTab + 1);
+      }
+    }
+
+    function prevDocTab() {
+      if (readerCurrentTab > 1) {
+        goToDocTab(readerCurrentTab - 1);
+      }
+    }
+
+    // Backward compatibility aliases
+    const goToReaderPage = goToDocTab;
+    const nextReaderPage = nextDocTab;
+    const prevReaderPage = prevDocTab;
+
+    function changeReaderFontSize(delta) {
+      readerFontSize = Math.max(80, Math.min(135, readerFontSize + delta * 8));
+      localStorage.setItem("cys_guide_font_size", readerFontSize);
+      applyReaderFontSize();
+    }
+
+    function applyReaderFontSize() {
+      const readerContent = document.getElementById("readerContent");
+      if (readerContent) {
+        readerContent.style.fontSize = (readerFontSize / 100) * 0.95 + "rem";
+      }
     }
 
     function editCurrentGuide() {
       if (!currentViewingGuide) return;
       if (!canEditGuide(currentViewingGuide)) {
-        showToast("Access Denied: Only the creator of this post or the owner can edit it.", "error");
+        showToast("Access Denied: Staff or the author of this post can edit it.", "error");
         return;
       }
       closeModal("guideReaderModal");
@@ -1684,7 +2834,7 @@
     async function toggleCurrentGuideVisibility() {
       if (!currentViewingGuide) return;
       if (!canEditGuide(currentViewingGuide)) {
-        showToast("Access Denied: Only the creator or owner can change visibility.", "error");
+        showToast("Access Denied: Staff or the author can change visibility.", "error");
         return;
       }
       await toggleVisibilityById(currentViewingGuide.id);
@@ -1694,7 +2844,7 @@
     async function deleteCurrentGuide() {
       if (!currentViewingGuide) return;
       if (!canEditGuide(currentViewingGuide)) {
-        showToast("Access Denied: Only the creator or owner can delete this guide.", "error");
+        showToast("Access Denied: Staff or the author can delete this guide.", "error");
         return;
       }
       if (await deleteGuideById(currentViewingGuide.id)) {
@@ -1723,7 +2873,7 @@
         const guide = allGuides.find((g) => String(g.id) === String(guideId));
         if (!guide) return;
         if (!canEditGuide(guide)) {
-          showToast("Access Denied: Only the creator of this post or the owner can edit it.", "error");
+          showToast("Access Denied: Staff or the author of this post can edit it.", "error");
           return;
         }
 
@@ -1734,13 +2884,21 @@
         document.getElementById("editorGame").value = guide.game || "Anime Expeditions";
         document.getElementById("editorVideoUrl").value = guide.video_url || "";
         document.getElementById("editorSummary").value = guide.summary || "";
-        document.getElementById("editorContent").value = guide.content || "";
         document.getElementById("editorPinned").checked = guide.pinned === 1 || guide.pinned === true;
 
         if (guide.is_public === 0 || guide.is_public === false) {
           document.getElementById("visPrivate").checked = true;
         } else {
           document.getElementById("visPublic").checked = true;
+        }
+
+        // Extract attachments and split content into clean tabs
+        const { cleanMd, attachments } = extractGuideAttachments(guide.content || "");
+        editorAttachments = attachments || {};
+        const parsed = parseGuideTabs(cleanMd);
+        editorTabs = parsed.map((t) => ({ title: t.title, content: t.content }));
+        if (editorTabs.length === 0) {
+          editorTabs = [{ title: "Overview", content: "" }];
         }
       } else {
         if (heading) heading.textContent = "Create Guide Post";
@@ -1750,23 +2908,31 @@
         document.getElementById("editorGame").value = "Anime Expeditions";
         document.getElementById("editorVideoUrl").value = "";
         document.getElementById("editorSummary").value = "";
-        document.getElementById("editorContent").value = "";
         document.getElementById("editorPinned").checked = false;
         document.getElementById("visPublic").checked = true;
+
+        editorTabs = [{ title: "Overview", content: "" }];
+        editorAttachments = {};
       }
+
+      editorActiveTabIdx = 0;
+      renderEditorTabsSidebar();
 
       // Attach instant real-time input listeners
       const contentEl = document.getElementById("editorContent");
       if (contentEl && !contentEl.dataset.hasLiveListener) {
         contentEl.dataset.hasLiveListener = "true";
-        contentEl.addEventListener("input", updateLivePreview);
-        contentEl.addEventListener("keyup", updateLivePreview);
+        contentEl.addEventListener("input", () => {
+          syncActiveEditorTabContent();
+          updateLivePreview();
+        });
         document.getElementById("editorTitle")?.addEventListener("input", updateLivePreview);
         document.getElementById("editorGame")?.addEventListener("change", updateLivePreview);
         document.getElementById("editorVideoUrl")?.addEventListener("input", updateLivePreview);
         document.getElementById("editorPinned")?.addEventListener("change", updateLivePreview);
         document.getElementById("visPublic")?.addEventListener("change", updateLivePreview);
         document.getElementById("visPrivate")?.addEventListener("change", updateLivePreview);
+        initEditorImagePasteAndDrop(contentEl);
       }
 
       openModal("guideEditorModal");
@@ -1800,7 +2966,7 @@
       const guide = allGuides.find((g) => String(g.id) === String(id));
       if (!guide) return;
       if (!canEditGuide(guide)) {
-        showToast("Access Denied: Only the creator of this post or the owner can edit it.", "error");
+        showToast("Access Denied: Staff or the author of this post can edit it.", "error");
         return;
       }
       openGuideEditor(id);
@@ -1853,19 +3019,410 @@
       }
     }
 
+    // ==========================================
+    // IMAGE PASTE, DRAG-AND-DROP & UPLOAD ENGINE
+    // ==========================================
+
+    function triggerImageUpload() {
+      const input = document.getElementById("editorImageInput");
+      if (input) input.click();
+    }
+
+    function handleImageFilePicker(e) {
+      const file = e.target.files && e.target.files[0];
+      const textarea = document.getElementById("editorContent");
+      if (file && textarea) {
+        processAndInsertImage(file, textarea);
+      }
+      e.target.value = "";
+    }
+
+    function initEditorImagePasteAndDrop(textarea) {
+      if (!textarea || textarea.dataset.hasImagePasteListener) return;
+      textarea.dataset.hasImagePasteListener = "true";
+
+      // 1. Paste event listener (Ctrl+V with image in clipboard)
+      textarea.addEventListener("paste", (e) => {
+        if (!e.clipboardData) return;
+
+        // Check if files are attached in clipboard
+        if (e.clipboardData.files && e.clipboardData.files.length > 0) {
+          for (let i = 0; i < e.clipboardData.files.length; i++) {
+            const file = e.clipboardData.files[i];
+            if (file.type && file.type.startsWith("image/")) {
+              e.preventDefault();
+              processAndInsertImage(file, textarea);
+              return;
+            }
+          }
+        }
+
+        // Check clipboard items (e.g. Snipping Tool, PrtScn screenshots)
+        if (e.clipboardData.items && e.clipboardData.items.length > 0) {
+          for (let i = 0; i < e.clipboardData.items.length; i++) {
+            const item = e.clipboardData.items[i];
+            if (item.type && item.type.indexOf("image") !== -1) {
+              const file = item.getAsFile();
+              if (file) {
+                e.preventDefault();
+                processAndInsertImage(file, textarea);
+                return;
+              }
+            }
+          }
+        }
+      });
+
+      // 2. Drag & drop image files onto textarea
+      textarea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        textarea.classList.add("editor-drag-over");
+      });
+
+      textarea.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        textarea.classList.remove("editor-drag-over");
+      });
+
+      textarea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        textarea.classList.remove("editor-drag-over");
+
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          for (let i = 0; i < e.dataTransfer.files.length; i++) {
+            const file = e.dataTransfer.files[i];
+            if (file.type && file.type.startsWith("image/")) {
+              processAndInsertImage(file, textarea);
+              break;
+            }
+          }
+        }
+      });
+    }
+
+    function processAndInsertImage(file, textarea) {
+      if (!file || !file.type || !file.type.startsWith("image/")) {
+        showToast("Selected file is not an image.", "error");
+        return;
+      }
+
+      if (file.size > 15 * 1024 * 1024) {
+        showToast("Image is too large (maximum 15MB).", "error");
+        return;
+      }
+
+      const start = textarea.selectionStart || 0;
+      const end = textarea.selectionEnd || 0;
+      const originalVal = textarea.value;
+
+      // Clean short attachment key
+      const keyIdx = Object.keys(editorAttachments).length + 1;
+      const randSuffix = Math.random().toString(36).substring(2, 6);
+      const attachmentKey = `img_${keyIdx}_${randSuffix}`;
+
+      // Insert clean placeholder so user gets instant visual feedback
+      const placeholder = `\n![Attaching Image...](${attachmentKey})\n`;
+      textarea.value = originalVal.substring(0, start) + placeholder + originalVal.substring(end);
+      syncActiveEditorTabContent();
+      updateLivePreview();
+
+      showToast("Optimizing image attachment...", "info");
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          try {
+            // Compress & resize image to maintain crisp quality while keeping data size lean
+            const maxDim = 1280;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Compress to WebP with JPEG fallback
+            let dataUrl = "";
+            try {
+              dataUrl = canvas.toDataURL("image/webp", 0.84);
+              if (!dataUrl.startsWith("data:image/webp")) {
+                dataUrl = canvas.toDataURL("image/jpeg", 0.84);
+              }
+            } catch (err) {
+              dataUrl = e.target.result;
+            }
+
+            // Save clean attachment to dictionary (never pollute the text editor!)
+            editorAttachments[attachmentKey] = dataUrl;
+            try {
+              localStorage.setItem("cys_att_" + attachmentKey, dataUrl);
+            } catch (e) {}
+
+            const cleanName = (file.name || "Screenshot").replace(/\.[^/.]+$/, "").replace(/[[\]()]/g, "");
+            const finalEmbed = `\n![${cleanName}](attachment:${attachmentKey})\n`;
+
+            if (textarea.value.includes(placeholder)) {
+              textarea.value = textarea.value.replace(placeholder, finalEmbed);
+            } else {
+              textarea.value += finalEmbed;
+            }
+
+            syncActiveEditorTabContent();
+            updateLivePreview();
+            showToast("Image attached cleanly! (No walls of text)", "success");
+          } catch (err) {
+            console.error("Image processing fallback:", err);
+            editorAttachments[attachmentKey] = e.target.result;
+            try {
+              localStorage.setItem("cys_att_" + attachmentKey, e.target.result);
+            } catch (e) {}
+            const cleanName = (file.name || "Screenshot").replace(/\.[^/.]+$/, "").replace(/[[\]()]/g, "");
+            const finalEmbed = `\n![${cleanName}](attachment:${attachmentKey})\n`;
+            if (textarea.value.includes(placeholder)) {
+              textarea.value = textarea.value.replace(placeholder, finalEmbed);
+            } else {
+              textarea.value += finalEmbed;
+            }
+            syncActiveEditorTabContent();
+            updateLivePreview();
+            showToast("Image attached cleanly!", "success");
+          }
+        };
+
+        img.onerror = function() {
+          textarea.value = textarea.value.replace(placeholder, "");
+          syncActiveEditorTabContent();
+          updateLivePreview();
+          showToast("Failed to process image.", "error");
+        };
+
+        img.src = e.target.result;
+      };
+
+      reader.onerror = function() {
+        textarea.value = textarea.value.replace(placeholder, "");
+        syncActiveEditorTabContent();
+        updateLivePreview();
+        showToast("Failed to read image file.", "error");
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    // ==========================================
+    // MULTI-TAB EDITOR WORKSPACE CONTROLLERS
+    // ==========================================
+
+    function renderEditorTabsSidebar() {
+      const tabsList = document.getElementById("editorTabsList");
+      const badge = document.getElementById("editorTabsCountBadge");
+      const titleInput = document.getElementById("editorTabTitleInput");
+      const contentEl = document.getElementById("editorContent");
+      const btnDelete = document.getElementById("btnDeleteCurrentTab");
+      const wordCount = document.getElementById("editorActiveTabWordCount");
+
+      if (badge) {
+        badge.textContent = `${editorTabs.length} ${editorTabs.length === 1 ? 'Tab' : 'Tabs'}`;
+      }
+
+      if (tabsList) {
+        tabsList.innerHTML = editorTabs.map((tab, idx) => `
+          <button type="button" class="editor-builder-tab-btn ${idx === editorActiveTabIdx ? 'active' : ''}" 
+                  onclick="switchActiveEditorTab(${idx})" 
+                  title="Edit section ${idx + 1}: ${escapeHtml(tab.title || 'Untitled')}">
+            <span class="editor-builder-tab-num">${idx + 1}</span>
+            <span class="editor-builder-tab-title">${escapeHtml(tab.title || ('Section ' + (idx + 1)))}</span>
+          </button>
+        `).join("");
+      }
+
+      const activeTab = editorTabs[editorActiveTabIdx] || editorTabs[0] || { title: "Overview", content: "" };
+      if (titleInput) {
+        titleInput.value = activeTab.title || "";
+      }
+      if (contentEl) {
+        contentEl.value = activeTab.content || "";
+      }
+      if (btnDelete) {
+        btnDelete.disabled = editorTabs.length <= 1;
+      }
+      if (wordCount) {
+        const words = (activeTab.content.trim().match(/\S+/g) || []).length;
+        wordCount.textContent = `${words} words`;
+      }
+    }
+
+    function switchActiveEditorTab(newIdx) {
+      syncActiveEditorTabContent();
+      editorActiveTabIdx = Math.max(0, Math.min(newIdx, editorTabs.length - 1));
+      renderEditorTabsSidebar();
+      updateLivePreview();
+    }
+
+    function addNewEditorTab() {
+      syncActiveEditorTabContent();
+      const nextNum = editorTabs.length + 1;
+      editorTabs.push({
+        title: `Section ${nextNum}`,
+        content: ""
+      });
+      editorActiveTabIdx = editorTabs.length - 1;
+      renderEditorTabsSidebar();
+      updateLivePreview();
+
+      const titleInput = document.getElementById("editorTabTitleInput");
+      if (titleInput) {
+        titleInput.focus();
+        titleInput.select();
+      }
+      showToast("Added new section tab! Name your section above.", "info");
+    }
+
+    function deleteCurrentEditorTab() {
+      if (editorTabs.length <= 1) {
+        showToast("Your guide must have at least one tab.", "info");
+        return;
+      }
+      editorTabs.splice(editorActiveTabIdx, 1);
+      if (editorActiveTabIdx >= editorTabs.length) {
+        editorActiveTabIdx = editorTabs.length - 1;
+      }
+      renderEditorTabsSidebar();
+      updateLivePreview();
+      showToast("Section tab deleted.", "info");
+    }
+
+    function handleEditorTabTitleChange() {
+      const input = document.getElementById("editorTabTitleInput");
+      if (!input || !editorTabs[editorActiveTabIdx]) return;
+      const newTitle = input.value.trim() || `Section ${editorActiveTabIdx + 1}`;
+      editorTabs[editorActiveTabIdx].title = newTitle;
+
+      // Update sidebar title button
+      const activeBtnTitle = document.querySelector(".editor-builder-tab-btn.active .editor-builder-tab-title");
+      if (activeBtnTitle) {
+        activeBtnTitle.textContent = newTitle;
+      }
+      updateLivePreview();
+    }
+
+    function syncActiveEditorTabContent() {
+      if (!editorTabs[editorActiveTabIdx]) return;
+      const titleInput = document.getElementById("editorTabTitleInput");
+      const contentEl = document.getElementById("editorContent");
+
+      if (titleInput && titleInput.value.trim()) {
+        editorTabs[editorActiveTabIdx].title = titleInput.value.trim();
+      }
+      if (contentEl) {
+        editorTabs[editorActiveTabIdx].content = contentEl.value;
+      }
+
+      const wordCount = document.getElementById("editorActiveTabWordCount");
+      if (wordCount && contentEl) {
+        const words = (contentEl.value.trim().match(/\S+/g) || []).length;
+        wordCount.textContent = `${words} words`;
+      }
+    }
+
+    function insertDocTab() {
+      addNewEditorTab();
+    }
+
+    const insertPageBreak = insertDocTab;
+
+    function selectSplitPreviewTab(tabNum) {
+      editorSplitActiveTab = tabNum;
+      updateLivePreview();
+    }
+
+    function selectFullPreviewTab(tabNum) {
+      editorFullActiveTab = tabNum;
+      updateLivePreview();
+    }
+
+    // Compatibility stubs for old calls
+    function changeSplitPreviewPage(delta) { selectSplitPreviewTab(editorSplitActiveTab + delta); }
+    function toggleSplitAllPages() {}
+    function changeFullPreviewPage(delta) { selectFullPreviewTab(editorFullActiveTab + delta); }
+    function toggleFullAllPages() {}
+
     function updateLivePreview() {
+      syncActiveEditorTabContent();
+
       const title = document.getElementById("editorTitle")?.value.trim() || "Untitled Guide Preview";
       const game = document.getElementById("editorGame")?.value || "General";
       const videoUrl = document.getElementById("editorVideoUrl")?.value.trim() || "";
-      const content = document.getElementById("editorContent")?.value || "";
       const isPublic = document.querySelector('input[name="guideVisibility"]:checked')?.value === "1";
       const isPinned = document.getElementById("editorPinned")?.checked || false;
 
-      const renderedHtml = renderMarkdown(content || "*No guide content written yet. Use markdown formatting above.*");
+      // Build tabs list directly from separate editorTabs
+      const tabs = editorTabs.map((t, i) => ({
+        tabNum: i + 1,
+        pageNum: i + 1,
+        title: t.title || `Section ${i + 1}`,
+        content: t.content || "*No content written for this section yet.*"
+      }));
 
-      // Update Full Preview Tab
+      if (editorSplitActiveTab > tabs.length) editorSplitActiveTab = tabs.length;
+      if (editorSplitActiveTab < 1) editorSplitActiveTab = 1;
+      if (editorFullActiveTab > tabs.length) editorFullActiveTab = tabs.length;
+      if (editorFullActiveTab < 1) editorFullActiveTab = 1;
+
+      // 1. Update Split View Pane
+      const splitTitle = document.getElementById("splitTitle");
+      if (splitTitle) splitTitle.textContent = title;
+
+      const splitBadgeGroup = document.getElementById("splitBadgeGroup");
+      if (splitBadgeGroup) {
+        splitBadgeGroup.innerHTML = `
+          <span class="guide-game-pill">${escapeHtml(game)}</span>
+          ${videoUrl ? '<span class="guide-video-pill"><i class="fas fa-play-circle"></i> Video</span>' : ''}
+          <span class="guide-pinned-pill" style="background: rgba(41, 240, 240, 0.12); color: var(--prim, #29f0f0); border-color: rgba(41, 240, 240, 0.3);"><i class="fas fa-layer-group"></i> ${tabs.length} ${tabs.length === 1 ? 'Tab' : 'Tabs'}</span>
+        `;
+      }
+
+      const splitTabPills = document.getElementById("splitTabPills");
+      if (splitTabPills) {
+        splitTabPills.innerHTML = tabs.map((t) => `
+          <button type="button" class="btn-split-tab-pill ${t.tabNum === editorSplitActiveTab ? 'active' : ''}" onclick="selectSplitPreviewTab(${t.tabNum})">
+            ${t.tabNum}. ${escapeHtml(t.title)}
+          </button>
+        `).join("");
+      }
+
+      const activeSplitTab = tabs[editorSplitActiveTab - 1] || tabs[0];
+      const splitRendered = document.getElementById("splitRenderedContent");
+      if (splitRendered && activeSplitTab) {
+        splitRendered.innerHTML = renderMarkdown(activeSplitTab.content, editorAttachments);
+      }
+
+      const splitWordCount = document.getElementById("splitWordCount");
+      if (splitWordCount && activeSplitTab) {
+        const words = (activeSplitTab.content.match(/\S+/g) || []).length;
+        splitWordCount.textContent = `${words} words &bull; ${tabs.length} ${tabs.length === 1 ? 'tab' : 'tabs'}`;
+      }
+
+      // 2. Update Full Preview Tab
       const previewTitle = document.getElementById("previewTitle");
       if (previewTitle) previewTitle.textContent = title;
+
       const previewBadgeGroup = document.getElementById("previewBadgeGroup");
       if (previewBadgeGroup) {
         previewBadgeGroup.innerHTML = `
@@ -1873,11 +3430,13 @@
           ${isPinned ? '<span class="guide-pinned-pill"><i class="fas fa-thumbtack"></i> Pinned</span>' : ''}
           ${videoUrl ? '<span class="guide-video-pill"><i class="fas fa-play-circle"></i> Video</span>' : ''}
           ${!isPublic ? '<span class="guide-private-pill"><i class="fas fa-lock"></i> Private Draft</span>' : ''}
+          <span class="guide-pinned-pill" style="background: rgba(41, 240, 240, 0.12); color: var(--prim, #29f0f0); border-color: rgba(41, 240, 240, 0.3);"><i class="fas fa-layer-group"></i> ${tabs.length} ${tabs.length === 1 ? 'Tab' : 'Tabs'}</span>
         `;
       }
+
       const videoContainer = document.getElementById("previewVideoContainer");
       if (videoContainer) {
-        if (videoUrl && videoUrl.trim()) {
+        if (videoUrl && videoUrl.trim() && editorFullActiveTab === 1) {
           const embedHtml = generateVideoEmbed(videoUrl);
           if (embedHtml) {
             videoContainer.innerHTML = embedHtml;
@@ -1894,26 +3453,36 @@
           videoContainer.innerHTML = "";
         }
       }
-      const previewRendered = document.getElementById("previewRenderedContent");
-      if (previewRendered) previewRendered.innerHTML = renderedHtml;
 
-      // Update Split View Pane
-      const splitTitle = document.getElementById("splitTitle");
-      if (splitTitle) splitTitle.textContent = title;
-      const splitBadgeGroup = document.getElementById("splitBadgeGroup");
-      if (splitBadgeGroup) {
-        splitBadgeGroup.innerHTML = `
-          <span class="guide-game-pill">${escapeHtml(game)}</span>
-          ${videoUrl ? '<span class="guide-video-pill"><i class="fas fa-play-circle"></i> Video</span>' : ''}
-        `;
+      const previewTabsBadge = document.getElementById("previewTabsBadge");
+      if (previewTabsBadge) {
+        previewTabsBadge.textContent = `${tabs.length} ${tabs.length === 1 ? 'Tab' : 'Tabs'}`;
       }
-      const splitRendered = document.getElementById("splitRenderedContent");
-      if (splitRendered) splitRendered.innerHTML = renderedHtml;
 
-      const splitWordCount = document.getElementById("splitWordCount");
-      if (splitWordCount) {
-        const words = content.trim() ? content.trim().split(/\s+/).length : 0;
-        splitWordCount.textContent = `${words} words`;
+      const previewTabsList = document.getElementById("previewTabsList");
+      if (previewTabsList) {
+        previewTabsList.innerHTML = tabs.map((t) => `
+          <button type="button" class="doc-sidebar-tab ${t.tabNum === editorFullActiveTab ? 'active' : ''}" onclick="selectFullPreviewTab(${t.tabNum})">
+            <span class="doc-tab-num">${t.tabNum}</span>
+            <span class="doc-tab-title">${escapeHtml(t.title)}</span>
+          </button>
+        `).join("");
+      }
+
+      const activeFullTab = tabs[editorFullActiveTab - 1] || tabs[0];
+      const previewBreadcrumb = document.getElementById("previewBreadcrumb");
+      if (previewBreadcrumb && activeFullTab) {
+        previewBreadcrumb.innerHTML = `Section ${activeFullTab.tabNum} &bull; <strong>${escapeHtml(activeFullTab.title)}</strong>`;
+      }
+
+      const previewActiveTabBadge = document.getElementById("previewActiveTabBadge");
+      if (previewActiveTabBadge) {
+        previewActiveTabBadge.textContent = `Tab ${editorFullActiveTab} of ${tabs.length}`;
+      }
+
+      const previewRendered = document.getElementById("previewRenderedContent");
+      if (previewRendered && activeFullTab) {
+        previewRendered.innerHTML = renderMarkdown(activeFullTab.content, editorAttachments);
       }
     }
 
@@ -1930,16 +3499,17 @@
       textarea.focus();
       textarea.setSelectionRange(start + prefix.length, start + prefix.length + (selected.length || 4));
 
-      // Instantly update live preview!
+      syncActiveEditorTabContent();
       updateLivePreview();
     }
 
     async function saveGuide() {
+      syncActiveEditorTabContent();
+
       const title = document.getElementById("editorTitle").value.trim();
       const game = document.getElementById("editorGame").value;
       const videoUrl = document.getElementById("editorVideoUrl").value.trim();
       const summary = document.getElementById("editorSummary").value.trim();
-      const content = document.getElementById("editorContent").value.trim();
       const isPublic = document.querySelector('input[name="guideVisibility"]:checked')?.value === "1";
       const isPinned = document.getElementById("editorPinned").checked;
 
@@ -1947,17 +3517,35 @@
         showToast("Please provide a guide title", "error");
         return;
       }
-      if (!content) {
-        showToast("Please provide guide content", "error");
+
+      // Check if at least one tab has content
+      const hasContent = editorTabs.some((t) => (t.content && t.content.trim().length > 0));
+      if (!hasContent) {
+        showToast("Please write content in at least one documentation tab", "error");
         return;
+      }
+
+      // Bundle all tabs cleanly with <!--tab: Title--> separators
+      let bundledContent = editorTabs.map((t, idx) => {
+        const cleanContent = (t.content || "").trim();
+        if (idx === 0) {
+          return cleanContent;
+        } else {
+          return `<!--tab: ${t.title || ('Section ' + (idx + 1))}-->\n\n${cleanContent}`;
+        }
+      }).join("\n\n");
+
+      // Append clean attachments metadata if present
+      if (editorAttachments && Object.keys(editorAttachments).length > 0) {
+        bundledContent += `\n\n<!--attachments:${JSON.stringify(editorAttachments)}-->`;
       }
 
       const payload = {
         title: title,
         game: game,
         video_url: videoUrl,
-        summary: summary,
-        content: content,
+        summary: summary || (editorTabs[0].content || "").substring(0, 150).replace(/[#*`_]/g, "").trim(),
+        content: bundledContent,
         is_public: isPublic ? 1 : 0,
         pinned: isPinned ? 1 : 0
       };
@@ -1971,7 +3559,17 @@
       const btnSave = document.getElementById("btnSaveGuide");
       btnSave.disabled = true;
 
+      // 1. Pre-cache all image attachments in browser storage so they can never be lost
+      try {
+        if (editorAttachments) {
+          for (const [key, val] of Object.entries(editorAttachments)) {
+            localStorage.setItem("cys_att_" + key, val);
+          }
+        }
+      } catch (e) {}
+
       let apiSaved = false;
+      let apiErrorMsg = "";
       try {
         const url = editingGuideId ? `${API_BASE}/api/guides/${editingGuideId}` : `${API_BASE}/api/guides`;
         const method = editingGuideId ? "PUT" : "POST";
@@ -1986,25 +3584,32 @@
           const data = await res.json();
           if (!data.error) {
             apiSaved = true;
+          } else {
+            apiErrorMsg = data.error;
           }
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          apiErrorMsg = errData.error || `Server responded with ${res.status}`;
+          console.warn("API save rejected:", res.status, apiErrorMsg);
         }
       } catch (err) {
         console.warn("API request unavailable, persisting locally:", err);
       }
 
-      // Save locally only as an offline fallback if API request didn't succeed
+      // Save locally as a rock-solid fallback if API request didn't succeed
       if (!apiSaved) {
         saveGuideToLocalStorage(payload, editingGuideId);
-      } else if (editingGuideId && String(editingGuideId).startsWith("local_")) {
-        // If it was a local draft that was just published to the cloud server, remove local copy
-        try {
-          let local = JSON.parse(localStorage.getItem("cys_local_guides") || "[]");
-          local = local.filter((g) => String(g.id) !== String(editingGuideId));
-          localStorage.setItem("cys_local_guides", JSON.stringify(local));
-        } catch (e) {}
+        showToast(apiErrorMsg ? `${apiErrorMsg} (Saved locally to your browser)` : "Saved locally to your browser!", "info");
+      } else {
+        if (editingGuideId && String(editingGuideId).startsWith("local_")) {
+          try {
+            let local = JSON.parse(localStorage.getItem("cys_local_guides") || "[]");
+            local = local.filter((g) => String(g.id) !== String(editingGuideId));
+            localStorage.setItem("cys_local_guides", JSON.stringify(local));
+          } catch (e) {}
+        }
+        showToast(editingGuideId ? "Guide updated successfully!" : "Guide published successfully!", "success");
       }
-
-      showToast(editingGuideId ? "Guide updated successfully!" : "Guide published successfully!", "success");
       closeModal("guideEditorModal");
       await fetchGuides();
 
@@ -2070,7 +3675,7 @@
     async function toggleVisibilityById(guideId) {
       const guide = allGuides.find((item) => String(item.id) === String(guideId));
       if (guide && !canEditGuide(guide)) {
-        showToast("Access Denied: Only the creator of this post or the owner can change visibility.", "error");
+        showToast("Access Denied: Staff or the author can change visibility.", "error");
         return;
       }
 
@@ -2100,7 +3705,7 @@
     async function deleteGuideById(guideId) {
       const guide = allGuides.find((item) => String(item.id) === String(guideId));
       if (guide && !canEditGuide(guide)) {
-        showToast("Access Denied: Only the creator of this post or the owner can delete it.", "error");
+        showToast("Access Denied: Staff or the author can delete this guide.", "error");
         return false;
       }
 
@@ -2158,11 +3763,47 @@
       return `<iframe src="${escapeHtml(url)}" allowfullscreen></iframe>`;
     }
 
-    function renderMarkdown(md) {
+    function renderMarkdown(md, attachments = null) {
       if (!md) return "";
 
+      // 1. Resolve attachments from parameter, current viewing guide, editor, or embedded metadata
+      let activeAttachments = attachments;
+      if (!activeAttachments || Object.keys(activeAttachments).length === 0) {
+        if (currentViewingGuide && currentViewingGuide.attachments && Object.keys(currentViewingGuide.attachments).length > 0) {
+          activeAttachments = currentViewingGuide.attachments;
+        } else if (editorAttachments && Object.keys(editorAttachments).length > 0) {
+          activeAttachments = editorAttachments;
+        } else {
+          const extracted = extractGuideAttachments(md);
+          if (extracted.attachments && Object.keys(extracted.attachments).length > 0) {
+            activeAttachments = extracted.attachments;
+          }
+        }
+      }
+      activeAttachments = activeAttachments || {};
+
+      let processed = md;
+
+      // 2. Replace clean image attachment tokens: ![Alt](attachment:key) -> ![Alt](dataUrl)
+      processed = processed.replace(/!\[([^\]]*)\]\(attachment:([a-zA-Z0-9_\-]+)\)/g, (match, alt, key) => {
+        // A. From active dictionary
+        if (activeAttachments[key]) {
+          return `![${alt}](${activeAttachments[key]})`;
+        }
+        // B. From persistent browser cache (preserves images even if server stripped metadata)
+        try {
+          const cached = localStorage.getItem("cys_att_" + key);
+          if (cached) {
+            return `![${alt}](${cached})`;
+          }
+        } catch (e) {}
+
+        // C. Safe fallback: NEVER output attachment: protocol to <img> tag to avoid ERR_UNKNOWN_URL_SCHEME!
+        return `\n<div class="guide-broken-img-notice" style="display:inline-flex;align-items:center;gap:0.45rem;padding:0.45rem 0.85rem;border-radius:8px;background:rgba(255,255,255,0.05);border:1px dashed rgba(41,240,240,0.3);color:#94a3b8;font-size:0.86rem;margin:0.6rem 0;"><i class="fas fa-image" style="color:var(--prim, #29f0f0)"></i> <span>[Image Attachment: ${escapeHtml(alt || key)}]</span></div>\n`;
+      });
+
       // Convert custom GitHub alert callouts first
-      let processed = md
+      processed = processed
         .replace(/^> \[!TIP\]\s*\n((?:> .*(?:\n|$))+)/gim, (m, body) => {
           const cleanBody = body.replace(/^> /gm, '');
           return `<div class="alert-tip"><i class="fas fa-lightbulb"></i> <strong>Tip:</strong> ${cleanBody}</div>\n\n`;
@@ -2453,6 +4094,9 @@
     }
 
     document.addEventListener("keydown", (e) => {
+      const readerModal = document.getElementById("guideReaderModal");
+      const isReaderOpen = readerModal && readerModal.style.display === "flex";
+
       if (e.key === "Escape") {
         const logsModal = document.getElementById("guideLogsModal");
         if (logsModal && logsModal.style.display === "flex") {
@@ -2473,6 +4117,21 @@
         }
 
         closeModal("guideReaderModal");
+        return;
+      }
+
+      // Keyboard Navigation in Document Tabs Mode
+      if (isReaderOpen && readerMode === "doc") {
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+        if (activeTag !== "input" && activeTag !== "textarea" && activeTag !== "select") {
+          if (e.key === "ArrowLeft" || e.key === "ArrowUp" || e.key === "PageUp") {
+            e.preventDefault();
+            prevDocTab();
+          } else if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "PageDown") {
+            e.preventDefault();
+            nextDocTab();
+          }
+        }
       }
     });
 

@@ -1335,17 +1335,25 @@ function initReveal() {
 function initParticles() {
   const wrap = document.querySelector('.bg-wrap');
   if (!wrap) return;
-  for (let i = 0; i < 22; i++) {
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  // Lightweight particle budget (8 particles instead of 22 to eliminate CPU overhead)
+  for (let i = 0; i < 8; i++) {
     const p = document.createElement('div');
     p.className = 'bg-particle';
     p.style.setProperty('--x',     Math.random() * 100 + 'vw');
-    p.style.setProperty('--dur',   9 + Math.random() * 13 + 's');
-    p.style.setProperty('--delay', -Math.random() * 22 + 's');
-    p.style.setProperty('--sz',    1.5 + Math.random() * 2.5 + 'px');
-    p.style.setProperty('--op',    String(0.25 + Math.random() * 0.45));
+    p.style.setProperty('--dur',   14 + Math.random() * 14 + 's');
+    p.style.setProperty('--delay', -Math.random() * 20 + 's');
+    p.style.setProperty('--sz',    1.5 + Math.random() * 2 + 'px');
+    p.style.setProperty('--op',    String(0.2 + Math.random() * 0.35));
     p.style.background = Math.random() > 0.5 ? 'var(--cyan, #29f0f0)' : 'var(--pink, #d42dcc)';
     wrap.appendChild(p);
   }
+
+  // Pause particle animations when tab is hidden to save 100% CPU in background
+  document.addEventListener('visibilitychange', () => {
+    wrap.style.display = document.hidden ? 'none' : 'block';
+  }, { passive: true });
 }
 
 function initHeroEntrance() {

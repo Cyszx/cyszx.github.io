@@ -49,10 +49,13 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   transition: width 0.08s linear;
 }
 
-/* BACKGROUND */
+/* BACKGROUND - GPU Accelerated & Battery Optimized */
 .bg-wrap {
   position: fixed; inset: 0;
   z-index: -1; overflow: hidden; pointer-events: none;
+  contain: strict;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .bg-grid {
@@ -61,9 +64,8 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
     linear-gradient(rgba(41,240,240,0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(41,240,240,0.04) 1px, transparent 1px);
   background-size: 44px 44px;
-  animation: grid-drift 18s linear infinite;
+  pointer-events: none;
 }
-@keyframes grid-drift { to { background-position: 44px 44px; } }
 
 .bg-aurora {
   position: absolute;
@@ -79,13 +81,17 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
     rgba(41,240,240,0.03) 280deg,
     transparent 320deg
   );
-  animation: aurora-spin 50s linear infinite;
+  will-change: transform;
+  transform: translateZ(0);
+  animation: aurora-spin 60s linear infinite;
 }
-@keyframes aurora-spin { to { transform: rotate(360deg); } }
+@keyframes aurora-spin { to { transform: rotate(360deg) translateZ(0); } }
 
 .bg-orb {
   position: absolute;
   border-radius: 50%;
+  will-change: transform;
+  transform: translateZ(0);
   animation: orb-drift 22s ease-in-out infinite alternate;
 }
 .bg-orb-1 {
@@ -100,8 +106,8 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   animation-delay: -11s; animation-direction: alternate-reverse;
 }
 @keyframes orb-drift {
-  0%   { transform: translate(0, 0); }
-  100% { transform: translate(30px, 25px); }
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(30px, 25px, 0); }
 }
 
 .bg-particle {
@@ -113,13 +119,21 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   border-radius: 50%;
   background: var(--prim);
   opacity: var(--op);
+  will-change: transform, opacity;
+  transform: translateZ(0);
   animation: p-float var(--dur) linear var(--delay) infinite;
   pointer-events: none;
 }
 @keyframes p-float {
-  0%   { transform: translateY(0) translateX(0); opacity: var(--op); }
-  50%  { transform: translateY(-45vh) translateX(15px); }
-  100% { transform: translateY(-95vh) translateX(-8px); opacity: 0; }
+  0%   { transform: translate3d(0, 0, 0); opacity: var(--op); }
+  50%  { transform: translate3d(15px, -45vh, 0); }
+  100% { transform: translate3d(-8px, -95vh, 0); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-aurora, .bg-orb, .bg-particle {
+    animation: none !important;
+  }
 }
 
 /* NAVBAR */
@@ -290,12 +304,14 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
 }
 .card-featured::before {
   content: '';
-  position: absolute; top: 0; left: -100%;
+  position: absolute; top: 0; left: 0;
   width: 55%; height: 2.5px;
   background: linear-gradient(90deg, transparent, rgba(41,240,240,0.7), transparent);
+  will-change: transform;
+  transform: translate3d(-100%, 0, 0);
   animation: top-sweep 4s ease-in-out 1.5s infinite;
 }
-@keyframes top-sweep { 0%{left:-100%} 50%,100%{left:200%} }
+@keyframes top-sweep { 0%{transform: translate3d(-100%, 0, 0);} 50%,100%{transform: translate3d(260%, 0, 0);} }
 
 .featured-chip {
   position: absolute; top: 1rem; left: 1rem;
