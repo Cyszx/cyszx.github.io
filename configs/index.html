@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sour+Gummy:ital,wght@0,100..900;1,100..900&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-  <link rel="stylesheet" href="style.css?v=2.2" />
+  <link rel="stylesheet" href="style.css?v=3.1" />
   <link rel="icon" type="image/x-icon" href="../assets/cyslogo.png" />
 </head>
 <body>
@@ -45,13 +45,18 @@
         <a href="https://discord.gg/cys" class="discord-link" target="_blank"><i class="fab fa-discord"></i> Discord</a>
       </div>
       <div class="ch-nav-right">
+        <!-- Macro Remote Control Button (visible only to verified testers) -->
+        <button class="btn-macro-remote hidden" id="btn-macro-remote" onclick="openMacroRemoteModal()" title="CysLink Macro Remote Control">
+          <span class="macro-dot offline" id="macro-status-dot"></span>
+          <span class="macro-label" id="macro-status-label">Macro</span>
+        </button>
         <!-- Logged out state -->
         <button class="btn-login" id="btn-login" onclick="startDiscordLogin()">
           <i class="fab fa-discord"></i>
           Login with Discord
         </button>
         <!-- Logged in state (hidden by default) -->
-        <button class="ch-nav-user hidden" id="nav-user" onclick="openUserProfileModal()" title="Click to view Profile & Key Access">
+        <button class="ch-nav-user hidden" id="nav-user" onclick="openUserProfileModal()" title="Profile">
           <img id="nav-user-avatar" src="" alt="User" />
           <span id="nav-user-name">User</span>
           <span class="user-role-badge" id="nav-user-badge">Member</span>
@@ -156,6 +161,12 @@
           <div class="detail-badge-group">
             <span class="game-badge" id="detail-game">Anime Expeditions</span>
             <span class="detail-mode-badge" id="detail-mode-badge">Story</span>
+            <span class="detail-time-chip" id="detail-created-chip" title="Upload Date">
+              <i class="far fa-clock"></i> <span id="detail-created-text">Uploaded</span>
+            </span>
+            <span class="detail-time-chip edited hidden" id="detail-edited-chip" title="Last Edited Date">
+              <i class="fas fa-pen-nib"></i> <span id="detail-edited-text">Edited</span>
+            </span>
           </div>
           <h2 id="detail-title" class="detail-main-title">Config Name</h2>
         </div>
@@ -173,44 +184,50 @@
       <div class="detail-share-code-banner">
         <div class="share-code-left">
           <span class="code-icon"><i class="fas fa-key"></i></span>
-          <div>
-            <div class="code-label">Macro Share Code</div>
-            <div class="code-text" id="detail-code">CYS-XXXX</div>
+          <div class="code-info">
+            <span class="code-label">Share Code</span>
+            <span class="code-text" id="detail-code">CYS-XXXX</span>
           </div>
         </div>
-        <button class="btn-copy-code" id="btn-copy-code" onclick="copyShareCode()">
-          <i class="fas fa-copy"></i>
-          <span>Copy Code</span>
-        </button>
+        <div class="share-code-actions">
+          <button class="btn-copy-code" id="btn-copy-code" onclick="copyShareCode()">
+            <i class="fas fa-copy"></i>
+            <span>Copy</span>
+          </button>
+          <button class="btn-send-macro" id="btn-detail-send-macro" onclick="sendCurrentConfigToMacro()" title="Send to macro">
+            <i class="fas fa-arrow-right"></i>
+            <span>Send to Macro</span>
+          </button>
+        </div>
       </div>
 
-      <!-- Metrics Quad -->
+      <!-- Metrics Quad (Strict 4-Column Single Row) -->
       <div class="detail-info-grid" id="detail-info-grid">
         <div class="detail-info-item">
           <div class="info-icon"><i class="fas fa-gamepad"></i></div>
-          <div>
-            <div class="info-label">Mode / Category</div>
+          <div class="info-meta">
+            <div class="info-label">Mode</div>
             <div class="info-value" id="detail-mode">-</div>
           </div>
         </div>
         <div class="detail-info-item">
           <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
-          <div>
-            <div class="info-label">Map / Stage</div>
+          <div class="info-meta">
+            <div class="info-label">Map</div>
             <div class="info-value" id="detail-map">-</div>
           </div>
         </div>
         <div class="detail-info-item">
           <div class="info-icon cyan"><i class="fas fa-download"></i></div>
-          <div>
-            <div class="info-label">Total Downloads</div>
+          <div class="info-meta">
+            <div class="info-label">Downloads</div>
             <div class="info-value" id="detail-downloads">0</div>
           </div>
         </div>
         <div class="detail-info-item">
           <div class="info-icon pink"><i class="fas fa-heart"></i></div>
-          <div>
-            <div class="info-label">Community Likes</div>
+          <div class="info-meta">
+            <div class="info-label">Likes</div>
             <div class="info-value" id="detail-likes-num">0</div>
           </div>
         </div>
@@ -218,13 +235,13 @@
 
       <!-- Description Section -->
       <div class="detail-section-block">
-        <h4 class="detail-section-title"><i class="fas fa-align-left"></i> Description &amp; Usage Notes</h4>
+        <h4 class="detail-section-title">Description</h4>
         <div class="detail-description" id="detail-description">No description provided.</div>
       </div>
 
       <!-- Tags Row -->
       <div class="detail-section-block">
-        <h4 class="detail-section-title"><i class="fas fa-tags"></i> Tags</h4>
+        <h4 class="detail-section-title">Tags</h4>
         <div class="config-card-tags" id="detail-tags"></div>
       </div>
 
@@ -262,6 +279,10 @@
           </button>
           <button class="btn-delete-config hidden" id="btn-delete-config" onclick="deleteConfig()" title="Delete this config">
             <i class="fas fa-trash-alt"></i>
+          </button>
+          <button class="btn-macro-action" id="btn-detail-macro-bottom" onclick="sendCurrentConfigToMacro()">
+            <i class="fas fa-arrow-right"></i>
+            <span>Send to Macro</span>
           </button>
           <button class="btn-download-config" onclick="downloadConfig()">
             <i class="fas fa-download"></i>
@@ -411,6 +432,202 @@
     </div>
   </div>
 
+  <!-- Macro Remote Control Modal -->
+  <div class="modal-overlay" id="macro-remote-modal">
+    <div class="modal-box macro-remote-modal-box">
+      <div class="modal-header">
+        <div class="macro-modal-header-left">
+          <div class="macro-title-row">
+            <span class="macro-brand-badge">CysLink</span>
+            <span class="macro-device-name" id="macro-modal-device-name">No Device Connected</span>
+            <span class="macro-state-badge offline" id="macro-modal-state-badge">Offline</span>
+          </div>
+          <p class="macro-modal-subtitle">Remote Control</p>
+        </div>
+        <div class="macro-modal-header-right">
+          <button class="macro-btn-icon" id="macro-btn-refresh-status" onclick="refreshMacroStatus(true)" title="Refresh status">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+          <button class="modal-close" onclick="closeMacroRemoteModal()" aria-label="Close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- State: Not Paired / Pairing Card -->
+      <div class="macro-pair-card" id="macro-pair-card">
+        <div class="macro-pair-icon-wrap">
+          <i class="fas fa-link"></i>
+        </div>
+        <h3>Connect Macro</h3>
+        <p>Enter the 6-digit Link Code from your macro settings or press <strong>F6</strong>.</p>
+        <div class="macro-pair-input-row">
+          <div class="macro-code-prefix">AE-</div>
+          <input type="text" class="macro-pair-input" id="macro-pair-code-input" placeholder="123456" maxlength="6" autocomplete="off" spellcheck="false" />
+          <button class="btn-pair-submit" id="btn-pair-submit" onclick="submitPairCode()">
+            <span>Connect</span>
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+        <div class="macro-pair-auto-row">
+          <button class="btn-macro-auto-detect" id="btn-macro-auto-detect" onclick="detectMacroDevice(true)">
+            <span>Find running macro</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- State: Paired / Live Control Dashboard -->
+      <div class="macro-dashboard hidden" id="macro-dashboard">
+        <!-- Stats Grid -->
+        <div class="macro-telemetry-grid">
+          <div class="macro-telem-box">
+            <div class="telem-lbl">Status</div>
+            <div class="telem-val" id="macro-telem-state">Idle</div>
+          </div>
+          <div class="macro-telem-box">
+            <div class="telem-lbl">Mode</div>
+            <div class="telem-val" id="macro-telem-mode">-</div>
+          </div>
+          <div class="macro-telem-box">
+            <div class="telem-lbl">Team</div>
+            <div class="telem-val" id="macro-telem-team">-</div>
+          </div>
+          <div class="macro-telem-box">
+            <div class="telem-lbl">Uptime</div>
+            <div class="telem-val" id="macro-telem-uptime">0s</div>
+          </div>
+          <div class="macro-telem-box">
+            <div class="telem-lbl">Ping</div>
+            <div class="telem-val" id="macro-telem-ping">Just now</div>
+          </div>
+        </div>
+
+        <!-- Mode, Stage & Team Controls -->
+        <div class="macro-mode-section">
+          <div class="macro-compact-header">
+            <span class="macro-subheading">Mode, Stage &amp; Team</span>
+          </div>
+          <div class="macro-selectors-row">
+            <div class="macro-select-group">
+              <label for="macro-mode-dropdown">Mode</label>
+              <select id="macro-mode-dropdown" class="macro-dropdown" onchange="onMacroModeChange()">
+                <option value="story">Story</option>
+                <option value="raid">Raid</option>
+                <option value="infinitytower">Infinity Tower</option>
+                <option value="portals">Portals</option>
+                <option value="event">Events</option>
+              </select>
+            </div>
+            <div class="macro-select-group" id="macro-stage-group">
+              <label for="macro-stage-dropdown">Stage</label>
+              <select id="macro-stage-dropdown" class="macro-dropdown" onchange="onMacroStageChange()">
+                <!-- Dynamic -->
+              </select>
+            </div>
+            <div class="macro-select-group" id="macro-act-group">
+              <label for="macro-act-dropdown">Act</label>
+              <select id="macro-act-dropdown" class="macro-dropdown">
+                <!-- Dynamic -->
+              </select>
+            </div>
+            <div class="macro-select-group" id="macro-team-group">
+              <label for="macro-team-dropdown">Team</label>
+              <select id="macro-team-dropdown" class="macro-dropdown" onchange="onMacroTeamChange()">
+                <option value="none">No Team</option>
+                <option value="1">Team 1</option>
+                <option value="2">Team 2</option>
+                <option value="3">Team 3</option>
+                <option value="4">Team 4</option>
+                <option value="5">Team 5</option>
+                <option value="6">Team 6</option>
+                <option value="7">Team 7</option>
+                <option value="8">Team 8</option>
+              </select>
+            </div>
+            <button type="button" class="btn-apply-stage" id="btn-apply-stage" onclick="applyMacroStageSelection()">
+              Apply Selection
+            </button>
+          </div>
+        </div>
+
+        <!-- Screenshot Section -->
+        <div class="macro-screen-section">
+          <div class="macro-screen-header">
+            <span class="macro-screen-title">Game Screen</span>
+            <div class="macro-screen-actions">
+              <span class="screen-updated-text" id="macro-screen-time">No screenshot</span>
+              <button class="macro-btn-screen-refresh" id="btn-capture-screen" onclick="requestMacroScreenshot()">
+                <i class="fas fa-camera"></i> <span>Capture Screen</span>
+              </button>
+            </div>
+          </div>
+          <div class="macro-screen-viewport" id="macro-screen-viewport">
+            <div class="macro-screen-placeholder" id="macro-screen-placeholder">
+              <span>No screenshot captured</span>
+            </div>
+            <img class="macro-screen-img hidden" id="macro-screen-img" alt="Macro Screen" />
+            <div class="macro-screen-spinner hidden" id="macro-screen-spinner">
+              <div class="ch-spinner"></div>
+              <span>Capturing screen...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls Grid -->
+        <div class="macro-controls-section">
+          <h4 class="macro-section-subtitle">Controls</h4>
+          <div class="macro-actions-grid">
+            <button class="macro-action-btn action-start" id="macro-btn-start" onclick="sendMacroCommand('StartMacro')">
+              <i class="fas fa-play"></i>
+              <span>Start</span>
+            </button>
+            <button class="macro-action-btn action-pause" id="macro-btn-pause" onclick="toggleMacroPause()">
+              <i class="fas fa-pause" id="macro-pause-icon"></i>
+              <span id="macro-pause-text">Pause</span>
+            </button>
+            <button class="macro-action-btn action-restart" onclick="sendMacroCommand('RestartMacro')">
+              <i class="fas fa-redo-alt"></i>
+              <span>Restart</span>
+            </button>
+            <button class="macro-action-btn action-reconnect" onclick="sendMacroCommand('Reconnect')">
+              <i class="fas fa-plug"></i>
+              <span>Reconnect</span>
+            </button>
+            <button class="macro-action-btn action-roblox" onclick="sendMacroCommand('CloseRoblox')">
+              <i class="fas fa-times-circle"></i>
+              <span>Close Game</span>
+            </button>
+            <button class="macro-action-btn action-shutdown" onclick="confirmMacroShutdown()">
+              <i class="fas fa-power-off"></i>
+              <span>Shutdown</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Load Share Code -->
+        <div class="macro-inject-section">
+          <h4 class="macro-section-subtitle">Load Share Code</h4>
+          <div class="macro-inject-row">
+            <input type="text" class="macro-inject-input" id="macro-inject-code" placeholder="e.g. CYS-8X9P" maxlength="20" autocomplete="off" spellcheck="false" />
+            <button class="btn-inject-submit" id="btn-inject-submit" onclick="submitInjectCode()">
+              <span>Send to Macro</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Device Management Footer -->
+        <div class="macro-modal-footer">
+          <div class="macro-footer-dev-info">
+            <span>Device: <code id="macro-footer-device-id">----</code></span>
+          </div>
+          <button class="btn-macro-unlink" onclick="unlinkActiveMacro()">
+            <i class="fas fa-unlink"></i> Disconnect
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
@@ -422,6 +639,6 @@
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="app.js?v=2.3"></script>
+  <script src="app.js?v=3.1"></script>
 </body>
 </html>

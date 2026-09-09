@@ -8,6 +8,9 @@
   // Live Cloudflare Worker API URL
   var API_BASE = "https://cys-configs-api.cyszxz615.workers.dev";
 
+  // CysLink Cloud Relay API URL
+  var CYSLINK_API = localStorage.getItem("cyslink_api_override") || "https://cyslink.onrender.com";
+
   // Discord Application's Client ID
   var DISCORD_CLIENT_ID = "1363171262314188951";
 
@@ -41,6 +44,11 @@
   var isEditing = false;
   var editingConfigCode = null;
 
+  // CysLink Remote State
+  var activeMacroDevice = null;
+  var macroPollTimer = null;
+  var macroModalOpen = false;
+
   // ==========================================
   // INITIALIZATION
   // ==========================================
@@ -56,6 +64,7 @@
     initMobileNav();
     updateFavoritesBadge();
     loadConfigs();
+    initMacroRemote();
   });
 
   function initScrollProgress() {
@@ -78,10 +87,13 @@
       var token = localStorage.getItem("ch_token");
       if (userData && token) {
         currentUser = JSON.parse(userData);
-        currentUser.is_admin = !!currentUser.is_admin;
-        currentUser.is_premium = !!(currentUser.is_premium || currentUser.is_admin || currentUser.is_config_maker || currentUser.is_creator);
+        currentUser.is_owner = !!currentUser.is_owner || currentUser.id === "1141849395902554202";
+        currentUser.is_admin = !!currentUser.is_admin || currentUser.is_owner;
+        currentUser.is_premium = !!(currentUser.is_premium || currentUser.is_admin || currentUser.is_owner || currentUser.is_config_maker || currentUser.is_creator);
+        currentUser.is_macro_tester = !!(currentUser.is_macro_tester || currentUser.is_owner || currentUser.is_admin);
         updateUIForLoggedIn();
         syncLiveUserRoles();
+        checkMacroTesterAccess();
       }
     } catch (e) {
       localStorage.removeItem("ch_user");
@@ -107,13 +119,15 @@
         if (!data || !data.user) return;
         console.log("[Auth Sync] Live roles synced from server:", data);
         if (currentUser) {
-          currentUser.is_owner = !!data.user.is_owner;
-          currentUser.is_admin = !!data.user.is_admin;
+          currentUser.is_owner = !!data.user.is_owner || currentUser.id === "1141849395902554202";
+          currentUser.is_admin = !!data.user.is_admin || currentUser.is_owner;
           currentUser.is_premium = !!data.user.is_premium;
           currentUser.is_config_maker = !!data.user.is_config_maker;
           currentUser.is_creator = !!data.user.is_creator;
+          currentUser.is_macro_tester = !!(data.user.is_macro_tester || currentUser.is_owner || currentUser.is_admin);
           localStorage.setItem("ch_user", JSON.stringify(currentUser));
           updateUIForLoggedIn();
+          checkMacroTesterAccess();
         }
       })
       .catch(function (err) {
@@ -159,9 +173,15 @@
         currentUser.is_owner = !!currentUser.is_owner || currentUser.id === "1141849395902554202";
         currentUser.is_admin = !!currentUser.is_admin || currentUser.is_owner;
         currentUser.is_premium = !!(currentUser.is_premium || currentUser.is_admin || currentUser.is_owner || currentUser.is_config_maker || currentUser.is_creator);
+        currentUser.is_macro_tester = !!(data.user.is_macro_tester || currentUser.is_owner || currentUser.is_admin);
         localStorage.setItem("ch_user", JSON.stringify(currentUser));
         localStorage.setItem("ch_token", data.token);
         updateUIForLoggedIn();
+        checkMacroTesterAccess().then(function (allowed) {
+          if (allowed) {
+            syncUserMacroDevices(true);
+          }
+        });
         var roleTitle = currentUser.is_owner
           ? " (Owner)"
           : (currentUser.is_admin
@@ -221,6 +241,7 @@
 
     document.getElementById("nav-my-configs").classList.remove("hidden");
     document.getElementById("btn-my-configs").classList.remove("hidden");
+    checkMacroTesterAccess();
   }
 
   window.openUserProfileModal = async function () {
@@ -368,6 +389,7 @@
 
   window.logoutUser = function () {
     currentUser = null;
+    isMacroTester = false;
     localStorage.removeItem("ch_user");
     localStorage.removeItem("ch_token");
     location.reload();
@@ -482,6 +504,16 @@
         rankHtml = '<span class="trending-rank-badge rank-3"><i class="fas fa-award"></i> #3 Trending</span>';
       }
 
+      var trendingTimeHtml = '';
+      if (config.created_at) {
+        trendingTimeHtml = '<div class="trending-time-meta">';
+        trendingTimeHtml += '<span class="time-badge upload-time" title="Uploaded ' + formatDate(config.created_at) + '"><i class="far fa-clock"></i> ' + formatTimeAgo(config.created_at) + '</span>';
+        if (isEdited(config.created_at, config.updated_at)) {
+          trendingTimeHtml += '<span class="time-badge edited-time" title="Last edited ' + formatDate(config.updated_at) + '"><i class="fas fa-pen-nib"></i> Edited ' + formatTimeAgo(config.updated_at) + '</span>';
+        }
+        trendingTimeHtml += '</div>';
+      }
+
       card.innerHTML =
         '<div class="trending-card-glow"></div>' +
         '<div class="trending-card-header">' +
@@ -498,6 +530,7 @@
         '      <i class="fas fa-copy"></i> ' + escapeHtml(config.share_code) +
         '    </span>' +
         '  </div>' +
+        trendingTimeHtml +
         '</div>' +
         '<div class="trending-card-footer">' +
         '  <div class="trending-author">' +
@@ -505,6 +538,7 @@
         '    <span>' + escapeHtml(config.author_name || "Community") + '</span>' +
         '  </div>' +
         '  <div class="trending-stats">' +
+        '    <button class="btn-card-macro" onclick="event.stopPropagation(); window.quickSendToMacro(\'' + escapeHtml(config.share_code) + '\', \'' + escapeHtml(config.name) + '\')" title="Send directly to Macro"><i class="fas fa-bolt"></i></button>' +
         '    <span class="stat-pill downloads"><i class="fas fa-download"></i> ' + formatNumber(config.downloads || 0) + '</span>' +
         '    <span class="stat-pill files"><i class="fas fa-file-alt"></i> ' + (config.file_count || 1) + ' file' + (config.file_count !== 1 ? 's' : '') + '</span>' +
         '  </div>' +
@@ -572,6 +606,15 @@
         openDetailModal(config);
       };
 
+      var timeMetaHtml = '<div class="config-time-meta">';
+      if (config.created_at) {
+        timeMetaHtml += '<span class="time-badge upload-time" title="Uploaded ' + formatDate(config.created_at) + '"><i class="far fa-clock"></i> Uploaded ' + formatTimeAgo(config.created_at) + '</span>';
+      }
+      if (isEdited(config.created_at, config.updated_at)) {
+        timeMetaHtml += '<span class="time-badge edited-time" title="Last edited ' + formatDate(config.updated_at) + '"><i class="fas fa-pen-nib"></i> Edited ' + formatTimeAgo(config.updated_at) + '</span>';
+      }
+      timeMetaHtml += '</div>';
+
       card.innerHTML =
         '<div class="config-glow"></div>' +
         '<div class="config-card-header">' +
@@ -587,6 +630,7 @@
         '  <h3 class="config-card-title" title="' + escapeHtml(config.name) + '">' + escapeHtml(config.name) + '</h3>' +
         '  <p class="config-card-desc">' + escapeHtml(config.description || "Community configuration optimized for automated farming.") + '</p>' +
         '  <div class="config-card-tags">' + (tagsHtml || '<span class="config-tag">General</span>') + '</div>' +
+        timeMetaHtml +
         '</div>' +
         '<div class="config-card-footer">' +
         '  <div class="config-author">' +
@@ -601,6 +645,7 @@
         '    <button class="btn-like" id="btn-like-' + config.share_code + '" onclick="event.stopPropagation(); toggleLike(\'' + config.share_code + '\')" title="Upvote">' +
         '      <i class="fas fa-heart"></i> <span id="likes-' + config.share_code + '">' + (config.likes || 0) + '</span>' +
         '    </button>' +
+        '    <button class="btn-card-macro" onclick="event.stopPropagation(); window.quickSendToMacro(\'' + escapeHtml(config.share_code) + '\', \'' + escapeHtml(config.name) + '\')" title="Send directly to Macro"><i class="fas fa-bolt"></i></button>' +
         '    <span class="stat-pill downloads"><i class="fas fa-download"></i> ' + formatNumber(config.downloads || 0) + '</span>' +
         '  </div>' +
         '</div>';
@@ -734,7 +779,41 @@
     var likesEl = document.getElementById("detail-likes-num");
     if (likesEl) likesEl.textContent = formatNumber(config.likes || 0);
     var createdEl = document.getElementById("detail-created");
-    if (createdEl) createdEl.textContent = formatDate(config.created_at);
+    var createdChip = document.getElementById("detail-created-chip");
+    var createdText = document.getElementById("detail-created-text");
+    if (config.created_at) {
+      var dateStr = formatDate(config.created_at);
+      var agoStr = formatTimeAgo(config.created_at);
+      if (createdEl) createdEl.textContent = dateStr + " (" + agoStr + ")";
+      if (createdText) createdText.textContent = "Uploaded " + agoStr;
+      if (createdChip) {
+        createdChip.style.display = "inline-flex";
+        createdChip.title = "Uploaded: " + dateStr + " (" + agoStr + ")";
+      }
+    } else {
+      if (createdEl) createdEl.textContent = "-";
+      if (createdChip) createdChip.style.display = "none";
+    }
+
+    var editedWrap = document.getElementById("detail-edited-wrap");
+    var editedEl = document.getElementById("detail-edited");
+    var editedChip = document.getElementById("detail-edited-chip");
+    var editedText = document.getElementById("detail-edited-text");
+    if (isEdited(config.created_at, config.updated_at)) {
+      var editDateStr = formatDate(config.updated_at);
+      var editAgoStr = formatTimeAgo(config.updated_at);
+      if (editedEl) editedEl.textContent = editDateStr + " (" + editAgoStr + ")";
+      if (editedText) editedText.textContent = "Edited " + editAgoStr;
+      if (editedWrap) editedWrap.classList.remove("hidden");
+      if (editedChip) {
+        editedChip.classList.remove("hidden");
+        editedChip.title = "Last Edited: " + editDateStr + " (" + editAgoStr + ")";
+      }
+    } else {
+      if (editedWrap) editedWrap.classList.add("hidden");
+      if (editedChip) editedChip.classList.add("hidden");
+    }
+
     var descEl = document.getElementById("detail-description");
     if (descEl) descEl.textContent = config.description || "No description provided.";
 
@@ -759,7 +838,7 @@
     var rawData = config.config_data || "";
 
     if (rawData.startsWith("data:application/zip;base64,")) {
-      previewEl.textContent = "📦 Reading ZIP archive contents...";
+      previewEl.textContent = "Reading ZIP archive contents...";
       parseAndPreviewZip(rawData, function (previewText) {
         previewEl.textContent = previewText;
       });
@@ -1034,7 +1113,7 @@
   function parseAndPreviewZip(dataUri, callback) {
     try {
       if (typeof JSZip === "undefined") {
-        callback("📦 ZIP Archive (Download to extract files)");
+        callback("ZIP Archive (Download to extract files)");
         return;
       }
       var base64 = dataUri.split(",")[1];
@@ -1059,9 +1138,9 @@
         });
 
         Promise.all(promises).then(function () {
-          var out = "📦 ZIP Archive (" + files.length + " file" + (files.length !== 1 ? "s" : "") + "):\n";
+          var out = "ZIP Archive (" + files.length + " file" + (files.length !== 1 ? "s" : "") + "):\n";
           files.forEach(function (f) {
-            out += "  📄 " + f + "\n";
+            out += "  " + f + "\n";
           });
           if (firstFileName && firstFileText) {
             out += "\n--- Preview of " + firstFileName + " ---\n";
@@ -1074,13 +1153,13 @@
           }
           callback(out);
         }).catch(function () {
-          callback("📦 ZIP Archive (" + files.length + " files)");
+          callback("ZIP Archive (" + files.length + " files)");
         });
       }).catch(function () {
-        callback("📦 ZIP Archive");
+        callback("ZIP Archive");
       });
     } catch (e) {
-      callback("📦 ZIP Archive");
+      callback("ZIP Archive");
     }
   }
 
@@ -1288,16 +1367,16 @@
     if (notice && currentUser) {
       if (currentUser.is_admin) {
         notice.className = "upload-role-notice admin";
-        notice.innerHTML = '👑 <strong>Admin Mode</strong> - Full upload, edit, and moderation access.';
+        notice.innerHTML = '<strong>Admin</strong> — Upload, edit, and moderation access enabled.';
       } else if (currentUser.is_config_maker || currentUser.is_creator) {
         notice.className = "upload-role-notice config-maker";
-        notice.innerHTML = '<i class="fas fa-hammer"></i> <strong>Config Maker Verified</strong> - Official Config Maker creator badge & 10MB upload limit enabled.';
+        notice.innerHTML = '<strong>Config Maker</strong> — Upload and edit access enabled.';
       } else if (currentUser.is_premium) {
         notice.className = "upload-role-notice premium";
-        notice.innerHTML = '💎 <strong>Donator Verified</strong> - Upload and edit access enabled.';
+        notice.innerHTML = '<strong>Donator</strong> — Upload and edit access enabled.';
       } else {
         notice.className = "upload-role-notice member";
-        notice.innerHTML = '🔒 <strong>Donator Required</strong> - Uploading is reserved for Discord Donators & Config Makers. <a href="https://discord.gg/cys" target="_blank" rel="noopener">Get role at discord.gg/cys</a>';
+        notice.innerHTML = '<strong>Donator Required</strong> — Uploading is reserved for Donators & Config Makers. <a href="https://discord.gg/cys" target="_blank" rel="noopener">discord.gg/cys</a>';
       }
     }
   }
@@ -1341,7 +1420,7 @@
       var ext = "." + f.name.split(".").pop().toLowerCase();
       if (ALLOWED_EXTENSIONS.indexOf(ext) === -1) {
         validation.className = "upload-validation invalid";
-        validation.textContent = "✗ Invalid file type: " + f.name + ". Allowed: " + ALLOWED_EXTENSIONS.join(", ");
+        validation.textContent = "Invalid file type: " + f.name + ". Allowed: " + ALLOWED_EXTENSIONS.join(", ");
         validation.classList.remove("hidden");
         uploadFiles = [];
         updateSubmitButton();
@@ -1352,7 +1431,7 @@
 
     if (totalSize > MAX_FILE_SIZE) {
       validation.className = "upload-validation invalid";
-      validation.textContent = "✗ Total size too large (" + formatFileSize(totalSize) + "). Max limit is " + formatFileSize(MAX_FILE_SIZE);
+      validation.textContent = "Total size too large (" + formatFileSize(totalSize) + "). Max limit is " + formatFileSize(MAX_FILE_SIZE);
       validation.classList.remove("hidden");
       uploadFiles = [];
       updateSubmitButton();
@@ -1369,7 +1448,7 @@
         '<button type="button" class="file-remove" onclick="removeUploadFiles()">✕</button>' +
         '</div>';
       validation.className = "upload-validation valid";
-      validation.textContent = "✓ 1 file ready for upload";
+      validation.textContent = "1 file ready for upload";
       validation.classList.remove("hidden");
     } else {
       var fileNames = files.map(function (f) { return f.name; }).join(", ");
@@ -1381,7 +1460,7 @@
         '<button type="button" class="file-remove" onclick="removeUploadFiles()">✕</button>' +
         '</div>';
       validation.className = "upload-validation valid";
-      validation.textContent = "✓ " + files.length + " files ready (will be auto-packaged as ZIP)";
+      validation.textContent = files.length + " files ready (packaged as ZIP)";
       validation.classList.remove("hidden");
     }
 
@@ -1795,13 +1874,19 @@
 
   function openModal(id) {
     var modal = document.getElementById(id);
+    if (!modal) return;
     modal.classList.add("visible");
+    modal.classList.add("active");
+    modal.style.display = "flex";
     document.body.style.overflow = "hidden";
   }
 
   window.closeModal = function (id) {
     var modal = document.getElementById(id);
+    if (!modal) return;
     modal.classList.remove("visible");
+    modal.classList.remove("active");
+    modal.style.display = "none";
     document.body.style.overflow = "";
   };
 
@@ -1809,6 +1894,9 @@
   document.addEventListener("click", function (e) {
     if (e.target.classList.contains("modal-overlay")) {
       e.target.classList.remove("visible");
+      e.target.classList.remove("active");
+      e.target.style.display = "none";
+      macroModalOpen = false;
       document.body.style.overflow = "";
     }
   });
@@ -1817,10 +1905,13 @@
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") {
       document
-        .querySelectorAll(".modal-overlay.visible")
+        .querySelectorAll(".modal-overlay")
         .forEach(function (m) {
           m.classList.remove("visible");
+          m.classList.remove("active");
+          m.style.display = "none";
         });
+      macroModalOpen = false;
       document.body.style.overflow = "";
     }
   });
@@ -1902,4 +1993,829 @@
       year: "numeric",
     });
   }
+
+  function formatTimeAgo(isoString) {
+    if (!isoString) return "";
+    var date = new Date(isoString);
+    var now = new Date();
+    var diffSec = Math.floor((now - date) / 1000);
+
+    if (isNaN(diffSec) || diffSec < 0) return "just now";
+    if (diffSec < 60) return "just now";
+    if (diffSec < 3600) return Math.floor(diffSec / 60) + "m ago";
+    if (diffSec < 86400) return Math.floor(diffSec / 3600) + "h ago";
+    if (diffSec < 604800) return Math.floor(diffSec / 86400) + "d ago";
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  }
+
+  function isEdited(created_at, updated_at) {
+    if (!updated_at) return false;
+    if (!created_at) return true;
+    var c = new Date(created_at).getTime();
+    var u = new Date(updated_at).getTime();
+    return !isNaN(u) && !isNaN(c) && (u - c > 60000);
+  }
+
+  // ==========================================
+  // CYSLINK MACRO REMOTE & INTEGRATION
+  // ==========================================
+
+  var MACRO_TESTER_GUILD_ID = "1391118743035183155";
+  var isMacroTester = false;
+
+  function checkMacroTesterAccess() {
+    var remoteBtn = document.getElementById("btn-macro-remote");
+    if (!currentUser) {
+      isMacroTester = false;
+      if (remoteBtn) remoteBtn.classList.add("hidden");
+      if (macroModalOpen) window.closeMacroRemoteModal();
+      return Promise.resolve(false);
+    }
+
+    var isOwnerOrAdmin = currentUser.id === "1141849395902554202" || !!currentUser.is_owner || !!currentUser.is_admin;
+    if (isOwnerOrAdmin || currentUser.is_macro_tester === true) {
+      isMacroTester = true;
+      if (remoteBtn) remoteBtn.classList.remove("hidden");
+      return Promise.resolve(true);
+    }
+
+    return fetch(CYSLINK_API + "/api/v1/website/user/" + encodeURIComponent(currentUser.id) + "/tester")
+      .then(function (res) {
+        if (!res.ok) return { is_tester: false };
+        return res.json();
+      })
+      .then(function (data) {
+        if (data && data.is_tester) {
+          isMacroTester = true;
+          currentUser.is_macro_tester = true;
+          localStorage.setItem("ch_user", JSON.stringify(currentUser));
+          if (remoteBtn) remoteBtn.classList.remove("hidden");
+          return true;
+        } else {
+          isMacroTester = false;
+          if (remoteBtn) remoteBtn.classList.add("hidden");
+          if (macroModalOpen) window.closeMacroRemoteModal();
+          return false;
+        }
+      })
+      .catch(function () {
+        if (currentUser.is_macro_tester) {
+          isMacroTester = true;
+          if (remoteBtn) remoteBtn.classList.remove("hidden");
+          return true;
+        }
+        isMacroTester = false;
+        if (remoteBtn) remoteBtn.classList.add("hidden");
+        return false;
+      });
+  }
+
+  function initMacroRemote() {
+    checkMacroTesterAccess().then(function (allowed) {
+      if (allowed) {
+        var savedDevId = localStorage.getItem("cyslink_device_id");
+        if (savedDevId) {
+          fetchMacroStatus(savedDevId);
+        } else {
+          syncUserMacroDevices(false);
+        }
+      }
+    });
+
+    // Explicit navbar remote button listener
+    var remoteBtn = document.getElementById("btn-macro-remote");
+    if (remoteBtn) {
+      remoteBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        window.openMacroRemoteModal();
+      });
+    }
+
+    // Enter key shortcuts for pairing and share code quick injection
+    var pairInput = document.getElementById("macro-pair-code-input");
+    if (pairInput) {
+      pairInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          window.submitPairCode();
+        }
+      });
+    }
+
+    var injectInput = document.getElementById("macro-inject-code");
+    if (injectInput) {
+      injectInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          window.submitInjectCode();
+        }
+      });
+    }
+
+    if (macroPollTimer) clearInterval(macroPollTimer);
+    macroPollTimer = setInterval(function () {
+      if (!isMacroTester) return;
+      if (activeMacroDevice && activeMacroDevice.device_id) {
+        fetchMacroStatus(activeMacroDevice.device_id, false);
+      } else {
+        syncUserMacroDevices(false);
+      }
+    }, 10000);
+  }
+
+  function syncUserMacroDevices(notifyOnFind) {
+    var primaryUrl = (currentUser && currentUser.id)
+      ? CYSLINK_API + "/api/v1/website/user/" + encodeURIComponent(currentUser.id) + "/devices"
+      : CYSLINK_API + "/api/v1/website/devices";
+
+    fetch(primaryUrl)
+      .then(function (res) {
+        if (!res.ok) {
+          return fetch(CYSLINK_API + "/api/v1/website/devices").then(function (r2) {
+            return r2.ok ? r2.json() : [];
+          });
+        }
+        return res.json();
+      })
+      .then(function (devs) {
+        // Fallback: If user endpoint returned empty list, check general devices
+        if ((!Array.isArray(devs) || devs.length === 0) && currentUser && currentUser.id) {
+          return fetch(CYSLINK_API + "/api/v1/website/devices")
+            .then(function (r) { return r.ok ? r.json() : []; })
+            .catch(function () { return []; });
+        }
+        return devs;
+      })
+      .then(function (devs) {
+        if (Array.isArray(devs) && devs.length > 0) {
+          var userDevs = devs;
+          if (currentUser && currentUser.id) {
+            var matched = devs.filter(function (d) { return String(d.discord_user_id) === String(currentUser.id); });
+            if (matched.length > 0) userDevs = matched;
+          }
+          var best = userDevs.find(function (d) { return d.online; }) || userDevs[0];
+          activeMacroDevice = best;
+          localStorage.setItem("cyslink_device_id", best.device_id);
+          updateMacroNavBadge();
+          if (macroModalOpen) renderMacroDashboard();
+          if (notifyOnFind) {
+            showToast("Connected to " + (best.name || "Macro-PC"), "success");
+          }
+        } else {
+          updateMacroNavBadge();
+          if (macroModalOpen && !activeMacroDevice) {
+            renderMacroPairingCard();
+          }
+          if (notifyOnFind) {
+            showToast("No running macro found on relay server.", "error");
+          }
+        }
+      })
+      .catch(function () {
+        updateMacroNavBadge();
+        if (notifyOnFind) {
+          showToast("Unable to reach CysLink relay server.", "error");
+        }
+      });
+  }
+
+  window.detectMacroDevice = function (showToastFeedback) {
+    syncUserMacroDevices(showToastFeedback !== false);
+  };
+
+  function fetchMacroStatus(deviceId, updateDashboardUi) {
+    if (!deviceId) return;
+    fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(deviceId) + "/status")
+      .then(function (res) {
+        if (!res.ok) throw new Error("Device not found");
+        return res.json();
+      })
+      .then(function (data) {
+        activeMacroDevice = data;
+        updateMacroNavBadge();
+        if (macroModalOpen || updateDashboardUi) {
+          renderMacroDashboard();
+        }
+      })
+      .catch(function () {
+        if (activeMacroDevice) {
+          activeMacroDevice.online = false;
+        }
+        updateMacroNavBadge();
+        if (macroModalOpen) {
+          if (activeMacroDevice) {
+            renderMacroDashboard();
+          } else {
+            renderMacroPairingCard();
+          }
+        }
+        syncUserMacroDevices(false);
+      });
+  }
+
+  function updateMacroNavBadge() {
+    var dot = document.getElementById("macro-status-dot");
+    var lbl = document.getElementById("macro-status-label");
+    if (!dot || !lbl) return;
+
+    dot.className = "macro-dot";
+    if (!activeMacroDevice) {
+      dot.classList.add("offline");
+      lbl.textContent = "Connect Macro";
+      return;
+    }
+
+    if (!activeMacroDevice.online) {
+      dot.classList.add("offline");
+      lbl.textContent = "Macro Offline";
+      return;
+    }
+
+    var st = activeMacroDevice.status || {};
+    if (st.is_paused) {
+      dot.classList.add("paused");
+      lbl.textContent = "Paused";
+    } else if (st.is_running) {
+      dot.classList.add("online");
+      lbl.textContent = "Running";
+    } else {
+      dot.classList.add("online");
+      lbl.textContent = "Macro Online";
+    }
+  }
+
+  window.openMacroRemoteModal = function () {
+    var isOwnerOrAdmin = currentUser && (currentUser.id === "1141849395902554202" || currentUser.is_owner || currentUser.is_admin);
+    if (!isMacroTester && !isOwnerOrAdmin && (!currentUser || !currentUser.is_macro_tester)) {
+      showToast("Macro remote control is in testing for server members only.", "error");
+      return;
+    }
+    var modal = document.getElementById("macro-remote-modal");
+    if (!modal) return;
+    macroModalOpen = true;
+    modal.classList.add("visible");
+    modal.classList.add("active");
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+
+    if (activeMacroDevice && activeMacroDevice.device_id) {
+      renderMacroDashboard();
+      fetchMacroStatus(activeMacroDevice.device_id, true);
+    } else {
+      renderMacroPairingCard();
+      syncUserMacroDevices(false);
+    }
+  };
+
+  window.closeMacroRemoteModal = function () {
+    var modal = document.getElementById("macro-remote-modal");
+    if (!modal) return;
+    macroModalOpen = false;
+    modal.classList.remove("visible");
+    modal.classList.remove("active");
+    modal.style.display = "none";
+    document.body.style.overflow = "";
+  };
+
+  function renderMacroPairingCard() {
+    var pairCard = document.getElementById("macro-pair-card");
+    var dash = document.getElementById("macro-dashboard");
+    var nameEl = document.getElementById("macro-modal-device-name");
+    var stateBadge = document.getElementById("macro-modal-state-badge");
+
+    if (pairCard) pairCard.classList.remove("hidden");
+    if (dash) dash.classList.add("hidden");
+    if (nameEl) nameEl.textContent = "No Device Connected";
+    if (stateBadge) {
+      stateBadge.className = "macro-state-badge offline";
+      stateBadge.textContent = "Offline";
+    }
+  }
+
+  function renderMacroDashboard() {
+    var pairCard = document.getElementById("macro-pair-card");
+    var dash = document.getElementById("macro-dashboard");
+    var nameEl = document.getElementById("macro-modal-device-name");
+    var stateBadge = document.getElementById("macro-modal-state-badge");
+
+    if (!activeMacroDevice) {
+      renderMacroPairingCard();
+      return;
+    }
+
+    if (pairCard) pairCard.classList.add("hidden");
+    if (dash) dash.classList.remove("hidden");
+
+    var dev = activeMacroDevice;
+    var st = dev.status || {};
+
+    if (nameEl) {
+      nameEl.textContent = (dev.name || "Macro-PC") + " (" + (dev.macro_type || "Anime Expeditions") + ")";
+    }
+
+    if (stateBadge) {
+      stateBadge.className = "macro-state-badge";
+      if (!dev.online) {
+        stateBadge.classList.add("offline");
+        stateBadge.textContent = "Offline";
+      } else if (st.is_paused) {
+        stateBadge.classList.add("paused");
+        stateBadge.textContent = "Paused";
+      } else if (st.is_running) {
+        stateBadge.classList.add("running");
+        stateBadge.textContent = "Running";
+      } else {
+        stateBadge.classList.add("idle");
+        stateBadge.textContent = "Idle";
+      }
+    }
+
+    var telemState = document.getElementById("macro-telem-state");
+    var telemMode = document.getElementById("macro-telem-mode");
+    var telemTeam = document.getElementById("macro-telem-team");
+    var telemUptime = document.getElementById("macro-telem-uptime");
+    var telemPing = document.getElementById("macro-telem-ping");
+
+    if (telemState) telemState.textContent = !dev.online ? "Offline" : (st.state || (st.is_paused ? "Paused" : (st.is_running ? "Running" : "Idle")));
+    if (telemMode) {
+      var modeStr = st.mode || "None";
+      if (st.stage && st.stage !== "None") modeStr += " • " + st.stage;
+      if (st.act && st.act !== "None") modeStr += " (" + st.act + ")";
+      telemMode.textContent = modeStr;
+    }
+    if (telemTeam) {
+      var displayTeam = st.team || "No Team";
+      if (displayTeam === "Skip Team" || displayTeam === "None" || displayTeam === "0") {
+        displayTeam = "No Team";
+      }
+      telemTeam.textContent = displayTeam;
+    }
+
+    var teamDropdown = document.getElementById("macro-team-dropdown");
+    if (teamDropdown && !teamDropdown.matches(":focus") && st.team) {
+      var tLower = String(st.team).toLowerCase();
+      if (tLower.includes("skip") || tLower.includes("none") || tLower === "0") {
+        teamDropdown.value = "none";
+        activeMacroTeam = "none";
+      } else {
+        var tNum = tLower.replace(/[^\d]/g, "");
+        if (tNum && teamDropdown.querySelector('option[value="' + tNum + '"]')) {
+          teamDropdown.value = tNum;
+          activeMacroTeam = tNum;
+        }
+      }
+    }
+    if (telemUptime) telemUptime.textContent = st.uptime || "0s";
+    if (telemPing) {
+      var sec = dev.last_seen_seconds_ago || 0;
+      telemPing.textContent = !dev.online ? "Offline" : (sec < 5 ? "Just now" : sec + "s ago");
+    }
+
+    var pauseText = document.getElementById("macro-pause-text");
+    var pauseIcon = document.getElementById("macro-pause-icon");
+    if (pauseText && pauseIcon) {
+      if (st.is_paused) {
+        pauseText.textContent = "Resume Macro";
+        pauseIcon.className = "fas fa-play";
+      } else {
+        pauseText.textContent = "Pause Macro";
+        pauseIcon.className = "fas fa-pause";
+      }
+    }
+
+    var footerId = document.getElementById("macro-footer-device-id");
+    if (footerId) {
+      var idStr = dev.device_id || "----";
+      footerId.textContent = idStr.length > 18 ? idStr.substring(0, 18) + "..." : idStr;
+    }
+
+    var screenImg = document.getElementById("macro-screen-img");
+    var placeholder = document.getElementById("macro-screen-placeholder");
+    if (dev.has_screenshot && screenImg) {
+      screenImg.src = CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(dev.device_id) + "/screenshot?t=" + Date.now();
+      screenImg.classList.remove("hidden");
+      if (placeholder) placeholder.classList.add("hidden");
+    }
+
+    initMacroModeSelectorsOnce();
+  }
+
+  function updateTeamPillsUI(teamVal) {
+    var teamDropdown = document.getElementById("macro-team-dropdown");
+    if (teamDropdown && teamVal) {
+      teamDropdown.value = String(teamVal);
+    }
+  }
+
+  // ==========================================
+  // MACRO STAGE & TEAM SELECTION
+  // ==========================================
+
+  var MACRO_STAGES_DATA = {
+    story: {
+      stages: [
+        { label: "School Grounds", value: "School Grounds" },
+        { label: "Flower Forest", value: "Flower Forest" },
+        { label: "Rose Kingdom", value: "Rose Kingdom" },
+        { label: "Fairy King Forest", value: "Fairy King Forest" },
+        { label: "King's Tomb", value: "King's Tomb" },
+        { label: "East Town", value: "East Town" },
+        { label: "Crimson-Shore", value: "Crimson-Shore" }
+      ],
+      acts: ["Act 1", "Act 2", "Act 3", "Act 4", "Act 5", "Act 6", "Infinite", "Mastery"]
+    },
+    raid: {
+      stages: [
+        { label: "Spirit City", value: "Spirit City" },
+        { label: "Snowy-Castle", value: "Snowy-Castle" }
+      ],
+      acts: ["Act 1", "Act 2", "Act 3"]
+    },
+    infinitytower: {
+      stages: [
+        { label: "School-Grounds", value: "School-Grounds" },
+        { label: "Flower-Forest", value: "Flower-Forest" },
+        { label: "Rose-Kingdom", value: "Rose-Kingdom" },
+        { label: "Fairy-King-Forest", value: "Fairy-King-Forest" },
+        { label: "Kings-Tomb", value: "Kings-Tomb" },
+        { label: "East-Town", value: "East-Town" },
+        { label: "Crimson-Shore", value: "Crimson-Shore" }
+      ],
+      acts: []
+    },
+    portals: {
+      stages: [
+        { label: "Summer", value: "Summer" },
+        { label: "Sky-Ruins", value: "Sky-Ruins" }
+      ],
+      acts: []
+    },
+    event: {
+      stages: [
+        { label: "Tidal Siege", value: "Tidal Siege" }
+      ],
+      acts: []
+    }
+  };
+
+  var activeMacroTeam = "none";
+  var macroModeSelectorsInit = false;
+
+  function initMacroModeSelectorsOnce() {
+    if (macroModeSelectorsInit) return;
+    macroModeSelectorsInit = true;
+    window.onMacroModeChange();
+  }
+
+  window.onMacroTeamChange = function () {
+    var teamSelect = document.getElementById("macro-team-dropdown");
+    if (!teamSelect) return;
+    activeMacroTeam = teamSelect.value;
+    var cmdPayload = (activeMacroTeam === "none") ? "Skip Team" : ("Team " + activeMacroTeam);
+    window.sendMacroCommand("SetTeam", cmdPayload);
+  };
+
+  window.setMacroTeam = function (teamNum) {
+    var teamSelect = document.getElementById("macro-team-dropdown");
+    if (teamSelect) {
+      teamSelect.value = String(teamNum);
+      window.onMacroTeamChange();
+    }
+  };
+
+  window.onMacroModeChange = function () {
+    var modeSelect = document.getElementById("macro-mode-dropdown");
+    var stageSelect = document.getElementById("macro-stage-dropdown");
+    var actSelect = document.getElementById("macro-act-dropdown");
+    var actGroup = document.getElementById("macro-act-group");
+    if (!modeSelect || !stageSelect) return;
+
+    var modeKey = modeSelect.value;
+    var data = MACRO_STAGES_DATA[modeKey] || MACRO_STAGES_DATA.story;
+
+    stageSelect.innerHTML = "";
+    data.stages.forEach(function (s) {
+      var opt = document.createElement("option");
+      opt.value = s.value;
+      opt.textContent = s.label;
+      stageSelect.appendChild(opt);
+    });
+
+    if (data.acts && data.acts.length > 0) {
+      if (actGroup) actGroup.style.display = "flex";
+      actSelect.innerHTML = "";
+      data.acts.forEach(function (a) {
+        var opt = document.createElement("option");
+        opt.value = a;
+        opt.textContent = a;
+        actSelect.appendChild(opt);
+      });
+    } else {
+      if (actGroup) actGroup.style.display = "none";
+    }
+  };
+
+  window.onMacroStageChange = function () {
+    // Optional per-stage act filters
+  };
+
+  window.applyMacroStageSelection = function () {
+    var modeSelect = document.getElementById("macro-mode-dropdown");
+    var stageSelect = document.getElementById("macro-stage-dropdown");
+    var actSelect = document.getElementById("macro-act-dropdown");
+    if (!modeSelect || !stageSelect) return;
+
+    var mode = modeSelect.value;
+    var stage = stageSelect.value;
+    var act = (actSelect && actSelect.value) ? actSelect.value : "";
+    var teamSelect = document.getElementById("macro-team-dropdown");
+    var team = (teamSelect && teamSelect.value) ? teamSelect.value : activeMacroTeam;
+    var cmdPayload = "";
+
+    if (mode === "story") {
+      cmdPayload = "Selected Story Stage: " + stage + ", Act: " + act;
+    } else if (mode === "raid") {
+      cmdPayload = "Selected Raid: " + stage + ", Act: " + act;
+    } else if (mode === "infinitytower") {
+      cmdPayload = "Selected Mode: Infinity Tower: " + stage;
+    } else if (mode === "portals") {
+      cmdPayload = "Selected Mode: Portals: " + stage;
+    } else if (mode === "event") {
+      cmdPayload = "Selected Mode: Events: " + stage;
+    }
+
+    if (team === "none" || team === "0" || team === "skip") {
+      cmdPayload += ": Skip Team";
+    } else if (team) {
+      cmdPayload += ": Team " + team;
+    }
+
+    window.sendMacroCommand("SelectedMode", cmdPayload);
+  };
+
+  window.submitPairCode = function () {
+    var input = document.getElementById("macro-pair-code-input");
+    var btn = document.getElementById("btn-pair-submit");
+    if (!input) return;
+    var rawCode = input.value.trim().toUpperCase();
+    if (!rawCode) {
+      showToast("Please enter a 6-digit Link Code", "error");
+      return;
+    }
+    if (!rawCode.startsWith("AE-")) rawCode = "AE-" + rawCode;
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<div class="ch-spinner" style="width:16px;height:16px;margin:0"></div> Pairing...';
+    }
+
+    fetch(CYSLINK_API + "/api/v1/website/link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        link_code: rawCode,
+        discord_user_id: currentUser ? currentUser.id : null
+      })
+    })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok) throw new Error(data.detail || "Pairing failed");
+          return data;
+        });
+      })
+      .then(function (data) {
+        activeMacroDevice = data;
+        localStorage.setItem("cyslink_device_id", data.device_id);
+        updateMacroNavBadge();
+        renderMacroDashboard();
+        showToast("Connected to " + (data.name || "Macro-PC") + "!", "success");
+        input.value = "";
+      })
+      .catch(function (err) {
+        showToast(err.message || "Failed to link code. Check code & try again.", "error");
+      })
+      .finally(function () {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<span>Pair Macro</span> <i class="fas fa-arrow-right"></i>';
+        }
+      });
+  };
+
+  window.unlinkActiveMacro = function () {
+    if (!activeMacroDevice) return;
+    var devId = activeMacroDevice.device_id;
+    fetch(CYSLINK_API + "/api/v1/website/unlink", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        device_id: devId,
+        discord_user_id: currentUser ? currentUser.id : null
+      })
+    })
+      .finally(function () {
+        localStorage.removeItem("cyslink_device_id");
+        activeMacroDevice = null;
+        updateMacroNavBadge();
+        renderMacroPairingCard();
+        showToast("Macro unlinked", "info");
+      });
+  };
+
+  window.refreshMacroStatus = function (feedback) {
+    var btn = document.getElementById("macro-btn-refresh-status");
+    if (btn) btn.classList.add("spinning");
+
+    if (activeMacroDevice && activeMacroDevice.device_id) {
+      fetchMacroStatus(activeMacroDevice.device_id, true);
+    } else {
+      syncUserMacroDevices(false);
+    }
+
+    setTimeout(function () {
+      if (btn) btn.classList.remove("spinning");
+      if (feedback) showToast("Status refreshed", "info");
+    }, 600);
+  };
+
+  window.requestMacroScreenshot = function () {
+    if (!activeMacroDevice || !activeMacroDevice.device_id) {
+      showToast("No macro connected", "error");
+      return;
+    }
+    if (!activeMacroDevice.online) {
+      showToast("Macro is offline", "error");
+      return;
+    }
+
+    var spinner = document.getElementById("macro-screen-spinner");
+    var screenImg = document.getElementById("macro-screen-img");
+    var placeholder = document.getElementById("macro-screen-placeholder");
+    var timeEl = document.getElementById("macro-screen-time");
+
+    if (spinner) spinner.classList.remove("hidden");
+
+    fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/request-screenshot", {
+      method: "POST"
+    })
+      .then(function (res) {
+        if (res.status === 404) {
+          // Fallback: dispatch ShowScreen command then fetch screenshot
+          return fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/command", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ command: "ShowScreen", payload: null })
+          }).then(function () {
+            return new Promise(function (resolve) { setTimeout(resolve, 2500); }).then(function () {
+              return fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/screenshot?t=" + Date.now());
+            });
+          }).then(function (r2) {
+            if (!r2.ok) throw new Error("Screenshot not available yet");
+            return r2.blob();
+          });
+        }
+        if (!res.ok) throw new Error("Screenshot failed");
+        return res.blob();
+      })
+      .then(function (blob) {
+        var objUrl = URL.createObjectURL(blob);
+        if (screenImg) {
+          screenImg.src = objUrl;
+          screenImg.classList.remove("hidden");
+        }
+        if (placeholder) placeholder.classList.add("hidden");
+        if (timeEl) timeEl.textContent = "Captured " + new Date().toLocaleTimeString();
+        showToast("Screen captured!", "success");
+      })
+      .catch(function (err) {
+        showToast("Screenshot capture timed out. Is Roblox running?", "error");
+      })
+      .finally(function () {
+        if (spinner) spinner.classList.add("hidden");
+      });
+  };
+
+  window.sendMacroCommand = function (command, payload) {
+    if (!activeMacroDevice || !activeMacroDevice.device_id) {
+      showToast("No macro connected. Please pair first.", "error");
+      window.openMacroRemoteModal();
+      return;
+    }
+    if (!activeMacroDevice.online) {
+      showToast("Macro is offline", "error");
+      return;
+    }
+
+    fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/command", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ command: command, payload: payload || null })
+    })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok) throw new Error(data.detail || "Command failed");
+          return data;
+        });
+      })
+      .then(function () {
+        showToast("Sent: " + command, "success");
+        setTimeout(function () {
+          fetchMacroStatus(activeMacroDevice.device_id, true);
+        }, 800);
+      })
+      .catch(function (err) {
+        showToast("Error: " + err.message, "error");
+      });
+  };
+
+  window.toggleMacroPause = function () {
+    var st = (activeMacroDevice && activeMacroDevice.status) || {};
+    if (st.is_paused) {
+      window.sendMacroCommand("ResumeMacro");
+    } else {
+      window.sendMacroCommand("PauseMacro");
+    }
+  };
+
+  window.confirmMacroShutdown = function () {
+    if (confirm("Shut down your PC via macro?")) {
+      window.sendMacroCommand("ShutdownPC");
+    }
+  };
+
+  window.submitInjectCode = function () {
+    var input = document.getElementById("macro-inject-code");
+    if (!input) return;
+    var code = input.value.trim().toUpperCase();
+    if (!code) {
+      showToast("Enter a share code", "error");
+      return;
+    }
+    window.sendConfigCodeToMacro(code);
+  };
+
+  window.sendConfigCodeToMacro = function (shareCode, configName) {
+    if (!shareCode) return;
+    var cleanCode = shareCode.trim().toUpperCase();
+
+    // 1. If inside native Macro WebView2 window: direct import
+    if (window.chrome && window.chrome.webview && window.chrome.webview.hostObjects && window.chrome.webview.hostObjects.ahk) {
+      try {
+        window.chrome.webview.hostObjects.ahk.Import(cleanCode);
+        showToast("Sent " + cleanCode + " to macro.", "success");
+        return;
+      } catch (e) {
+        console.warn("Native import error, falling back to server:", e);
+      }
+    }
+
+    // 2. Web browser: relay through server
+    if (!activeMacroDevice || !activeMacroDevice.device_id) {
+      showToast("Connect your macro first.", "info");
+      window.openMacroRemoteModal();
+      var injectInput = document.getElementById("macro-inject-code");
+      if (injectInput) injectInput.value = cleanCode;
+      return;
+    }
+
+    if (!activeMacroDevice.online) {
+      showToast("Macro is offline. Start it on your PC.", "error");
+      return;
+    }
+
+    showToast("Sending " + cleanCode + "...", "info");
+    fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/command", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        command: "LoadShareCode",
+        payload: cleanCode
+      })
+    })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok) throw new Error(data.detail || "Failed to send");
+          return data;
+        });
+      })
+      .then(function () {
+        showToast("Loaded " + cleanCode + " into macro.", "success");
+      })
+      .catch(function (err) {
+        showToast("Failed to send config: " + err.message, "error");
+      });
+  };
+
+  window.sendCurrentConfigToMacro = function () {
+    if (!currentDetailConfig || !currentDetailConfig.share_code) {
+      showToast("No config open", "error");
+      return;
+    }
+    window.sendConfigCodeToMacro(currentDetailConfig.share_code, currentDetailConfig.name);
+  };
+
+  window.quickSendToMacro = function (shareCode, configName) {
+    window.sendConfigCodeToMacro(shareCode, configName);
+  };
 })();
+
