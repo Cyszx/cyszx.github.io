@@ -230,13 +230,11 @@ function updateNavbarAuthUI() {
     const isPrem = isOwner || currentUser.is_premium || currentUser.is_admin || isConfigMaker;
     if (isPrem) {
       btn.classList.add("premium");
-      const prefix = isOwner ? "👑 " : (currentUser.is_admin ? "⚡ " : (isConfigMaker ? "🛠️ " : "⭐ "));
-      text.textContent = prefix + currentUser.username;
     } else {
       btn.classList.remove("premium");
-      text.textContent = currentUser.username;
     }
-    btn.title = "Click to view your Profile & Farming Stats";
+    text.textContent = currentUser.username;
+    btn.title = "View profile";
 
     if (userBadgeWrap) {
       let chipHtml = '<span class="user-role-chip free-chip"><i class="fas fa-user"></i> Free Member</span>';
@@ -805,12 +803,8 @@ function formatTimeAgo(isoString) {
 async function verifyCurrentUserKeySystem() {
   const token = localStorage.getItem("ch_token");
   if (!currentUser || !currentUser.id || !token) {
-    console.log("%c[KeySystem API] ℹ️ No user logged in with active session token.", "color: #94a3b8;");
     return;
   }
-
-  console.log(`%c[KeySystem API] 🔒 Securely checking key status for: ${currentUser.username} (${currentUser.id})`, "color: #29f0f0; font-weight: bold; font-size: 13px;");
-  console.log(`%c[KeySystem API] 📡 Querying backend proxy: ${API_BASE}/api/user/key-status`, "color: #94a3b8;");
 
   try {
     const res = await fetch(`${API_BASE}/api/user/key-status`, {
@@ -818,35 +812,15 @@ async function verifyCurrentUserKeySystem() {
     });
     const data = await res.json();
 
-    console.log("%c[KeySystem API] 📥 Server Response:", "color: #d42dcc; font-weight: bold;", data);
-
     if (res.ok && data && data.success) {
       currentUser.key_data = data;
       currentUser.is_premium = !!data.active && !data.is_expired;
       currentUser.total_usage_seconds = parseInt(data.total_usage_time) || 0;
       currentUser.total_usage_hours = data.total_hours || parseFloat(((data.total_usage_time || 0) / 3600).toFixed(1));
 
-      const statusText = data.is_expired ? "EXPIRED" : (data.active ? "ACTIVE PREMIUM" : "INACTIVE");
-      const statusColor = (data.active && !data.is_expired) ? "color: #4ade80; font-weight: bold;" : "color: #f87171; font-weight: bold;";
-
-      console.log(`%c[KeySystem API] 🛡️ Status: ${statusText} | ⏱️ Total Usage: ${currentUser.total_usage_hours} hrs (${currentUser.total_usage_seconds}s)`, statusColor);
-
-      console.table({
-        "Discord ID": data.user_id,
-        "Active": data.active,
-        "Total Seconds": data.total_usage_time,
-        "Hours Farmed": currentUser.total_usage_hours + "h",
-        "Expires At": data.expires_at || "Never (Lifetime)",
-        "AE Access": !!data.games?.ae,
-        "ALS Access": !!data.games?.als,
-        "AV Access": !!data.games?.av,
-        "ASTD Access": !!data.games?.astd
-      });
-
       localStorage.setItem("ch_user", JSON.stringify(currentUser));
       updateNavbarAuthUI();
     } else {
-      console.warn(`[KeySystem API] ⚠️ Key check response:`, data.message || "No active license key found");
       currentUser.key_data = null;
       currentUser.is_premium = false;
       currentUser.total_usage_seconds = 0;
@@ -855,7 +829,7 @@ async function verifyCurrentUserKeySystem() {
       updateNavbarAuthUI();
     }
   } catch (err) {
-    console.error("[KeySystem API] ❌ Backend verification error:", err);
+    console.error("[KeySystem] Verification error:", err);
   }
 }
 
