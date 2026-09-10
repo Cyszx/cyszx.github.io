@@ -46,6 +46,7 @@
 
   // CysLink Remote State
   var activeMacroDevice = null;
+  var userMacroDevicesList = [];
   var macroPollTimer = null;
   var macroModalOpen = false;
 
@@ -2123,45 +2124,215 @@
     }, 10000);
   }
 
+  // ==========================================
+  // CYSLINK SECURITY & DEBUG TELEMETRY
+  // ==========================================
+
+  function logMacroSecurity(msg, level) {
+    var prefix = "[CysLink Security]";
+    var timeStr = new Date().toLocaleTimeString();
+    var formatted = "[" + timeStr + "] " + msg;
+    if (level === "warn") {
+      console.warn(prefix, msg);
+    } else if (level === "error") {
+      console.error(prefix, msg);
+    } else {
+      console.log(prefix, msg);
+    }
+    var logBox = document.getElementById("macro-sec-log-box");
+    if (logBox) {
+      var div = document.createElement("div");
+      div.className = "sec-log-entry" + (level ? " " + level : "");
+      div.textContent = formatted;
+      logBox.appendChild(div);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+  }
+
+  window.clearMacroSecurityLog = function () {
+    var logBox = document.getElementById("macro-sec-log-box");
+    if (logBox) logBox.innerHTML = '<div class="sec-log-entry">[DEBUG] Log cleared.</div>';
+  };
+
+  window.toggleMacroSecurityPanel = function () {
+    var panel = document.getElementById("macro-security-panel");
+    var btn = document.getElementById("macro-btn-security");
+    if (!panel) return;
+    var isHidden = panel.classList.contains("hidden");
+    if (isHidden) {
+      panel.classList.remove("hidden");
+      if (btn) btn.classList.add("active");
+      renderMacroSecurityPanel();
+    } else {
+      panel.classList.add("hidden");
+      if (btn) btn.classList.remove("active");
+    }
+  };
+
+  function renderMacroSecurityPanel() {
+    var uidEl = document.getElementById("sec-stat-user-id");
+    var activeEl = document.getElementById("sec-stat-active-device");
+    var ipEl = document.getElementById("sec-stat-device-ip");
+    var countEl = document.getElementById("sec-device-count");
+    var listEl = document.getElementById("macro-sec-device-list");
+
+    if (uidEl) uidEl.textContent = currentUser && currentUser.id ? (currentUser.username || "User") + " (" + currentUser.id + ")" : "Not logged in";
+    if (activeEl) {
+      if (activeMacroDevice) {
+        var aId = activeMacroDevice.device_id || "";
+        activeEl.textContent = (activeMacroDevice.name || "Device") + " (" + (aId.length > 8 ? aId.substring(0, 8) : aId) + ")";
+      } else {
+        activeEl.textContent = "None";
+      }
+    }
+    if (ipEl) {
+      ipEl.textContent = (activeMacroDevice && activeMacroDevice.client_ip) ? activeMacroDevice.client_ip : "Unknown";
+    }
+    if (countEl) countEl.textContent = String(userMacroDevicesList.length);
+
+    if (listEl) {
+      if (!userMacroDevicesList.length) {
+        listEl.innerHTML = '<div class="macro-sec-empty">No devices linked to your Discord account.</div>';
+        return;
+      }
+      var html = "";
+      userMacroDevicesList.forEach(function (d) {
+        var isCurrent = activeMacroDevice && activeMacroDevice.device_id === d.device_id;
+        var statusBadge = d.online ? '<span class="macro-state-badge online" style="font-size:0.6rem;padding:0.1rem 0.4rem;">Online</span>' : '<span class="macro-state-badge offline" style="font-size:0.6rem;padding:0.1rem 0.4rem;">Offline</span>';
+        var devIdShort = d.device_id ? d.device_id.substring(0, 8) + "..." : "----";
+        var ipStr = d.client_ip || "Unknown IP";
+        var pingStr = d.online ? (d.last_seen_seconds_ago < 5 ? "Active now" : d.last_seen_seconds_ago + "s ago") : "Offline";
+
+        html += '<div class="macro-sec-device-item' + (isCurrent ? ' active-dev' : '') + '">';
+        html += '  <div class="sec-dev-info">';
+        html += '    <div class="sec-dev-name-row">';
+        html += '      <span class="sec-dev-title">' + escapeHtml(d.name || "Macro-PC") + '</span>';
+        html += '      ' + statusBadge;
+        if (isCurrent) html += ' <span style="font-size:0.65rem;color:var(--prim);font-weight:700;">(ACTIVE)</span>';
+        html += '    </div>';
+        html += '    <div class="sec-dev-meta">ID: ' + devIdShort + ' | IP: ' + escapeHtml(ipStr) + ' | ' + pingStr + '</div>';
+        html += '  </div>';
+        html += '  <div class="sec-dev-actions">';
+        if (!isCurrent) {
+          html += '    <button class="btn-sec-select-dev" onclick="switchMacroDevice(\'' + d.device_id + '\')">Select</button>';
+        }
+        html += '    <button class="btn-sec-unlink-dev" onclick="unlinkDeviceById(\'' + d.device_id + '\')" title="Unlink this device">Unlink</button>';
+        html += '  </div>';
+        html += '</div>';
+      });
+      listEl.innerHTML = html;
+    }
+  }
+
+  function updateMacroDevicePickerUI() {
+    var picker = document.getElementById("macro-device-picker");
+    var nameEl = document.getElementById("macro-modal-device-name");
+    if (!picker) return;
+
+    if (!userMacroDevicesList || userMacroDevicesList.length <= 1) {
+      picker.classList.add("hidden");
+      if (nameEl) nameEl.classList.remove("hidden");
+      return;
+    }
+
+    if (nameEl) nameEl.classList.add("hidden");
+    picker.classList.remove("hidden");
+
+    var currentId = activeMacroDevice ? activeMacroDevice.device_id : "";
+    var html = "";
+    userMacroDevicesList.forEach(function (d) {
+      var sel = d.device_id === currentId ? " selected" : "";
+      var label = (d.name || "Macro-PC") + (d.online ? " [Online]" : " [Offline]");
+      html += '<option value="' + d.device_id + '"' + sel + '>' + escapeHtml(label) + '</option>';
+    });
+    picker.innerHTML = html;
+  }
+
+  window.onMacroDevicePickerChange = function (newDevId) {
+    window.switchMacroDevice(newDevId);
+  };
+
+  window.switchMacroDevice = function (deviceId) {
+    var found = userMacroDevicesList.find(function (d) { return d.device_id === deviceId; });
+    if (!found) {
+      logMacroSecurity("Device switch rejected: " + deviceId + " not in authorized device list!", "warn");
+      return;
+    }
+    activeMacroDevice = found;
+    localStorage.setItem("cyslink_device_id", found.device_id);
+    logMacroSecurity("Switched active device to " + (found.name || "Device") + " (" + found.device_id.substring(0, 8) + ") | IP: " + (found.client_ip || "Unknown"));
+    updateMacroNavBadge();
+    updateMacroDevicePickerUI();
+    renderMacroSecurityPanel();
+    renderMacroDashboard();
+    fetchMacroStatus(found.device_id, true);
+    showToast("Switched to " + (found.name || "Macro-PC"), "info");
+  };
+
   function syncUserMacroDevices(notifyOnFind) {
     if (!currentUser || !currentUser.id) {
       activeMacroDevice = null;
+      userMacroDevicesList = [];
       updateMacroNavBadge();
+      updateMacroDevicePickerUI();
       if (macroModalOpen) renderMacroPairingCard();
       return;
     }
 
     var primaryUrl = CYSLINK_API + "/api/v1/website/user/" + encodeURIComponent(currentUser.id) + "/devices";
+    logMacroSecurity("Syncing devices for Discord user " + currentUser.id + " (" + (currentUser.username || "User") + ")...");
 
     fetch(primaryUrl)
       .then(function (res) {
-        if (!res.ok) return [];
+        if (!res.ok) {
+          logMacroSecurity("User devices query returned HTTP " + res.status, "warn");
+          return [];
+        }
         return res.json();
       })
       .then(function (devs) {
-        if (Array.isArray(devs) && devs.length > 0) {
-          // Strictly only select devices that belong to this Discord user
-          var userDevs = devs.filter(function (d) {
-            return String(d.discord_user_id) === String(currentUser.id) || d.linked;
-          });
-          if (userDevs.length > 0) {
-            userDevs.sort(function (a, b) {
-              if (Boolean(a.online) !== Boolean(b.online)) return a.online ? -1 : 1;
-              return (a.last_seen_seconds_ago || 999999) - (b.last_seen_seconds_ago || 999999);
-            });
-            var best = userDevs.find(function (d) { return d.online; }) || userDevs[0];
+        if (!Array.isArray(devs)) devs = [];
+
+        // Strictly only accept devices that belong to this Discord user
+        userMacroDevicesList = devs.filter(function (d) {
+          return !d.discord_user_id || String(d.discord_user_id) === String(currentUser.id);
+        });
+
+        logMacroSecurity("Retrieved " + userMacroDevicesList.length + " device(s) linked to user ID " + currentUser.id);
+
+        renderMacroSecurityPanel();
+        updateMacroDevicePickerUI();
+
+        if (userMacroDevicesList.length > 0) {
+          var savedDevId = localStorage.getItem("cyslink_device_id");
+          var matched = null;
+
+          if (savedDevId) {
+            matched = userMacroDevicesList.find(function (d) { return d.device_id === savedDevId; });
+          }
+
+          if (matched) {
+            // Keep user's chosen device! NEVER silently switch away!
+            logMacroSecurity("Preserved user's selected device: " + (matched.name || "Macro-PC") + " (" + matched.device_id.substring(0, 8) + ")");
+            activeMacroDevice = matched;
+          } else {
+            // If previous choice was invalid/unlinked, pick the best online device
+            var onlineDevs = userMacroDevicesList.filter(function (d) { return d.online; });
+            var best = onlineDevs.length > 0 ? onlineDevs[0] : userMacroDevicesList[0];
             activeMacroDevice = best;
             localStorage.setItem("cyslink_device_id", best.device_id);
-            updateMacroNavBadge();
-            if (macroModalOpen) renderMacroDashboard();
-            if (notifyOnFind) {
-              showToast("Connected to " + (best.name || "Macro-PC") + (best.online ? " (Online)" : " (Offline)"), best.online ? "success" : "info");
-            }
-            return;
+            logMacroSecurity("Selected device " + (best.name || "Macro-PC") + " (" + best.device_id.substring(0, 8) + ") | IP: " + (best.client_ip || "Unknown"));
           }
+
+          updateMacroNavBadge();
+          if (macroModalOpen) renderMacroDashboard();
+          if (notifyOnFind) {
+            showToast("Connected to " + (activeMacroDevice.name || "Macro-PC") + (activeMacroDevice.online ? " (Online)" : " (Offline)"), activeMacroDevice.online ? "success" : "info");
+          }
+          return;
         }
 
-        // If no devices are linked to this user, NEVER fall back to other users' macros!
+        // Zero linked devices for this user
         activeMacroDevice = null;
         localStorage.removeItem("cyslink_device_id");
         updateMacroNavBadge();
@@ -2173,7 +2344,7 @@
         }
       })
       .catch(function (err) {
-        console.warn("[CysLink Remote DEBUG] Sync devices error:", err);
+        logMacroSecurity("Sync devices error: " + (err.message || err), "error");
         updateMacroNavBadge();
         if (notifyOnFind) {
           showToast("Unable to reach CysLink relay server.", "error");
@@ -2189,23 +2360,48 @@
 
   function fetchMacroStatus(deviceId, updateDashboardUi) {
     if (!deviceId) return;
-    fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(deviceId) + "/status")
+    var uidParam = currentUser && currentUser.id ? "?discord_user_id=" + encodeURIComponent(currentUser.id) : "";
+    fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(deviceId) + "/status" + uidParam)
       .then(function (res) {
-        if (!res.ok) throw new Error("Device not found (HTTP " + res.status + ")");
+        if (!res.ok) {
+          if (res.status === 403) {
+            logMacroSecurity("SECURITY ALERT: Forbidden status access on device " + deviceId + " by user " + (currentUser ? currentUser.id : "null"), "error");
+            localStorage.removeItem("cyslink_device_id");
+            activeMacroDevice = null;
+            updateMacroNavBadge();
+            if (macroModalOpen) renderMacroPairingCard();
+            throw new Error("Unauthorized device access");
+          }
+          throw new Error("Device not found (HTTP " + res.status + ")");
+        }
         return res.json();
       })
       .then(function (data) {
+        // STRICT SECURITY CHECK: verify device ownership!
+        if (currentUser && currentUser.id && data.discord_user_id && String(data.discord_user_id) !== String(currentUser.id)) {
+          var isOwner = currentUser.id === "1141849395902554202" || currentUser.is_owner;
+          if (!isOwner) {
+            logMacroSecurity("SECURITY WARNING: Device " + data.device_id + " belongs to user " + data.discord_user_id + ", NOT current user " + currentUser.id + "! Dropping connection.", "error");
+            localStorage.removeItem("cyslink_device_id");
+            activeMacroDevice = null;
+            updateMacroNavBadge();
+            if (macroModalOpen) renderMacroPairingCard();
+            return;
+          }
+        }
+
         macroStatusConsecutiveErrors = 0;
         activeMacroDevice = data;
         updateMacroNavBadge();
+        updateMacroDevicePickerUI();
+        renderMacroSecurityPanel();
         if (macroModalOpen || updateDashboardUi) {
           renderMacroDashboard();
         }
       })
       .catch(function (err) {
         macroStatusConsecutiveErrors++;
-        console.warn("[CysLink Remote DEBUG] Status fetch failed (" + macroStatusConsecutiveErrors + "/3):", err);
-        // Tolerate up to 2 temporary errors (Render cold start / network hiccup) before declaring offline
+        logMacroSecurity("Status fetch failed (" + macroStatusConsecutiveErrors + "/3): " + (err.message || err), "warn");
         if (macroStatusConsecutiveErrors >= 3) {
           if (activeMacroDevice) {
             activeMacroDevice.online = false;
@@ -2402,7 +2598,8 @@
     var screenImg = document.getElementById("macro-screen-img");
     var placeholder = document.getElementById("macro-screen-placeholder");
     if (dev.has_screenshot && screenImg) {
-      screenImg.src = CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(dev.device_id) + "/screenshot?t=" + Date.now();
+      var sUid = currentUser && currentUser.id ? encodeURIComponent(currentUser.id) : "";
+      screenImg.src = CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(dev.device_id) + "/screenshot?t=" + Date.now() + (sUid ? "&discord_user_id=" + sUid : "");
       screenImg.classList.remove("hidden");
       if (placeholder) placeholder.classList.add("hidden");
     }
@@ -2624,20 +2821,79 @@
   window.unlinkActiveMacro = function () {
     if (!activeMacroDevice) return;
     var devId = activeMacroDevice.device_id;
-    fetch(CYSLINK_API + "/api/v1/website/unlink", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        device_id: devId,
-        discord_user_id: currentUser ? currentUser.id : null
-      })
+    window.unlinkDeviceById(devId);
+  };
+
+  window.unlinkDeviceById = function (deviceId) {
+    if (!deviceId) return;
+    var devObj = userMacroDevicesList.find(function (d) { return d.device_id === deviceId; }) || activeMacroDevice;
+    var devName = devObj ? (devObj.name || "Device") : "Device";
+    if (!confirm("Are you sure you want to disconnect and unlink " + devName + " (" + deviceId.substring(0, 8) + ")? It will require re-pairing via Link Code.")) return;
+
+    logMacroSecurity("Requesting unlink for device " + devName + " (" + deviceId.substring(0, 8) + ")...", "warn");
+    var uid = currentUser && currentUser.id ? encodeURIComponent(currentUser.id) : null;
+
+    fetch(CYSLINK_API + "/api/v1/website/user/" + uid + "/devices/" + encodeURIComponent(deviceId) + "/unlink", {
+      method: "POST"
     })
-      .finally(function () {
+      .then(function (res) {
+        if (!res.ok) {
+          // Fallback to general unlink
+          return fetch(CYSLINK_API + "/api/v1/website/unlink", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              device_id: deviceId,
+              discord_user_id: currentUser ? currentUser.id : null
+            })
+          });
+        }
+        return res.json();
+      })
+      .then(function () {
+        logMacroSecurity("Successfully unlinked device " + deviceId.substring(0, 8), "success");
+        showToast("Device unlinked", "info");
+        if (activeMacroDevice && activeMacroDevice.device_id === deviceId) {
+          activeMacroDevice = null;
+          localStorage.removeItem("cyslink_device_id");
+        }
+        syncUserMacroDevices(false);
+      })
+      .catch(function (err) {
+        logMacroSecurity("Unlink device failed: " + err.message, "error");
+        showToast("Failed to unlink device", "error");
+      });
+  };
+
+  window.unlinkAllDevicesFromModal = function () {
+    if (!currentUser || !currentUser.id) {
+      showToast("You must be logged in with Discord", "error");
+      return;
+    }
+    if (!confirm("EMERGENCY UNLINK: This will disconnect and unlink ALL devices attached to your Discord account. Any remote macros will lose access until re-paired. Continue?")) return;
+
+    logMacroSecurity("Purging ALL devices for Discord user " + currentUser.id + "...", "warn");
+    fetch(CYSLINK_API + "/api/v1/website/user/" + encodeURIComponent(currentUser.id) + "/unlink-all", {
+      method: "POST"
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error("Failed to unlink all devices (HTTP " + res.status + ")");
+        return res.json();
+      })
+      .then(function (data) {
+        logMacroSecurity("Successfully purged all " + (data.count || "0") + " device(s)!", "success");
+        showToast("All devices unlinked (" + (data.count || 0) + ")", "info");
         localStorage.removeItem("cyslink_device_id");
         activeMacroDevice = null;
+        userMacroDevicesList = [];
         updateMacroNavBadge();
+        updateMacroDevicePickerUI();
+        renderMacroSecurityPanel();
         renderMacroPairingCard();
-        showToast("Macro unlinked", "info");
+      })
+      .catch(function (err) {
+        logMacroSecurity("Unlink all devices failed: " + err.message, "error");
+        showToast("Failed to unlink all devices", "error");
       });
   };
 
@@ -2674,7 +2930,10 @@
 
     if (spinner) spinner.classList.remove("hidden");
 
-    fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/request-screenshot", {
+    var uid = currentUser && currentUser.id ? encodeURIComponent(currentUser.id) : "";
+    var uidParam = uid ? "?discord_user_id=" + uid : "";
+
+    fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/request-screenshot" + uidParam, {
       method: "POST"
     })
       .then(function (res) {
@@ -2683,10 +2942,10 @@
           return fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/command", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ command: "ShowScreen", payload: null })
+            body: JSON.stringify({ command: "ShowScreen", payload: null, discord_user_id: currentUser ? String(currentUser.id) : null })
           }).then(function () {
             return new Promise(function (resolve) { setTimeout(resolve, 2500); }).then(function () {
-              return fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/screenshot?t=" + Date.now());
+              return fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/screenshot?t=" + Date.now() + (uid ? "&discord_user_id=" + uid : ""));
             });
           }).then(function (r2) {
             if (!r2.ok) throw new Error("Screenshot not available yet");
@@ -2704,9 +2963,11 @@
         }
         if (placeholder) placeholder.classList.add("hidden");
         if (timeEl) timeEl.textContent = "Captured " + new Date().toLocaleTimeString();
+        logMacroSecurity("Screenshot received successfully for " + (activeMacroDevice.name || "Device"), "success");
         showToast("Screen captured!", "success");
       })
       .catch(function (err) {
+        logMacroSecurity("Screenshot capture failed: " + err.message, "warn");
         showToast("Screenshot capture timed out. Is Roblox running?", "error");
       })
       .finally(function () {
