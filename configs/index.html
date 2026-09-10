@@ -604,6 +604,161 @@
           </div>
         </div>
 
+        <!-- Macro Settings Section -->
+        <div class="macro-settings-section" id="macro-settings-section">
+          <div class="macro-settings-header" onclick="toggleMacroSettingsPanel()">
+            <div class="macro-settings-header-left">
+              <i class="fas fa-sliders-h"></i>
+              <h4 class="macro-section-subtitle">Macro Settings</h4>
+            </div>
+            <div class="macro-settings-header-right">
+              <span class="macro-settings-status" id="macro-settings-status-badge">Live Sync</span>
+              <i class="fas fa-chevron-down macro-collapse-arrow" id="macro-settings-collapse-arrow"></i>
+            </div>
+          </div>
+
+          <div class="macro-settings-body" id="macro-settings-body">
+            <!-- Tabs -->
+            <div class="macro-settings-tabs">
+              <button type="button" class="macro-tab-btn active" data-tab="delays" onclick="switchMacroSettingsTab('delays')">
+                <i class="fas fa-stopwatch"></i> Delays
+              </button>
+              <button type="button" class="macro-tab-btn" data-tab="challenges" onclick="switchMacroSettingsTab('challenges')">
+                <i class="fas fa-trophy"></i> Challenges
+              </button>
+              <button type="button" class="macro-tab-btn" data-tab="general" onclick="switchMacroSettingsTab('general')">
+                <i class="fas fa-cog"></i> General &amp; Safety
+              </button>
+            </div>
+
+            <!-- Tab 1: Delays -->
+            <div class="macro-tab-content active" id="macro-tab-delays">
+              <div class="macro-form-grid">
+                <div class="macro-field-group">
+                  <label for="mset-placement-delay">Placement Delay (ms)</label>
+                  <input type="number" id="mset-placement-delay" class="macro-num-input" min="50" max="20000" step="50" placeholder="1250" />
+                </div>
+                <div class="macro-field-group">
+                  <label for="mset-upgrade-delay">Upgrade Delay (ms)</label>
+                  <input type="number" id="mset-upgrade-delay" class="macro-num-input" min="50" max="20000" step="50" placeholder="350" />
+                </div>
+                <div class="macro-field-group">
+                  <label for="mset-click-delay">Click Delay (ms)</label>
+                  <input type="number" id="mset-click-delay" class="macro-num-input" min="20" max="5000" step="10" placeholder="100" />
+                </div>
+                <div class="macro-field-group">
+                  <label for="mset-ingame-delay">In-Game Delay (ms)</label>
+                  <input type="number" id="mset-ingame-delay" class="macro-num-input" min="500" max="30000" step="500" placeholder="6000" />
+                </div>
+                <div class="macro-field-group">
+                  <label for="mset-zoom-scrolls">Zoom Scrolls</label>
+                  <input type="number" id="mset-zoom-scrolls" class="macro-num-input" min="0" max="50" step="1" placeholder="15" />
+                </div>
+                <div class="macro-field-group">
+                  <label for="mset-placement-timeout">Place Timeout (min)</label>
+                  <input type="number" id="mset-placement-timeout" class="macro-num-input" min="1" max="120" step="1" placeholder="15" />
+                </div>
+                <div class="macro-field-group">
+                  <label for="mset-upgrade-timeout">Upgrade Timeout (min)</label>
+                  <input type="number" id="mset-upgrade-timeout" class="macro-num-input" min="1" max="120" step="1" placeholder="15" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 2: Challenges -->
+            <div class="macro-tab-content" id="macro-tab-challenges">
+              <div class="macro-switches-grid">
+                <label class="macro-switch-card">
+                  <div class="switch-info">
+                    <span class="switch-title">Auto-Challenges</span>
+                    <span class="switch-desc">Run challenges every 30m reset</span>
+                  </div>
+                  <input type="checkbox" id="mset-enable-challenges" class="macro-switch-checkbox" />
+                  <span class="macro-switch-slider"></span>
+                </label>
+
+                <label class="macro-switch-card">
+                  <div class="switch-info">
+                    <span class="switch-title">Daily Challenge</span>
+                    <span class="switch-desc">Run daily challenge once per UTC day</span>
+                  </div>
+                  <input type="checkbox" id="mset-enable-daily-challenge" class="macro-switch-checkbox" />
+                  <span class="macro-switch-slider"></span>
+                </label>
+
+                <div class="macro-chal-acts-box">
+                  <span class="switch-title">Challenge Categories:</span>
+                  <div class="macro-chal-acts-row">
+                    <label class="macro-check-chip">
+                      <input type="checkbox" id="mset-chal-1" />
+                      <span>Chal 1 (Traits/Gems)</span>
+                    </label>
+                    <label class="macro-check-chip">
+                      <input type="checkbox" id="mset-chal-2" />
+                      <span>Chal 2 (Stats)</span>
+                    </label>
+                    <label class="macro-check-chip">
+                      <input type="checkbox" id="mset-chal-3" />
+                      <span>Chal 3 (Sprites)</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 3: General & Safety -->
+            <div class="macro-tab-content" id="macro-tab-general">
+              <div class="macro-switches-grid">
+                <label class="macro-switch-card">
+                  <div class="switch-info">
+                    <span class="switch-title">Click Next Instead of Retry</span>
+                    <span class="switch-desc">Clicks Next button on stage victory</span>
+                  </div>
+                  <input type="checkbox" id="mset-click-next" class="macro-switch-checkbox" />
+                  <span class="macro-switch-slider"></span>
+                </label>
+
+                <label class="macro-switch-card">
+                  <div class="switch-info">
+                    <span class="switch-title">Read Match Rewards (OCR)</span>
+                    <span class="switch-desc">Scan and track end-game drops</span>
+                  </div>
+                  <input type="checkbox" id="mset-read-ocr" class="macro-switch-checkbox" />
+                  <span class="macro-switch-slider"></span>
+                </label>
+
+                <label class="macro-switch-card">
+                  <div class="switch-info">
+                    <span class="switch-title">Enable Golden Hour</span>
+                    <span class="switch-desc">Auto-swap to Golden Hour stage</span>
+                  </div>
+                  <input type="checkbox" id="mset-golden-hour" class="macro-switch-checkbox" />
+                  <span class="macro-switch-slider"></span>
+                </label>
+
+                <div class="macro-form-grid" style="margin-top: 8px;">
+                  <div class="macro-field-group">
+                    <label for="mset-reconnect-attempts">Reconnect Attempts</label>
+                    <input type="number" id="mset-reconnect-attempts" class="macro-num-input" min="1" max="100" step="1" placeholder="15" />
+                  </div>
+                  <div class="macro-field-group">
+                    <label for="mset-reconnect-wait">Reconnect Wait (ms)</label>
+                    <input type="number" id="mset-reconnect-wait" class="macro-num-input" min="500" max="20000" step="500" placeholder="3000" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Settings Action Bar -->
+            <div class="macro-settings-action-bar">
+              <button type="button" class="btn-save-macro-settings" id="btn-save-macro-settings" onclick="saveMacroSettingsFromWeb()">
+                <i class="fas fa-check"></i>
+                <span>Apply Settings</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Load Share Code -->
         <div class="macro-inject-section">
           <h4 class="macro-section-subtitle">Load Share Code</h4>
@@ -639,6 +794,6 @@
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="app.js?v=3.1"></script>
+  <script src="app.js?v=3.3"></script>
 </body>
 </html>

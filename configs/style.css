@@ -2703,4 +2703,332 @@ select.upload-input {
   color: #f87171;
 }
 
+/* ==========================================
+   CYSLINK MACRO SETTINGS PANEL STYLES
+   ========================================== */
+
+.macro-settings-section {
+  background: var(--surf-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  margin-bottom: 1rem;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.macro-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s ease;
+}
+
+.macro-settings-header:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.macro-settings-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--prim);
+}
+
+.macro-settings-header-left .macro-section-subtitle {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.macro-settings-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.macro-settings-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.18rem 0.55rem;
+  border-radius: var(--pill);
+  background: rgba(41, 240, 240, 0.12);
+  border: 1px solid var(--prim-border);
+  color: var(--prim);
+}
+
+.macro-collapse-arrow {
+  color: var(--text-3);
+  font-size: 0.85rem;
+  transition: transform 0.25s ease;
+}
+
+.macro-settings-body {
+  padding: 0.95rem;
+  transition: all 0.25s ease;
+}
+
+.macro-settings-body.collapsed {
+  display: none;
+}
+
+/* Tabs */
+.macro-settings-tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+.macro-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.macro-tab-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.macro-tab-btn.active {
+  color: var(--prim);
+  background: rgba(41, 240, 240, 0.1);
+  border-color: var(--prim-border);
+}
+
+.macro-tab-content {
+  display: none;
+}
+
+.macro-tab-content.active {
+  display: block;
+}
+
+/* Form Grid */
+.macro-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.65rem;
+}
+
+.macro-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.macro-field-group label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.macro-num-input {
+  background: var(--surf);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  padding: 0.45rem 0.6rem;
+  color: #fff;
+  font-family: var(--font-m);
+  font-size: 0.88rem;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.macro-num-input:focus {
+  border-color: var(--prim);
+  box-shadow: 0 0 10px rgba(41, 240, 240, 0.2);
+}
+
+/* Switches Grid */
+.macro-switches-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.macro-switch-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.macro-switch-card:hover {
+  border-color: var(--border-2);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.macro-switch-card .switch-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.macro-switch-card .switch-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.macro-switch-card .switch-desc {
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+
+.macro-switch-checkbox {
+  display: none;
+}
+
+.macro-switch-slider {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--pill);
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.macro-switch-slider::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.25s ease;
+}
+
+.macro-switch-checkbox:checked + .macro-switch-slider {
+  background: var(--prim);
+}
+
+.macro-switch-checkbox:checked + .macro-switch-slider::before {
+  transform: translateX(18px);
+  background: #040814;
+}
+
+/* Challenge Acts Box */
+.macro-chal-acts-box {
+  padding: 0.65rem 0.85rem;
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.macro-chal-acts-box .switch-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.macro-chal-acts-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.macro-check-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-2);
+  border-radius: var(--pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.macro-check-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.macro-check-chip input:checked + span {
+  color: var(--prim);
+  font-weight: 700;
+}
+
+.macro-check-chip input {
+  accent-color: var(--prim);
+}
+
+/* Action Bar */
+.macro-settings-action-bar {
+  margin-top: 0.95rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-save-macro-settings {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.25rem;
+  background: linear-gradient(135deg, var(--prim), #2563eb);
+  border: none;
+  border-radius: var(--r-sm);
+  color: #040814;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-save-macro-settings:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(41, 240, 240, 0.35);
+}
+
+.btn-save-macro-settings:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
 

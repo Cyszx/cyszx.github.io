@@ -2124,54 +2124,56 @@
   }
 
   function syncUserMacroDevices(notifyOnFind) {
-    var primaryUrl = (currentUser && currentUser.id)
-      ? CYSLINK_API + "/api/v1/website/user/" + encodeURIComponent(currentUser.id) + "/devices"
-      : CYSLINK_API + "/api/v1/website/devices";
+    if (!currentUser || !currentUser.id) {
+      activeMacroDevice = null;
+      updateMacroNavBadge();
+      if (macroModalOpen) renderMacroPairingCard();
+      return;
+    }
+
+    var primaryUrl = CYSLINK_API + "/api/v1/website/user/" + encodeURIComponent(currentUser.id) + "/devices";
 
     fetch(primaryUrl)
       .then(function (res) {
-        if (!res.ok) {
-          return fetch(CYSLINK_API + "/api/v1/website/devices").then(function (r2) {
-            return r2.ok ? r2.json() : [];
-          });
-        }
+        if (!res.ok) return [];
         return res.json();
       })
       .then(function (devs) {
-        // Fallback: If user endpoint returned empty list, check general devices
-        if ((!Array.isArray(devs) || devs.length === 0) && currentUser && currentUser.id) {
-          return fetch(CYSLINK_API + "/api/v1/website/devices")
-            .then(function (r) { return r.ok ? r.json() : []; })
-            .catch(function () { return []; });
-        }
-        return devs;
-      })
-      .then(function (devs) {
         if (Array.isArray(devs) && devs.length > 0) {
-          var userDevs = devs;
-          if (currentUser && currentUser.id) {
-            var matched = devs.filter(function (d) { return String(d.discord_user_id) === String(currentUser.id); });
-            if (matched.length > 0) userDevs = matched;
-          }
-          var best = userDevs.find(function (d) { return d.online; }) || userDevs[0];
-          activeMacroDevice = best;
-          localStorage.setItem("cyslink_device_id", best.device_id);
-          updateMacroNavBadge();
-          if (macroModalOpen) renderMacroDashboard();
-          if (notifyOnFind) {
-            showToast("Connected to " + (best.name || "Macro-PC"), "success");
-          }
-        } else {
-          updateMacroNavBadge();
-          if (macroModalOpen && !activeMacroDevice) {
-            renderMacroPairingCard();
-          }
-          if (notifyOnFind) {
-            showToast("No running macro found on relay server.", "error");
+          // Strictly only select devices that belong to this Discord user
+          var userDevs = devs.filter(function (d) {
+            return String(d.discord_user_id) === String(currentUser.id) || d.linked;
+          });
+          if (userDevs.length > 0) {
+            userDevs.sort(function (a, b) {
+              if (Boolean(a.online) !== Boolean(b.online)) return a.online ? -1 : 1;
+              return (a.last_seen_seconds_ago || 999999) - (b.last_seen_seconds_ago || 999999);
+            });
+            var best = userDevs.find(function (d) { return d.online; }) || userDevs[0];
+            activeMacroDevice = best;
+            localStorage.setItem("cyslink_device_id", best.device_id);
+            updateMacroNavBadge();
+            if (macroModalOpen) renderMacroDashboard();
+            if (notifyOnFind) {
+              showToast("Connected to " + (best.name || "Macro-PC") + (best.online ? " (Online)" : " (Offline)"), best.online ? "success" : "info");
+            }
+            return;
           }
         }
+
+        // If no devices are linked to this user, NEVER fall back to other users' macros!
+        activeMacroDevice = null;
+        localStorage.removeItem("cyslink_device_id");
+        updateMacroNavBadge();
+        if (macroModalOpen) {
+          renderMacroPairingCard();
+        }
+        if (notifyOnFind) {
+          showToast("No macro linked to your Discord account. Press F6 in macro to link.", "info");
+        }
       })
-      .catch(function () {
+      .catch(function (err) {
+        console.warn("[CysLink Remote DEBUG] Sync devices error:", err);
         updateMacroNavBadge();
         if (notifyOnFind) {
           showToast("Unable to reach CysLink relay server.", "error");
@@ -2183,33 +2185,41 @@
     syncUserMacroDevices(showToastFeedback !== false);
   };
 
+  var macroStatusConsecutiveErrors = 0;
+
   function fetchMacroStatus(deviceId, updateDashboardUi) {
     if (!deviceId) return;
     fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(deviceId) + "/status")
       .then(function (res) {
-        if (!res.ok) throw new Error("Device not found");
+        if (!res.ok) throw new Error("Device not found (HTTP " + res.status + ")");
         return res.json();
       })
       .then(function (data) {
+        macroStatusConsecutiveErrors = 0;
         activeMacroDevice = data;
         updateMacroNavBadge();
         if (macroModalOpen || updateDashboardUi) {
           renderMacroDashboard();
         }
       })
-      .catch(function () {
-        if (activeMacroDevice) {
-          activeMacroDevice.online = false;
-        }
-        updateMacroNavBadge();
-        if (macroModalOpen) {
+      .catch(function (err) {
+        macroStatusConsecutiveErrors++;
+        console.warn("[CysLink Remote DEBUG] Status fetch failed (" + macroStatusConsecutiveErrors + "/3):", err);
+        // Tolerate up to 2 temporary errors (Render cold start / network hiccup) before declaring offline
+        if (macroStatusConsecutiveErrors >= 3) {
           if (activeMacroDevice) {
-            renderMacroDashboard();
-          } else {
-            renderMacroPairingCard();
+            activeMacroDevice.online = false;
           }
+          updateMacroNavBadge();
+          if (macroModalOpen) {
+            if (activeMacroDevice) {
+              renderMacroDashboard();
+            } else {
+              renderMacroPairingCard();
+            }
+          }
+          syncUserMacroDevices(false);
         }
-        syncUserMacroDevices(false);
       });
   }
 
@@ -2398,6 +2408,9 @@
     }
 
     initMacroModeSelectorsOnce();
+    if (st && st.settings) {
+      populateMacroSettingsUI(st.settings);
+    }
   }
 
   function updateTeamPillsUI(teamVal) {
@@ -2430,6 +2443,12 @@
         { label: "Snowy-Castle", value: "Snowy-Castle" }
       ],
       acts: ["Act 1", "Act 2", "Act 3"]
+    },
+    challenge: {
+      stages: [
+        { label: "School Grounds", value: "School Grounds" }
+      ],
+      acts: []
     },
     infinitytower: {
       stages: [
@@ -2706,10 +2725,11 @@
       return;
     }
 
+    var uid = currentUser && currentUser.id ? String(currentUser.id) : null;
     fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/command", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ command: command, payload: payload || null })
+      body: JSON.stringify({ command: command, payload: payload || null, discord_user_id: uid })
     })
       .then(function (res) {
         return res.json().then(function (data) {
@@ -2817,5 +2837,155 @@
   window.quickSendToMacro = function (shareCode, configName) {
     window.sendConfigCodeToMacro(shareCode, configName);
   };
+
+  // ==========================================
+  // MACRO SETTINGS MANAGEMENT
+  // ==========================================
+
+  var macroSettingsActiveTab = "delays";
+  var macroSettingsPanelOpen = true;
+
+  window.toggleMacroSettingsPanel = function () {
+    var body = document.getElementById("macro-settings-body");
+    var arrow = document.getElementById("macro-settings-collapse-arrow");
+    if (!body) return;
+    macroSettingsPanelOpen = !macroSettingsPanelOpen;
+    if (macroSettingsPanelOpen) {
+      body.classList.remove("collapsed");
+      if (arrow) arrow.style.transform = "rotate(0deg)";
+    } else {
+      body.classList.add("collapsed");
+      if (arrow) arrow.style.transform = "rotate(-90deg)";
+    }
+  };
+
+  window.switchMacroSettingsTab = function (tabId) {
+    macroSettingsActiveTab = tabId;
+    var tabBtns = document.querySelectorAll(".macro-tab-btn");
+    var tabPanes = document.querySelectorAll(".macro-tab-content");
+
+    tabBtns.forEach(function (btn) {
+      if (btn.getAttribute("data-tab") === tabId) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+
+    tabPanes.forEach(function (pane) {
+      if (pane.id === "macro-tab-" + tabId) {
+        pane.classList.add("active");
+      } else {
+        pane.classList.remove("active");
+      }
+    });
+  };
+
+  function populateMacroSettingsUI(settings) {
+    if (!settings || typeof settings !== "object") return;
+
+    function setNum(id, val) {
+      var el = document.getElementById(id);
+      if (el && val !== undefined && val !== null && !el.matches(":focus")) {
+        el.value = Number(val);
+      }
+    }
+
+    function setCheck(id, val) {
+      var el = document.getElementById(id);
+      if (el && val !== undefined && val !== null) {
+        el.checked = Boolean(Number(val));
+      }
+    }
+
+    // Delays
+    setNum("mset-placement-delay", settings.PlacementDelay !== undefined ? settings.PlacementDelay : 1250);
+    setNum("mset-upgrade-delay", settings.UpgradeDelay !== undefined ? settings.UpgradeDelay : 350);
+    setNum("mset-click-delay", settings.ClickDelay !== undefined ? settings.ClickDelay : 100);
+    setNum("mset-ingame-delay", settings.InGameDelay !== undefined ? settings.InGameDelay : 6000);
+    setNum("mset-zoom-scrolls", settings.ZoomScrolls !== undefined ? settings.ZoomScrolls : 15);
+    setNum("mset-placement-timeout", settings.PlacementTimeoutEdit !== undefined ? settings.PlacementTimeoutEdit : 15);
+    setNum("mset-upgrade-timeout", settings.UpgradeTimeoutEdit !== undefined ? settings.UpgradeTimeoutEdit : 15);
+
+    // Challenges
+    setCheck("mset-enable-challenges", settings.EnableChallenges);
+    setCheck("mset-enable-daily-challenge", settings.EnableDailyChallenge);
+    setCheck("mset-chal-1", settings.Chal1Cb !== undefined ? settings.Chal1Cb : 1);
+    setCheck("mset-chal-2", settings.Chal2Cb);
+    setCheck("mset-chal-3", settings.Chal3Cb);
+
+    // General & Safety
+    setCheck("mset-click-next", settings.ClickNext);
+    setCheck("mset-read-ocr", settings.ReadMatchRewards !== undefined ? settings.ReadMatchRewards : 1);
+    setCheck("mset-golden-hour", settings.EnableGoldenHour);
+    setNum("mset-reconnect-attempts", settings.ReconnectAttempts !== undefined ? settings.ReconnectAttempts : 15);
+    setNum("mset-reconnect-wait", settings.ReconnectWait !== undefined ? settings.ReconnectWait : 3000);
+  }
+
+  window.saveMacroSettingsFromWeb = function () {
+    if (!activeMacroDevice || !activeMacroDevice.device_id) {
+      showToast("No macro connected", "error");
+      return;
+    }
+    if (!activeMacroDevice.online) {
+      showToast("Macro is offline", "error");
+      return;
+    }
+
+    function getNum(id, defaultVal) {
+      var el = document.getElementById(id);
+      if (!el || el.value === "") return defaultVal;
+      var num = Number(el.value);
+      return isNaN(num) ? defaultVal : num;
+    }
+
+    function getCheck(id) {
+      var el = document.getElementById(id);
+      return (el && el.checked) ? 1 : 0;
+    }
+
+    var payload = {
+      PlacementDelay: Math.max(50, getNum("mset-placement-delay", 1250)),
+      UpgradeDelay: Math.max(50, getNum("mset-upgrade-delay", 350)),
+      ClickDelay: Math.max(20, getNum("mset-click-delay", 100)),
+      InGameDelay: Math.max(500, getNum("mset-ingame-delay", 6000)),
+      ZoomScrolls: Math.max(0, getNum("mset-zoom-scrolls", 15)),
+      PlacementTimeoutEdit: Math.max(1, getNum("mset-placement-timeout", 15)),
+      UpgradeTimeoutEdit: Math.max(1, getNum("mset-upgrade-timeout", 15)),
+
+      EnableChallenges: getCheck("mset-enable-challenges"),
+      EnableDailyChallenge: getCheck("mset-enable-daily-challenge"),
+      Chal1Cb: getCheck("mset-chal-1"),
+      Chal2Cb: getCheck("mset-chal-2"),
+      Chal3Cb: getCheck("mset-chal-3"),
+
+      ClickNext: getCheck("mset-click-next"),
+      ReadMatchRewards: getCheck("mset-read-ocr"),
+      EnableGoldenHour: getCheck("mset-golden-hour"),
+      ReconnectAttempts: Math.max(1, getNum("mset-reconnect-attempts", 15)),
+      ReconnectWait: Math.max(500, getNum("mset-reconnect-wait", 3000))
+    };
+
+    var btn = document.getElementById("btn-save-macro-settings");
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Applying...';
+    }
+
+    window.sendMacroCommand("UpdateSettings", JSON.stringify(payload));
+
+    if (activeMacroDevice.status) {
+      if (!activeMacroDevice.status.settings) activeMacroDevice.status.settings = {};
+      Object.assign(activeMacroDevice.status.settings, payload);
+    }
+
+    setTimeout(function () {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check"></i> <span>Apply Settings</span>';
+      }
+    }, 1200);
+  };
 })();
+
 
