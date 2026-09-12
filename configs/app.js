@@ -2092,9 +2092,23 @@
       });
     }
 
-    // Enter key shortcuts for pairing and share code quick injection
+    // Enter key shortcuts and auto-strip 'AE-' on paste/input
     var pairInput = document.getElementById("macro-pair-code-input");
     if (pairInput) {
+      pairInput.addEventListener("input", function () {
+        var v = this.value.toUpperCase().replace(/^AE-?/, "").replace(/[^A-Z0-9]/g, "");
+        if (v.length > 6) v = v.substring(0, 6);
+        this.value = v;
+      });
+      pairInput.addEventListener("paste", function (e) {
+        var pasted = (e.clipboardData || window.clipboardData) ? (e.clipboardData || window.clipboardData).getData("text") : "";
+        if (pasted) {
+          e.preventDefault();
+          var v = pasted.trim().toUpperCase().replace(/^AE-?/, "").replace(/[^A-Z0-9]/g, "");
+          if (v.length > 6) v = v.substring(0, 6);
+          this.value = v;
+        }
+      });
       pairInput.addEventListener("keydown", function (e) {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -2360,7 +2374,8 @@
 
   function fetchMacroStatus(deviceId, updateDashboardUi) {
     if (!deviceId) return;
-    var uidParam = currentUser && currentUser.id ? "?discord_user_id=" + encodeURIComponent(currentUser.id) : "";
+    var uid = currentUser && currentUser.id ? currentUser.id : (activeMacroDevice && activeMacroDevice.discord_user_id ? activeMacroDevice.discord_user_id : "");
+    var uidParam = uid ? "?discord_user_id=" + encodeURIComponent(uid) : "";
     fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(deviceId) + "/status" + uidParam)
       .then(function (res) {
         if (!res.ok) {
@@ -2773,12 +2788,12 @@
     var input = document.getElementById("macro-pair-code-input");
     var btn = document.getElementById("btn-pair-submit");
     if (!input) return;
-    var rawCode = input.value.trim().toUpperCase();
-    if (!rawCode) {
-      showToast("Please enter a 6-digit Link Code", "error");
+    var cleanedDigits = input.value.trim().toUpperCase().replace(/^AE-?/, "").replace(/[^A-Z0-9]/g, "");
+    if (!cleanedDigits || cleanedDigits.length < 6) {
+      showToast("Please enter a valid 6-digit Link Code (e.g. 123456)", "error");
       return;
     }
-    if (!rawCode.startsWith("AE-")) rawCode = "AE-" + rawCode;
+    var rawCode = "AE-" + cleanedDigits.substring(0, 6);
 
     if (btn) {
       btn.disabled = true;
@@ -2930,7 +2945,8 @@
 
     if (spinner) spinner.classList.remove("hidden");
 
-    var uid = currentUser && currentUser.id ? encodeURIComponent(currentUser.id) : "";
+    var rawUid = currentUser && currentUser.id ? String(currentUser.id) : (activeMacroDevice && activeMacroDevice.discord_user_id ? String(activeMacroDevice.discord_user_id) : "");
+    var uid = encodeURIComponent(rawUid);
     var uidParam = uid ? "?discord_user_id=" + uid : "";
 
     fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/request-screenshot" + uidParam, {
@@ -2942,7 +2958,7 @@
           return fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/command", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ command: "ShowScreen", payload: null, discord_user_id: currentUser ? String(currentUser.id) : null })
+            body: JSON.stringify({ command: "ShowScreen", payload: null, discord_user_id: rawUid || null })
           }).then(function () {
             return new Promise(function (resolve) { setTimeout(resolve, 2500); }).then(function () {
               return fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/screenshot?t=" + Date.now() + (uid ? "&discord_user_id=" + uid : ""));
@@ -2986,7 +3002,13 @@
       return;
     }
 
-    var uid = currentUser && currentUser.id ? String(currentUser.id) : null;
+    var uid = currentUser && currentUser.id ? String(currentUser.id) : (activeMacroDevice && activeMacroDevice.discord_user_id ? String(activeMacroDevice.discord_user_id) : null);
+    if (!uid) {
+      showToast("Please log in with Discord first to control your macro.", "error");
+      window.openMacroRemoteModal();
+      return; 
+    }
+
     fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/command", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -3064,13 +3086,21 @@
       return;
     }
 
+    var uid = currentUser && currentUser.id ? String(currentUser.id) : (activeMacroDevice && activeMacroDevice.discord_user_id ? String(activeMacroDevice.discord_user_id) : null);
+    if (!uid) {
+      showToast("Please log in with Discord first to send configs to your macro.", "error");
+      window.openMacroRemoteModal();
+      return;
+    }
+
     showToast("Sending " + cleanCode + "...", "info");
     fetch(CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(activeMacroDevice.device_id) + "/command", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         command: "LoadShareCode",
-        payload: cleanCode
+        payload: cleanCode,
+        discord_user_id: uid
       })
     })
       .then(function (res) {
