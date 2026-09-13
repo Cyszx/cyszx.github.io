@@ -45,7 +45,7 @@
         <a href="https://discord.gg/cys" class="discord-link" target="_blank"><i class="fab fa-discord"></i> Discord</a>
       </div>
       <div class="ch-nav-right">
-        <!-- Macro Remote Control Button (visible only to verified testers) -->
+        <!-- Macro Remote Control Button -->
         <button class="btn-macro-remote hidden" id="btn-macro-remote" onclick="openMacroRemoteModal()" title="CysLink Macro Remote Control">
           <span class="macro-dot offline" id="macro-status-dot"></span>
           <span class="macro-label" id="macro-status-label">Macro</span>
@@ -516,6 +516,8 @@
                 <option value="infinitytower">Infinity Tower</option>
                 <option value="portals">Portals</option>
                 <option value="event">Events</option>
+                <option value="expedition">Expedition</option>
+                <option value="autogriffith">Auto Griffith</option>
               </select>
             </div>
             <div class="macro-select-group" id="macro-stage-group">
@@ -533,6 +535,7 @@
             <div class="macro-select-group" id="macro-team-group">
               <label for="macro-team-dropdown">Team</label>
               <select id="macro-team-dropdown" class="macro-dropdown" onchange="onMacroTeamChange()">
+                <option value="saved" selected>Use Saved Team</option>
                 <option value="none">No Team</option>
                 <option value="1">Team 1</option>
                 <option value="2">Team 2</option>

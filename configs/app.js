@@ -91,7 +91,7 @@
         currentUser.is_owner = !!currentUser.is_owner || currentUser.id === "1141849395902554202";
         currentUser.is_admin = !!currentUser.is_admin || currentUser.is_owner;
         currentUser.is_premium = !!(currentUser.is_premium || currentUser.is_admin || currentUser.is_owner || currentUser.is_config_maker || currentUser.is_creator);
-        currentUser.is_macro_tester = !!(currentUser.is_macro_tester || currentUser.is_owner || currentUser.is_admin);
+        currentUser.is_macro_tester = true;
         updateUIForLoggedIn();
         syncLiveUserRoles();
         checkMacroTesterAccess();
@@ -125,7 +125,7 @@
           currentUser.is_premium = !!data.user.is_premium;
           currentUser.is_config_maker = !!data.user.is_config_maker;
           currentUser.is_creator = !!data.user.is_creator;
-          currentUser.is_macro_tester = !!(data.user.is_macro_tester || currentUser.is_owner || currentUser.is_admin);
+          currentUser.is_macro_tester = true;
           localStorage.setItem("ch_user", JSON.stringify(currentUser));
           updateUIForLoggedIn();
           checkMacroTesterAccess();
@@ -174,7 +174,7 @@
         currentUser.is_owner = !!currentUser.is_owner || currentUser.id === "1141849395902554202";
         currentUser.is_admin = !!currentUser.is_admin || currentUser.is_owner;
         currentUser.is_premium = !!(currentUser.is_premium || currentUser.is_admin || currentUser.is_owner || currentUser.is_config_maker || currentUser.is_creator);
-        currentUser.is_macro_tester = !!(data.user.is_macro_tester || currentUser.is_owner || currentUser.is_admin);
+        currentUser.is_macro_tester = true;
         localStorage.setItem("ch_user", JSON.stringify(currentUser));
         localStorage.setItem("ch_token", data.token);
         updateUIForLoggedIn();
@@ -2021,8 +2021,7 @@
   // CYSLINK MACRO REMOTE & INTEGRATION
   // ==========================================
 
-  var MACRO_TESTER_GUILD_ID = "1391118743035183155";
-  var isMacroTester = false;
+  var isMacroTester = true;
 
   function checkMacroTesterAccess() {
     var remoteBtn = document.getElementById("btn-macro-remote");
@@ -2033,42 +2032,10 @@
       return Promise.resolve(false);
     }
 
-    var isOwnerOrAdmin = currentUser.id === "1141849395902554202" || !!currentUser.is_owner || !!currentUser.is_admin;
-    if (isOwnerOrAdmin || currentUser.is_macro_tester === true) {
-      isMacroTester = true;
-      if (remoteBtn) remoteBtn.classList.remove("hidden");
-      return Promise.resolve(true);
-    }
-
-    return fetch(CYSLINK_API + "/api/v1/website/user/" + encodeURIComponent(currentUser.id) + "/tester")
-      .then(function (res) {
-        if (!res.ok) return { is_tester: false };
-        return res.json();
-      })
-      .then(function (data) {
-        if (data && data.is_tester) {
-          isMacroTester = true;
-          currentUser.is_macro_tester = true;
-          localStorage.setItem("ch_user", JSON.stringify(currentUser));
-          if (remoteBtn) remoteBtn.classList.remove("hidden");
-          return true;
-        } else {
-          isMacroTester = false;
-          if (remoteBtn) remoteBtn.classList.add("hidden");
-          if (macroModalOpen) window.closeMacroRemoteModal();
-          return false;
-        }
-      })
-      .catch(function () {
-        if (currentUser.is_macro_tester) {
-          isMacroTester = true;
-          if (remoteBtn) remoteBtn.classList.remove("hidden");
-          return true;
-        }
-        isMacroTester = false;
-        if (remoteBtn) remoteBtn.classList.add("hidden");
-        return false;
-      });
+    isMacroTester = true;
+    currentUser.is_macro_tester = true;
+    if (remoteBtn) remoteBtn.classList.remove("hidden");
+    return Promise.resolve(true);
   }
 
   function initMacroRemote() {
@@ -2199,9 +2166,6 @@
         activeEl.textContent = "None";
       }
     }
-    if (ipEl) {
-      ipEl.textContent = (activeMacroDevice && activeMacroDevice.client_ip) ? activeMacroDevice.client_ip : "Unknown";
-    }
     if (countEl) countEl.textContent = String(userMacroDevicesList.length);
 
     if (listEl) {
@@ -2214,7 +2178,6 @@
         var isCurrent = activeMacroDevice && activeMacroDevice.device_id === d.device_id;
         var statusBadge = d.online ? '<span class="macro-state-badge online" style="font-size:0.6rem;padding:0.1rem 0.4rem;">Online</span>' : '<span class="macro-state-badge offline" style="font-size:0.6rem;padding:0.1rem 0.4rem;">Offline</span>';
         var devIdShort = d.device_id ? d.device_id.substring(0, 8) + "..." : "----";
-        var ipStr = d.client_ip || "Unknown IP";
         var pingStr = d.online ? (d.last_seen_seconds_ago < 5 ? "Active now" : d.last_seen_seconds_ago + "s ago") : "Offline";
 
         html += '<div class="macro-sec-device-item' + (isCurrent ? ' active-dev' : '') + '">';
@@ -2224,7 +2187,7 @@
         html += '      ' + statusBadge;
         if (isCurrent) html += ' <span style="font-size:0.65rem;color:var(--prim);font-weight:700;">(ACTIVE)</span>';
         html += '    </div>';
-        html += '    <div class="sec-dev-meta">ID: ' + devIdShort + ' | IP: ' + escapeHtml(ipStr) + ' | ' + pingStr + '</div>';
+        html += '    <div class="sec-dev-meta">ID: ' + devIdShort + ' | ' + pingStr + '</div>';
         html += '  </div>';
         html += '  <div class="sec-dev-actions">';
         if (!isCurrent) {
@@ -2274,7 +2237,7 @@
     }
     activeMacroDevice = found;
     localStorage.setItem("cyslink_device_id", found.device_id);
-    logMacroSecurity("Switched active device to " + (found.name || "Device") + " (" + found.device_id.substring(0, 8) + ") | IP: " + (found.client_ip || "Unknown"));
+    logMacroSecurity("Switched active device to " + (found.name || "Device") + " (" + found.device_id.substring(0, 8) + ")");
     updateMacroNavBadge();
     updateMacroDevicePickerUI();
     renderMacroSecurityPanel();
@@ -2335,7 +2298,7 @@
             var best = onlineDevs.length > 0 ? onlineDevs[0] : userMacroDevicesList[0];
             activeMacroDevice = best;
             localStorage.setItem("cyslink_device_id", best.device_id);
-            logMacroSecurity("Selected device " + (best.name || "Macro-PC") + " (" + best.device_id.substring(0, 8) + ") | IP: " + (best.client_ip || "Unknown"));
+            logMacroSecurity("Selected device " + (best.name || "Macro-PC") + " (" + best.device_id.substring(0, 8) + ")");
           }
 
           updateMacroNavBadge();
@@ -2466,9 +2429,8 @@
   }
 
   window.openMacroRemoteModal = function () {
-    var isOwnerOrAdmin = currentUser && (currentUser.id === "1141849395902554202" || currentUser.is_owner || currentUser.is_admin);
-    if (!isMacroTester && !isOwnerOrAdmin && (!currentUser || !currentUser.is_macro_tester)) {
-      showToast("Macro remote control is in testing for server members only.", "error");
+    if (!currentUser) {
+      showToast("Please log in with Discord to access Macro Remote Control.", "info");
       return;
     }
     var modal = document.getElementById("macro-remote-modal");
@@ -2613,8 +2575,12 @@
     var screenImg = document.getElementById("macro-screen-img");
     var placeholder = document.getElementById("macro-screen-placeholder");
     if (dev.has_screenshot && screenImg) {
-      var sUid = currentUser && currentUser.id ? encodeURIComponent(currentUser.id) : "";
-      screenImg.src = CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(dev.device_id) + "/screenshot?t=" + Date.now() + (sUid ? "&discord_user_id=" + sUid : "");
+      var shotTime = dev.latest_screenshot_time || 1;
+      if (screenImg.dataset.loadedShotTime !== String(shotTime)) {
+        screenImg.dataset.loadedShotTime = String(shotTime);
+        var sUid = currentUser && currentUser.id ? encodeURIComponent(currentUser.id) : "";
+        screenImg.src = CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(dev.device_id) + "/screenshot?v=" + shotTime + (sUid ? "&discord_user_id=" + sUid : "");
+      }
       screenImg.classList.remove("hidden");
       if (placeholder) placeholder.classList.add("hidden");
     }
@@ -2686,10 +2652,31 @@
         { label: "Tidal Siege", value: "Tidal Siege" }
       ],
       acts: []
+    },
+    expedition: {
+      stages: [
+        { label: "School Grounds", value: "School Grounds" },
+        { label: "Flower Forest", value: "Flower Forest" },
+        { label: "Rose Kingdom", value: "Rose Kingdom" },
+        { label: "East Town", value: "East Town" }
+      ],
+      acts: ["Diff 1", "Diff 2", "Diff 3"]
+    },
+    autogriffith: {
+      stages: [
+        { label: "School Grounds", value: "School Grounds" },
+        { label: "Flower Forest", value: "Flower Forest" },
+        { label: "Rose Kingdom", value: "Rose Kingdom" },
+        { label: "Fairy King Forest", value: "Fairy King Forest" },
+        { label: "King's Tomb", value: "King's Tomb" },
+        { label: "East Town", value: "East Town" },
+        { label: "Crimson-Shore", value: "Crimson-Shore" }
+      ],
+      acts: []
     }
   };
 
-  var activeMacroTeam = "none";
+  var activeMacroTeam = "saved";
   var macroModeSelectorsInit = false;
 
   function initMacroModeSelectorsOnce() {
@@ -2702,7 +2689,14 @@
     var teamSelect = document.getElementById("macro-team-dropdown");
     if (!teamSelect) return;
     activeMacroTeam = teamSelect.value;
-    var cmdPayload = (activeMacroTeam === "none") ? "Skip Team" : ("Team " + activeMacroTeam);
+    var cmdPayload;
+    if (activeMacroTeam === "saved") {
+      cmdPayload = "Saved Team";
+    } else if (activeMacroTeam === "none") {
+      cmdPayload = "Skip Team";
+    } else {
+      cmdPayload = "Team " + activeMacroTeam;
+    }
     window.sendMacroCommand("SetTeam", cmdPayload);
   };
 
@@ -2773,9 +2767,15 @@
       cmdPayload = "Selected Mode: Portals: " + stage;
     } else if (mode === "event") {
       cmdPayload = "Selected Mode: Events: " + stage;
+    } else if (mode === "expedition") {
+      cmdPayload = "Selected Mode: Expedition: " + stage + ", " + act;
+    } else if (mode === "autogriffith") {
+      cmdPayload = "Selected Mode: Auto Griffith: " + stage;
     }
 
-    if (team === "none" || team === "0" || team === "skip") {
+    if (team === "saved") {
+      cmdPayload += ": Saved Team";
+    } else if (team === "none" || team === "0" || team === "skip") {
       cmdPayload += ": Skip Team";
     } else if (team) {
       cmdPayload += ": Team " + team;
@@ -2974,6 +2974,7 @@
       .then(function (blob) {
         var objUrl = URL.createObjectURL(blob);
         if (screenImg) {
+          screenImg.dataset.loadedShotTime = String(Date.now());
           screenImg.src = objUrl;
           screenImg.classList.remove("hidden");
         }
