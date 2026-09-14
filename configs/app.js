@@ -834,16 +834,37 @@
       tagsContainer.appendChild(span);
     });
 
+  function isZipConfigData(content) {
+    if (!content || typeof content !== "string") return false;
+    var trimmed = content.trim();
+    if (trimmed.startsWith("data:") && trimmed.indexOf(";base64,") !== -1) {
+      var mime = trimmed.substring(5, trimmed.indexOf(";base64,")).toLowerCase();
+      if (mime.indexOf("zip") !== -1 || mime.indexOf("octet-stream") !== -1 || mime.indexOf("compressed") !== -1) {
+        return true;
+      }
+      var b64Part = trimmed.substring(trimmed.indexOf(";base64,") + 8).trim();
+      if (b64Part.startsWith("UEsDB")) return true;
+    }
+    if (trimmed.startsWith("UEsDB")) return true;
+    return false;
+  }
+
     // Config preview
     var previewEl = document.getElementById("detail-preview");
+    var previewFilenameEl = document.querySelector(".preview-filename");
+    var fileTabs = document.getElementById("preview-file-tabs");
     var rawData = config.config_data || "";
 
-    if (rawData.startsWith("data:application/zip;base64,")) {
-      previewEl.textContent = "Reading ZIP archive contents...";
-      parseAndPreviewZip(rawData, function (previewText) {
-        previewEl.textContent = previewText;
-      });
+    if (isZipConfigData(rawData)) {
+      renderZipFileTabs(rawData, config.name);
     } else {
+      if (fileTabs) {
+        fileTabs.innerHTML = "";
+        fileTabs.classList.add("hidden");
+      }
+      currentZipFilesMap = {};
+      currentSelectedZipFile = "";
+      if (previewFilenameEl) previewFilenameEl.textContent = "config.ini";
       var lines = rawData.split("\n");
       if (lines.length > 25) {
         rawData = lines.slice(0, 25).join("\n") + "\n\n... (" + lines.length + " lines total)";
@@ -956,9 +977,19 @@
 
   window.copyPreviewText = function () {
     if (!currentDetailConfig) return;
-    var rawData = currentDetailConfig.config_data || "";
+    if (currentSelectedZipFile && currentZipFilesMap[currentSelectedZipFile]) {
+      var fileContent = currentZipFilesMap[currentSelectedZipFile];
+      copyToClipboard(fileContent, function () {
+        showToast("Copied " + currentSelectedZipFile + "!", "success");
+      }, function () {
+        showToast("Failed to copy", "error");
+      });
+      return;
+    }
+    var previewEl = document.getElementById("detail-preview");
+    var rawData = previewEl ? previewEl.textContent : (currentDetailConfig.config_data || "");
     copyToClipboard(rawData, function () {
-      showToast("Raw config code copied!", "success");
+      showToast("Config code copied!", "success");
     }, function () {
       showToast("Failed to copy code", "error");
     });
@@ -1111,56 +1142,147 @@
     }
   };
 
-  function parseAndPreviewZip(dataUri, callback) {
+  var currentZipFilesMap = {};
+  var currentSelectedZipFile = "";
+
+  function getFileIconClass(filename) {
+    var ext = ("." + (filename || "").split(".").pop()).toLowerCase();
+    if (ext === ".json") return "fas fa-code";
+    if (ext === ".ini" || ext === ".cfg") return "fas fa-sliders-h";
+    if (ext === ".txt") return "fas fa-file-alt";
+    if (ext === ".ahk") return "fas fa-bolt";
+    if (ext === ".png" || ext === ".jpg" || ext === ".jpeg") return "fas fa-file-image";
+    return "fas fa-file";
+  }
+
+  function selectZipPreviewFile(filename) {
+    currentSelectedZipFile = filename;
+    var previewEl = document.getElementById("detail-preview");
+    var previewFilenameEl = document.querySelector(".preview-filename");
+    var fileTabs = document.getElementById("preview-file-tabs");
+
+    if (previewFilenameEl) previewFilenameEl.textContent = filename;
+
+    if (fileTabs) {
+      var tabs = fileTabs.querySelectorAll(".preview-file-tab");
+      tabs.forEach(function (tab) {
+        if (tab.getAttribute("data-file") === filename) {
+          tab.classList.add("active");
+        } else {
+          tab.classList.remove("active");
+        }
+      });
+    }
+
+    if (previewEl) {
+      var content = currentZipFilesMap[filename];
+      if (typeof content === "string") {
+        previewEl.textContent = content;
+      } else {
+        previewEl.textContent = "[Binary or non-text file: " + filename + " — Download ZIP to inspect]";
+      }
+    }
+  }
+
+  function renderZipFileTabs(dataUri, configName) {
+    var fileTabs = document.getElementById("preview-file-tabs");
+    var previewEl = document.getElementById("detail-preview");
+    var previewFilenameEl = document.querySelector(".preview-filename");
+
+    currentZipFilesMap = {};
+    currentSelectedZipFile = "";
+
+    if (previewEl) previewEl.textContent = "Unpacking ZIP archive...";
+    if (fileTabs) {
+      fileTabs.innerHTML = "";
+      fileTabs.classList.remove("hidden");
+    }
+
     try {
       if (typeof JSZip === "undefined") {
-        callback("ZIP Archive (Download to extract files)");
+        if (previewEl) previewEl.textContent = "ZIP Archive (Click Download to extract files)";
         return;
       }
-      var base64 = dataUri.split(",")[1];
+
+      var base64 = dataUri.indexOf(",") !== -1 ? dataUri.split(",")[1] : dataUri;
+      base64 = base64.trim();
+
       JSZip.loadAsync(base64, { base64: true }).then(function (zip) {
-        var files = [];
-        var firstFileText = "";
-        var firstFileName = "";
+        var fileEntries = [];
         var promises = [];
 
         zip.forEach(function (relativePath, zipEntry) {
           if (!zipEntry.dir) {
-            files.push(relativePath);
-            if (!firstFileName && relativePath.match(/\.(txt|ini|cfg|json)$/i)) {
-              firstFileName = relativePath;
-              promises.push(
-                zipEntry.async("string").then(function (content) {
-                  firstFileText = content;
-                })
-              );
-            }
+            fileEntries.push({ path: relativePath, entry: zipEntry });
+          }
+        });
+
+        if (fileEntries.length === 0) {
+          if (previewEl) previewEl.textContent = "Empty ZIP archive.";
+          return;
+        }
+
+        // Sort files: config and text files first
+        fileEntries.sort(function (a, b) {
+          var aIsCfg = a.path.match(/\.(txt|ini|cfg|json)$/i) ? 0 : 1;
+          var bIsCfg = b.path.match(/\.(txt|ini|cfg|json)$/i) ? 0 : 1;
+          if (aIsCfg !== bIsCfg) return aIsCfg - bIsCfg;
+          return a.path.localeCompare(b.path);
+        });
+
+        fileEntries.forEach(function (item) {
+          var isText = !item.path.match(/\.(png|jpg|jpeg|gif|ico|exe|dll|zip|bin)$/i);
+          if (isText) {
+            promises.push(
+              item.entry.async("string").then(function (text) {
+                currentZipFilesMap[item.path] = text;
+              }).catch(function () {
+                currentZipFilesMap[item.path] = null;
+              })
+            );
+          } else {
+            currentZipFilesMap[item.path] = null;
           }
         });
 
         Promise.all(promises).then(function () {
-          var out = "ZIP Archive (" + files.length + " file" + (files.length !== 1 ? "s" : "") + "):\n";
-          files.forEach(function (f) {
-            out += "  " + f + "\n";
-          });
-          if (firstFileName && firstFileText) {
-            out += "\n--- Preview of " + firstFileName + " ---\n";
-            var lines = firstFileText.split("\n");
-            if (lines.length > 20) {
-              out += lines.slice(0, 20).join("\n") + "\n... (" + lines.length + " lines)";
-            } else {
-              out += firstFileText;
+          if (!fileTabs) return;
+          fileTabs.innerHTML = "";
+          fileTabs.classList.remove("hidden");
+
+          fileEntries.forEach(function (item, idx) {
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "preview-file-tab" + (idx === 0 ? " active" : "");
+            btn.setAttribute("data-file", item.path);
+
+            var iconClass = getFileIconClass(item.path);
+            var content = currentZipFilesMap[item.path];
+            var lineBadge = "";
+            if (typeof content === "string") {
+              var linesCount = content.split("\n").length;
+              lineBadge = '<span class="file-badge">' + linesCount + ' ' + (linesCount === 1 ? 'line' : 'lines') + '</span>';
             }
+
+            btn.innerHTML = '<i class="' + iconClass + '"></i><span>' + item.path + '</span>' + lineBadge;
+            btn.onclick = function () {
+              selectZipPreviewFile(item.path);
+            };
+            fileTabs.appendChild(btn);
+          });
+
+          // Automatically preview first file
+          if (fileEntries.length > 0) {
+            selectZipPreviewFile(fileEntries[0].path);
           }
-          callback(out);
-        }).catch(function () {
-          callback("ZIP Archive (" + files.length + " files)");
+        }).catch(function (err) {
+          if (previewEl) previewEl.textContent = "Error reading archive entries: " + (err.message || err);
         });
-      }).catch(function () {
-        callback("ZIP Archive");
+      }).catch(function (err) {
+        if (previewEl) previewEl.textContent = "Corrupted or invalid ZIP archive.";
       });
     } catch (e) {
-      callback("ZIP Archive");
+      if (previewEl) previewEl.textContent = "ZIP Archive (Click Download to extract files)";
     }
   }
 
@@ -1179,9 +1301,10 @@
     var content = currentDetailConfig.config_data || "";
     var sanitizedName = currentDetailConfig.name.replace(/[^a-zA-Z0-9_\-\s]/g, "").trim() || "config";
 
-    if (content.startsWith("data:application/zip;base64,")) {
+    if (isZipConfigData(content)) {
       // Binary ZIP download
-      var base64 = content.split(",")[1];
+      var base64 = content.indexOf(",") !== -1 ? content.split(",")[1] : content;
+      base64 = base64.trim();
       var binaryString = atob(base64);
       var bytes = new Uint8Array(binaryString.length);
       for (var i = 0; i < binaryString.length; i++) {
@@ -3004,6 +3127,7 @@
         var objUrl = URL.createObjectURL(blob);
         if (screenImg) {
           screenImg.dataset.loadedShotTime = String(Date.now());
+          screenImg.dataset.loadedDevId = String(activeMacroDevice.device_id);
           screenImg.src = objUrl;
           screenImg.classList.remove("hidden");
         }

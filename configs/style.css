@@ -1503,6 +1503,74 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* Multi-file ZIP Tab Bar */
+.preview-file-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  background: rgba(0, 0, 0, 0.45);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.preview-file-tabs::-webkit-scrollbar {
+  height: 3px;
+}
+.preview-file-tabs::-webkit-scrollbar-thumb {
+  background: rgba(41, 240, 240, 0.25);
+  border-radius: 2px;
+}
+.preview-file-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-m);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-2);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.28rem 0.7rem;
+  border-radius: var(--pill);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+.preview-file-tab:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+.preview-file-tab.active {
+  color: #a5f3fc;
+  background: rgba(41, 240, 240, 0.14);
+  border-color: rgba(41, 240, 240, 0.45);
+  box-shadow: 0 0 12px rgba(41, 240, 240, 0.2);
+}
+.preview-file-tab i {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+.preview-file-tab.active i {
+  opacity: 1;
+  color: #29f0f0;
+}
+.preview-file-tab .file-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-3);
+  margin-left: 0.25rem;
+}
+.preview-file-tab.active .file-badge {
+  background: rgba(41, 240, 240, 0.2);
+  color: #a5f3fc;
+}
+
 .detail-config-preview pre {
   font-family: var(--font-m);
   font-size: 0.78rem;
