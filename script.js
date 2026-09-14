@@ -1320,19 +1320,38 @@ function initSetupTabs() {
   });
 }
 
+function openDonateModal() {
+  const modal = document.getElementById('donateModal');
+  if (!modal) return;
+  modal.classList.add('active');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDonateModal() {
+  const modal = document.getElementById('donateModal');
+  if (!modal) return;
+  modal.classList.remove('active');
+  modal.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
 function initDonateModal() {
   const btn      = document.getElementById('donateBtn');
   const modal    = document.getElementById('donateModal');
   const closeBtn = document.getElementById('modalClose');
   const backdrop = document.getElementById('modalBackdrop');
 
-  const open  = () => { modal.classList.add('active');    document.body.style.overflow = 'hidden'; };
-  const close = () => { modal.classList.remove('active'); document.body.style.overflow = ''; };
-
-  btn?.addEventListener('click', open);
-  closeBtn?.addEventListener('click', close);
-  backdrop?.addEventListener('click', close);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  btn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openDonateModal();
+  });
+  closeBtn?.addEventListener('click', closeDonateModal);
+  backdrop?.addEventListener('click', closeDonateModal);
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) closeDonateModal();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDonateModal(); });
 }
 
 function initReveal() {
@@ -1605,7 +1624,7 @@ function initPurchaseInterceptor() {
     if (!link) return;
     const href = link.getAttribute("href") || "";
     const isRobloxPass = href.includes("roblox.com/game-pass");
-    const isPurchaseClass = link.classList.contains("btn-pink") || link.classList.contains("donate-option");
+    const isPurchaseClass = link.classList.contains("btn-pink") || link.classList.contains("btn-gold") || link.classList.contains("btn-divine") || link.classList.contains("donate-option");
     if (isRobloxPass || isPurchaseClass) {
       e.preventDefault();
       e.stopPropagation();
@@ -1614,7 +1633,14 @@ function initPurchaseInterceptor() {
       const card = link.closest(".macro-card");
       if (card) {
         const cardTitle = card.querySelector(".card-title");
-        if (cardTitle) title = cardTitle.textContent.trim() + " Premium";
+        if (cardTitle) {
+          const raw = cardTitle.textContent.trim();
+          if (raw.toLowerCase().includes("divine")) {
+            title = "Divine Donator (Includes Every Macro)";
+          } else {
+            title = raw + " Premium";
+          }
+        }
       } else if (link.classList.contains("donate-option")) {
         const optName = link.querySelector(".opt-name");
         const optPrice = link.querySelector(".opt-price");
@@ -1625,6 +1651,8 @@ function initPurchaseInterceptor() {
     }
   });
 }
+window.openDonateModal = openDonateModal;
+window.closeDonateModal = closeDonateModal;
 window.openPurchaseConsentModal = openPurchaseConsentModal;
 window.closePurchaseConsentModal = closePurchaseConsentModal;
 window.confirmPurchaseRedirect = confirmPurchaseRedirect;

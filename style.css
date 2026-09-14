@@ -539,7 +539,60 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   transform: translate3d(-100%, 0, 0);
   animation: top-sweep 4s ease-in-out 1.5s infinite;
 }
-@keyframes top-sweep { 0%{transform: translate3d(-100%, 0, 0);} 50%,100%{transform: translate3d(260%, 0, 0);} }
+/* DIVINE DONATOR CARD (DISCORD BLUE COLORWAY) */
+.card-divine {
+  border-top-color: #3b82f6 !important;
+  border-color: rgba(59, 130, 246, 0.35) !important;
+}
+.card-divine:hover {
+  border-color: rgba(59, 130, 246, 0.75) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(59, 130, 246, 0.25) !important;
+}
+.card-divine .card-accent {
+  background: linear-gradient(90deg, #3b82f6, transparent);
+}
+
+.divine-logo-wrap {
+  width: 52px;
+  height: 52px;
+  margin: 0.15rem auto 0.35rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.22) 0%, rgba(37, 99, 235, 0.1) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  color: #60a5fa;
+  font-size: 1.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.25);
+  transition: transform 0.22s ease;
+}
+.card-divine:hover .divine-logo-wrap {
+  transform: scale(1.06);
+  box-shadow: 0 0 28px rgba(59, 130, 246, 0.45);
+}
+
+.badge-divine {
+  background: rgba(59, 130, 246, 0.16) !important;
+  border: 1px solid rgba(59, 130, 246, 0.45) !important;
+  color: #93c5fd !important;
+}
+
+.card-divine .feature-list i {
+  color: #60a5fa !important;
+}
+
+.btn-divine {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35) !important;
+}
+.btn-divine:hover {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%) !important;
+  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.55) !important;
+  color: #fff !important;
+  transform: translateY(-2px);
+}
 
 .featured-chip {
   position: absolute; top: 1rem; left: 1rem;
@@ -762,7 +815,7 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   position: fixed; inset: 0; z-index: 2000;
   display: none; align-items: center; justify-content: center; padding: 2rem;
 }
-.donate-modal.active { display: flex; }
+.donate-modal.active { display: flex !important; }
 
 .modal-backdrop {
   position: absolute; inset: 0;

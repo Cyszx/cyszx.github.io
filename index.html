@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sour+Gummy:ital,wght@0,100..900;1,100..900&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=2.8">
+  <link rel="stylesheet" href="style.css?v=2.9">
   <link rel="icon" type="image/x-icon" href="assets/cyslogo.png">
   <meta name="robots" content="noindex, nofollow">
   <meta name="googlebot" content="noindex, nofollow">
@@ -124,6 +124,26 @@
         <p class="section-sub">Find the macro you need!</p>
       </div>
       <div class="macros-grid">
+
+        <!-- Divine Donator -->
+        <div class="macro-card card-divine" data-game="divine">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <div class="divine-logo-wrap">
+              <i class="fas fa-crown"></i>
+            </div>
+            <div class="card-badge badge-divine">Premium</div>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">Divine Donator</h3>
+            <ul class="feature-list">
+              <li><i class="fas fa-check"></i>Every Macro right now and in the future</li>
+            </ul>
+          </div>
+          <div class="card-footer">
+            <a href="https://www.roblox.com/game-pass/1142443636/Huge-Donation" class="btn btn-divine full" target="_blank"><i class="fas fa-star"></i><span class="btn-text">Get Premium</span></a>
+          </div>
+        </div>
 
         <div class="macro-card card-premium" data-game="ae">
           <div class="card-accent"></div>
@@ -476,13 +496,13 @@
   </footer>
 
   <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="fas fa-chevron-up"></i></button>
-  <button class="floating-donate" id="donateBtn"><i class="fas fa-gift"></i><span>Donate</span></button>
+  <button class="floating-donate" id="donateBtn" onclick="openDonateModal()" aria-label="Donate"><i class="fas fa-gift"></i><span>Donate</span></button>
 
   <!-- Donate Modal -->
-  <div class="donate-modal" id="donateModal" role="dialog" aria-modal="true" style="display: none;">
-    <div class="modal-backdrop" id="modalBackdrop"></div>
+  <div class="donate-modal" id="donateModal" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" id="modalBackdrop" onclick="closeDonateModal()"></div>
     <div class="modal-content">
-      <button class="modal-close" id="modalClose" aria-label="Close"><i class="fas fa-times"></i></button>
+      <button class="modal-close" id="modalClose" onclick="closeDonateModal()" aria-label="Close"><i class="fas fa-times"></i></button>
       <h2 class="modal-title">Support Development</h2>
       <p class="modal-sub">Your support keeps the macros alive</p>
       <div class="donate-options">
@@ -508,7 +528,7 @@
         </a>
         <a href="https://www.roblox.com/game-pass/1142443636/Huge-Donation" class="donate-option opt-featured" target="_blank">
           <div class="opt-icon"><i class="fas fa-crown"></i></div>
-          <div class="opt-info"><span class="opt-name">Divine Donation</span><span class="opt-price">1000 R$</span></div>
+          <div class="opt-info"><span class="opt-name">Divine Donator (Includes Every Macro)</span><span class="opt-price">1000 R$</span></div>
         </a>
       </div>
     </div>
@@ -984,6 +1004,6 @@
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <script src="script.js?v=2.8"></script>
+  <script src="script.js?v=2.9"></script>
 </body>
 </html>
