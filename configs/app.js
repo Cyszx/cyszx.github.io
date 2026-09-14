@@ -2272,7 +2272,7 @@
 
         // Strictly only accept devices that belong to this Discord user
         userMacroDevicesList = devs.filter(function (d) {
-          return !d.discord_user_id || String(d.discord_user_id) === String(currentUser.id);
+          return d.discord_user_id && String(d.discord_user_id) === String(currentUser.id);
         });
 
         logMacroSecurity("Retrieved " + userMacroDevicesList.length + " device(s) linked to user ID " + currentUser.id);
@@ -2458,6 +2458,16 @@
     modal.classList.remove("active");
     modal.style.display = "none";
     document.body.style.overflow = "";
+
+    var screenImg = document.getElementById("macro-screen-img");
+    var placeholder = document.getElementById("macro-screen-placeholder");
+    if (screenImg) {
+      screenImg.src = "";
+      screenImg.classList.add("hidden");
+      delete screenImg.dataset.loadedShotTime;
+      delete screenImg.dataset.loadedDevId;
+    }
+    if (placeholder) placeholder.classList.remove("hidden");
   };
 
   function renderMacroPairingCard() {
@@ -2473,6 +2483,16 @@
       stateBadge.className = "macro-state-badge offline";
       stateBadge.textContent = "Offline";
     }
+
+    var screenImg = document.getElementById("macro-screen-img");
+    var placeholder = document.getElementById("macro-screen-placeholder");
+    if (screenImg) {
+      screenImg.src = "";
+      screenImg.classList.add("hidden");
+      delete screenImg.dataset.loadedShotTime;
+      delete screenImg.dataset.loadedDevId;
+    }
+    if (placeholder) placeholder.classList.remove("hidden");
   }
 
   function renderMacroDashboard() {
@@ -2575,14 +2595,23 @@
     var screenImg = document.getElementById("macro-screen-img");
     var placeholder = document.getElementById("macro-screen-placeholder");
     if (dev.has_screenshot && screenImg) {
-      var shotTime = dev.latest_screenshot_time || 1;
-      if (screenImg.dataset.loadedShotTime !== String(shotTime)) {
+      var shotTime = dev.latest_screenshot_time || Date.now();
+      if (screenImg.dataset.loadedShotTime !== String(shotTime) || screenImg.dataset.loadedDevId !== String(dev.device_id)) {
         screenImg.dataset.loadedShotTime = String(shotTime);
+        screenImg.dataset.loadedDevId = String(dev.device_id);
         var sUid = currentUser && currentUser.id ? encodeURIComponent(currentUser.id) : "";
         screenImg.src = CYSLINK_API + "/api/v1/website/devices/" + encodeURIComponent(dev.device_id) + "/screenshot?v=" + shotTime + (sUid ? "&discord_user_id=" + sUid : "");
       }
       screenImg.classList.remove("hidden");
       if (placeholder) placeholder.classList.add("hidden");
+    } else {
+      if (screenImg) {
+        screenImg.src = "";
+        screenImg.classList.add("hidden");
+        delete screenImg.dataset.loadedShotTime;
+        delete screenImg.dataset.loadedDevId;
+      }
+      if (placeholder) placeholder.classList.remove("hidden");
     }
 
     initMacroModeSelectorsOnce();
