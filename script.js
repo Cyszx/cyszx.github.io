@@ -1180,6 +1180,48 @@ function initScrollProgress() {
   }, { passive: true });
 }
 
+function openMobileDrawer() {
+  const drawer = document.getElementById("navDrawer");
+  const backdrop = document.getElementById("drawerBackdrop");
+  if (drawer) drawer.classList.add("open");
+  if (backdrop) {
+    backdrop.classList.add("active");
+    backdrop.style.display = "block";
+  }
+  document.body.style.overflow = "hidden";
+}
+
+function closeMobileDrawer() {
+  const drawer = document.getElementById("navDrawer");
+  const backdrop = document.getElementById("drawerBackdrop");
+  if (drawer) drawer.classList.remove("open");
+  if (backdrop) {
+    backdrop.classList.remove("active");
+    backdrop.style.display = "none";
+  }
+  document.body.style.overflow = "";
+}
+
+function toggleMobileDrawer() {
+  const drawer = document.getElementById("navDrawer");
+  if (drawer && drawer.classList.contains("open")) {
+    closeMobileDrawer();
+  } else {
+    openMobileDrawer();
+  }
+}
+
+// Global aliases to ensure any legacy, cached, or external caller works without ReferenceError
+function closeMobileMenu() { closeMobileDrawer(); }
+function openMobileMenu() { openMobileDrawer(); }
+function toggleMobileMenu() { toggleMobileDrawer(); }
+window.closeMobileDrawer = closeMobileDrawer;
+window.openMobileDrawer = openMobileDrawer;
+window.toggleMobileDrawer = toggleMobileDrawer;
+window.closeMobileMenu = closeMobileDrawer;
+window.openMobileMenu = openMobileDrawer;
+window.toggleMobileMenu = toggleMobileDrawer;
+
 function initNavbar() {
   const navbar = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
@@ -1188,10 +1230,14 @@ function initNavbar() {
 
   document.querySelectorAll('.nav-link[href^="#"]').forEach(link => {
     link.addEventListener('click', e => {
-      e.preventDefault();
-      const target = document.querySelector(link.getAttribute('href'));
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      closeMobileMenu();
+      const href = link.getAttribute('href');
+      if (!href || href === '#') return;
+      const target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      closeMobileDrawer();
     });
   });
 
@@ -1220,20 +1266,16 @@ function initActiveNav() {
 }
 
 function initMobileNav() {
-  const toggle   = document.getElementById('mobileToggle');
-  const navLinks = document.getElementById('navLinks');
-  if (!toggle || !navLinks) return;
-  toggle.addEventListener('click', () => {
-    const open = navLinks.classList.toggle('open');
-    toggle.querySelector('i').className = open ? 'fas fa-times' : 'fas fa-bars';
-  });
-}
+  const toggle = document.getElementById('mobileToggle');
+  const drawerClose = document.getElementById('drawerClose');
+  const backdrop = document.getElementById('drawerBackdrop');
+  if (toggle) toggle.addEventListener('click', toggleMobileDrawer);
+  if (drawerClose) drawerClose.addEventListener('click', closeMobileDrawer);
+  if (backdrop) backdrop.addEventListener('click', closeMobileDrawer);
 
-function closeMobileMenu() {
-  const navLinks = document.getElementById('navLinks');
-  const toggle   = document.getElementById('mobileToggle');
-  navLinks?.classList.remove('open');
-  if (toggle) toggle.querySelector('i').className = 'fas fa-bars';
+  document.querySelectorAll('.drawer-link').forEach(link => {
+    link.addEventListener('click', closeMobileDrawer);
+  });
 }
 
 function initBackToTop() {
@@ -1361,7 +1403,252 @@ function initHeroParallax() {
   }, { passive: true });
 }
 
+// ==========================================
+// IN-PAGE LEGAL MODAL (TERMS & PRIVACY)
+// ==========================================
+
+function openLegalModal(tab) {
+  const modal = document.getElementById("legalModal");
+  if (!modal) return;
+  switchLegalTab(tab || 'terms');
+  modal.classList.add("visible", "active");
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeLegalModal() {
+  const modal = document.getElementById("legalModal");
+  if (!modal) return;
+  modal.classList.remove("visible", "active");
+  modal.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function switchLegalTab(tab) {
+  const btnTerms = document.getElementById("tabBtnTerms");
+  const btnPrivacy = document.getElementById("tabBtnPrivacy");
+  const paneTerms = document.getElementById("legalPaneTerms");
+  const panePrivacy = document.getElementById("legalPanePrivacy");
+  if (tab === 'privacy') {
+    if (btnTerms) btnTerms.classList.remove("active");
+    if (btnPrivacy) btnPrivacy.classList.add("active");
+    if (paneTerms) paneTerms.classList.remove("active");
+    if (panePrivacy) panePrivacy.classList.add("active");
+  } else {
+    if (btnTerms) btnTerms.classList.add("active");
+    if (btnPrivacy) btnPrivacy.classList.remove("active");
+    if (paneTerms) paneTerms.classList.add("active");
+    if (panePrivacy) panePrivacy.classList.remove("active");
+  }
+}
+
+function initLegalModalEvents() {
+  const modal = document.getElementById("legalModal");
+  if (!modal) return;
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeLegalModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("active")) {
+      closeLegalModal();
+    }
+  });
+}
+window.openLegalModal = openLegalModal;
+window.closeLegalModal = closeLegalModal;
+window.switchLegalTab = switchLegalTab;
+
+// ==========================================
+// PURCHASE LEGAL AGREEMENT INTERCEPTOR
+// ==========================================
+
+let pendingPurchaseUrl = null;
+
+function openPurchaseConsentModal(targetUrl, itemTitle) {
+  pendingPurchaseUrl = targetUrl;
+  const titleEl = document.getElementById("purchaseTargetName");
+  if (titleEl) titleEl.textContent = itemTitle || "Premium Access";
+  const modal = document.getElementById("purchaseConsentModal");
+  if (!modal) {
+    window.open(targetUrl, "_blank");
+    return;
+  }
+  const agreeCheck = document.getElementById("purchaseAgreeCheck");
+  if (agreeCheck) agreeCheck.checked = true;
+
+  modal.classList.add("visible", "active");
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closePurchaseConsentModal() {
+  pendingPurchaseUrl = null;
+  const modal = document.getElementById("purchaseConsentModal");
+  if (!modal) return;
+  modal.classList.remove("visible", "active");
+  modal.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function confirmPurchaseRedirect() {
+  const agreeCheck = document.getElementById("purchaseAgreeCheck");
+  if (agreeCheck && !agreeCheck.checked) {
+    showToast("Please agree to the Terms of Service & Privacy Policy to proceed.", "error");
+    return;
+  }
+  if (pendingPurchaseUrl) {
+    const url = pendingPurchaseUrl;
+    closePurchaseConsentModal();
+    window.open(url, "_blank");
+    // Show the Discord Role & Key guide card after user continues to Roblox
+    setTimeout(() => {
+      openDiscordGuideModal();
+    }, 250);
+  } else {
+    closePurchaseConsentModal();
+  }
+}
+
+function openDiscordGuideModal() {
+  const modal = document.getElementById("discordGuideModal");
+  if (!modal) return;
+  modal.classList.add("visible", "active");
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeDiscordGuideModal() {
+  const modal = document.getElementById("discordGuideModal");
+  if (!modal) return;
+  modal.classList.remove("visible", "active");
+  modal.style.display = "none";
+  document.body.style.overflow = "";
+  const focusHint = document.getElementById("discordFocusHint");
+  if (focusHint) focusHint.style.display = "none";
+}
+
+function copyDiscordCommand(cmd) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(cmd).then(() => {
+      showToast(`Copied "${cmd}" to clipboard!`, "success");
+    }).catch(() => {
+      fallbackCopyDiscordText(cmd);
+    });
+  } else {
+    fallbackCopyDiscordText(cmd);
+  }
+}
+
+function fallbackCopyDiscordText(text) {
+  const el = document.createElement("textarea");
+  el.value = text;
+  el.setAttribute("readonly", "");
+  el.style.position = "absolute";
+  el.style.left = "-9999px";
+  document.body.appendChild(el);
+  el.select();
+  try {
+    document.execCommand("copy");
+    showToast(`Copied "${text}" to clipboard!`, "success");
+  } catch (err) {
+    showToast(`Command: ${text}`, "info");
+  }
+  document.body.removeChild(el);
+}
+
+function openDiscordChannel(channelId, event) {
+  if (event) {
+    event.preventDefault();
+  }
+  const guildId = "1338965034616881263";
+  const appUrl = `discord://-/channels/${guildId}/${channelId}`;
+  const webUrl = `https://discord.com/channels/${guildId}/${channelId}`;
+
+  // Reveal the prominent taskbar switch hint on the guide card
+  const focusHint = document.getElementById("discordFocusHint");
+  if (focusHint) {
+    focusHint.style.display = "flex";
+  }
+
+  showToast("Opening Discord... Click Discord on your taskbar to view!", "info");
+
+  // Try opening the native Discord desktop/mobile app directly
+  const start = Date.now();
+  window.location.href = appUrl;
+
+  // Fallback to web if Discord app isn't installed or window doesn't blur
+  setTimeout(() => {
+    if (document.hidden) return;
+    if (Date.now() - start < 2200) {
+      window.open(webUrl, "_blank");
+    }
+  }, 1400);
+}
+
+function initPurchaseInterceptor() {
+  const modal = document.getElementById("purchaseConsentModal");
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closePurchaseConsentModal();
+    });
+  }
+
+  const guideModal = document.getElementById("discordGuideModal");
+  if (guideModal) {
+    guideModal.addEventListener("click", (e) => {
+      if (e.target === guideModal) closeDiscordGuideModal();
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    const link = e.target.closest("a");
+    if (!link) return;
+    const href = link.getAttribute("href") || "";
+    const isRobloxPass = href.includes("roblox.com/game-pass");
+    const isPurchaseClass = link.classList.contains("btn-pink") || link.classList.contains("donate-option");
+    if (isRobloxPass || isPurchaseClass) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      let title = "Premium Access";
+      const card = link.closest(".macro-card");
+      if (card) {
+        const cardTitle = card.querySelector(".card-title");
+        if (cardTitle) title = cardTitle.textContent.trim() + " Premium";
+      } else if (link.classList.contains("donate-option")) {
+        const optName = link.querySelector(".opt-name");
+        const optPrice = link.querySelector(".opt-price");
+        title = (optName ? optName.textContent.trim() : "Donation") + (optPrice ? " (" + optPrice.textContent.trim() + ")" : "");
+      }
+
+      openPurchaseConsentModal(href, title);
+    }
+  });
+}
+window.openPurchaseConsentModal = openPurchaseConsentModal;
+window.closePurchaseConsentModal = closePurchaseConsentModal;
+window.confirmPurchaseRedirect = confirmPurchaseRedirect;
+window.openDiscordGuideModal = openDiscordGuideModal;
+window.closeDiscordGuideModal = closeDiscordGuideModal;
+window.copyDiscordCommand = copyDiscordCommand;
+window.openDiscordChannel = openDiscordChannel;
+
+window.openMacroRemoteModal = function () {};
+window.closeMacroRemoteModal = function () {};
+window.submitPairCode = function () {};
+window.detectMacroDevice = function () {};
+window.sendMacroCommand = function () {};
+window.toggleMacroPause = function () {};
+window.requestMacroScreenshot = function () {};
+window.refreshMacroStatus = function () {};
+window.unlinkActiveMacro = function () {};
+window.onMacroModeChange = function () {};
+window.onMacroStageChange = function () {};
+window.onMacroTeamChange = function () {};
+window.applyMacroStageSelection = function () {};
+
 document.addEventListener('DOMContentLoaded', () => {
+  document.body.style.overflow = "";
   fetchAllRepoInfo();
   loadUserFromStorage();
   handleOAuthCallback();
@@ -1380,4 +1667,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initParticles();
   initHeroParallax();
   initHeroEntrance();
+  initPurchaseInterceptor();
+  initLegalModalEvents();
 });

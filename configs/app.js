@@ -853,11 +853,13 @@
     var previewEl = document.getElementById("detail-preview");
     var previewFilenameEl = document.querySelector(".preview-filename");
     var fileTabs = document.getElementById("preview-file-tabs");
+    var tabsWrapper = document.getElementById("preview-tabs-wrapper");
     var rawData = config.config_data || "";
 
     if (isZipConfigData(rawData)) {
       renderZipFileTabs(rawData, config.name);
     } else {
+      if (tabsWrapper) tabsWrapper.classList.add("hidden");
       if (fileTabs) {
         fileTabs.innerHTML = "";
         fileTabs.classList.add("hidden");
@@ -1155,6 +1157,101 @@
     return "fas fa-file";
   }
 
+  function setupFileTabsInteractions(fileTabs) {
+    if (!fileTabs || fileTabs._interactionsBound) return;
+    fileTabs._interactionsBound = true;
+
+    // 1. Convert mouse vertical wheel to horizontal scroll over tabs
+    fileTabs.addEventListener(
+      "wheel",
+      function (e) {
+        if (fileTabs.scrollWidth > fileTabs.clientWidth) {
+          var delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+          if (delta !== 0) {
+            fileTabs.scrollLeft += delta * 0.85;
+            e.preventDefault();
+            if (fileTabs._updateNavButtons) fileTabs._updateNavButtons();
+          }
+        }
+      },
+      { passive: false }
+    );
+
+    // 2. Click and drag to scroll horizontally
+    var isDown = false;
+    var startX = 0;
+    var initialScrollLeft = 0;
+    var hasDragged = false;
+
+    fileTabs.addEventListener("mousedown", function (e) {
+      if (e.button !== 0) return;
+      isDown = true;
+      hasDragged = false;
+      fileTabs.classList.add("is-dragging");
+      startX = e.pageX - fileTabs.offsetLeft;
+      initialScrollLeft = fileTabs.scrollLeft;
+    });
+
+    window.addEventListener("mouseup", function () {
+      if (!isDown) return;
+      isDown = false;
+      fileTabs.classList.remove("is-dragging");
+    });
+
+    fileTabs.addEventListener("mousemove", function (e) {
+      if (!isDown) return;
+      var x = e.pageX - fileTabs.offsetLeft;
+      var walk = (x - startX) * 1.5;
+      if (Math.abs(walk) > 4) {
+        hasDragged = true;
+      }
+      fileTabs.scrollLeft = initialScrollLeft - walk;
+      if (fileTabs._updateNavButtons) fileTabs._updateNavButtons();
+    });
+
+    // Suppress tab click if the user was dragging/panning
+    fileTabs.addEventListener(
+      "click",
+      function (e) {
+        if (hasDragged) {
+          e.preventDefault();
+          e.stopPropagation();
+          hasDragged = false;
+        }
+      },
+      true
+    );
+
+    // 3. Dynamic left/right arrow buttons update
+    function updateNavButtons() {
+      var leftBtn = document.getElementById("tabNavLeft");
+      var rightBtn = document.getElementById("tabNavRight");
+      if (!leftBtn || !rightBtn) return;
+      var maxScroll = fileTabs.scrollWidth - fileTabs.clientWidth;
+      if (maxScroll <= 2) {
+        leftBtn.style.opacity = "0.2";
+        leftBtn.style.pointerEvents = "none";
+        rightBtn.style.opacity = "0.2";
+        rightBtn.style.pointerEvents = "none";
+      } else {
+        leftBtn.style.opacity = fileTabs.scrollLeft <= 5 ? "0.2" : "1";
+        leftBtn.style.pointerEvents = fileTabs.scrollLeft <= 5 ? "none" : "auto";
+        rightBtn.style.opacity = fileTabs.scrollLeft >= maxScroll - 5 ? "0.2" : "1";
+        rightBtn.style.pointerEvents = fileTabs.scrollLeft >= maxScroll - 5 ? "none" : "auto";
+      }
+    }
+
+    fileTabs.addEventListener("scroll", updateNavButtons);
+    fileTabs._updateNavButtons = updateNavButtons;
+  }
+
+  window.scrollZipTabs = function (delta) {
+    var fileTabs = document.getElementById("preview-file-tabs");
+    if (fileTabs) {
+      fileTabs.scrollBy({ left: delta, behavior: "smooth" });
+    }
+  };
+
   function selectZipPreviewFile(filename) {
     currentSelectedZipFile = filename;
     var previewEl = document.getElementById("detail-preview");
@@ -1168,10 +1265,16 @@
       tabs.forEach(function (tab) {
         if (tab.getAttribute("data-file") === filename) {
           tab.classList.add("active");
+          try {
+            tab.scrollIntoView({ behavior: "smooth", inline: "nearest", block: "nearest" });
+          } catch (e) {}
         } else {
           tab.classList.remove("active");
         }
       });
+      if (fileTabs._updateNavButtons) {
+        fileTabs._updateNavButtons();
+      }
     }
 
     if (previewEl) {
@@ -1181,10 +1284,13 @@
       } else {
         previewEl.textContent = "[Binary or non-text file: " + filename + " — Download ZIP to inspect]";
       }
+      previewEl.scrollTop = 0;
+      previewEl.scrollLeft = 0;
     }
   }
 
   function renderZipFileTabs(dataUri, configName) {
+    var tabsWrapper = document.getElementById("preview-tabs-wrapper");
     var fileTabs = document.getElementById("preview-file-tabs");
     var previewEl = document.getElementById("detail-preview");
     var previewFilenameEl = document.querySelector(".preview-filename");
@@ -1193,9 +1299,13 @@
     currentSelectedZipFile = "";
 
     if (previewEl) previewEl.textContent = "Unpacking ZIP archive...";
+    if (tabsWrapper) {
+      tabsWrapper.classList.remove("hidden");
+    }
     if (fileTabs) {
       fileTabs.innerHTML = "";
       fileTabs.classList.remove("hidden");
+      setupFileTabsInteractions(fileTabs);
     }
 
     try {
@@ -1248,7 +1358,9 @@
         Promise.all(promises).then(function () {
           if (!fileTabs) return;
           fileTabs.innerHTML = "";
+          if (tabsWrapper) tabsWrapper.classList.remove("hidden");
           fileTabs.classList.remove("hidden");
+          setupFileTabsInteractions(fileTabs);
 
           fileEntries.forEach(function (item, idx) {
             var btn = document.createElement("button");
@@ -1274,6 +1386,9 @@
           // Automatically preview first file
           if (fileEntries.length > 0) {
             selectZipPreviewFile(fileEntries[0].path);
+          }
+          if (fileTabs._updateNavButtons) {
+            setTimeout(fileTabs._updateNavButtons, 60);
           }
         }).catch(function (err) {
           if (previewEl) previewEl.textContent = "Error reading archive entries: " + (err.message || err);

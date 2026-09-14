@@ -259,7 +259,15 @@
           </button>
         </div>
         <!-- Multi-file Tab Bar (shown when config is a ZIP package) -->
-        <div class="preview-file-tabs hidden" id="preview-file-tabs"></div>
+        <div class="preview-tabs-wrapper hidden" id="preview-tabs-wrapper">
+          <button type="button" class="tab-nav-btn tab-nav-left" id="tabNavLeft" onclick="scrollZipTabs(-200)" aria-label="Scroll tabs left" title="Scroll left">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div class="preview-file-tabs" id="preview-file-tabs"></div>
+          <button type="button" class="tab-nav-btn tab-nav-right" id="tabNavRight" onclick="scrollZipTabs(200)" aria-label="Scroll tabs right" title="Scroll right">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
         <pre id="detail-preview">Loading configuration preview...</pre>
       </div>
 

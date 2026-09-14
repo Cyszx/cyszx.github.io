@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sour+Gummy:ital,wght@0,100..900;1,100..900&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2.8">
   <link rel="icon" type="image/x-icon" href="assets/cyslogo.png">
   <meta name="robots" content="noindex, nofollow">
   <meta name="googlebot" content="noindex, nofollow">
@@ -38,17 +38,57 @@
         <a href="guides.html" class="nav-link"><i class="fas fa-book-open"></i><span>Guides</span></a>
         <a href="#reviews" class="nav-link" data-section="reviews"><i class="fas fa-star"></i><span>Reviews</span></a>
         <a href="#setup" class="nav-link" data-section="setup"><i class="fas fa-cog"></i><span>Setup</span></a>
-        <a href="https://discord.gg/cys" class="nav-link discord-link" target="_blank"><i class="fab fa-discord"></i><span>Discord</span></a>
+        <a href="https://discord.gg/cys" class="nav-link discord-link" target="_blank" rel="noopener"><i class="fab fa-discord"></i><span>Discord</span></a>
       </div>
-      <div class="nav-auth-wrapper">
-        <button class="nav-auth-btn" id="navAuthBtn" onclick="handleNavAuthClick()">
-          <i class="fab fa-discord"></i>
-          <span id="navAuthText">Login</span>
-        </button>
+      <div class="nav-actions">
+        <div class="nav-auth-wrapper">
+          <button class="nav-auth-btn" id="navAuthBtn" onclick="handleNavAuthClick()">
+            <i class="fab fa-discord"></i>
+            <span id="navAuthText">Login</span>
+          </button>
+        </div>
+        <button class="nav-mobile-toggle" id="mobileToggle" onclick="toggleMobileDrawer()" aria-label="Open mobile menu"><i class="fas fa-bars"></i></button>
       </div>
-      <button class="nav-mobile-toggle" id="mobileToggle" aria-label="Toggle menu"><i class="fas fa-bars"></i></button>
     </div>
   </nav>
+
+  <!-- Mobile Drawer Overlay & Sheet -->
+  <div class="nav-drawer-backdrop" id="drawerBackdrop" onclick="closeMobileDrawer()" style="display: none;"></div>
+  <aside class="nav-drawer" id="navDrawer" aria-label="Mobile Navigation">
+    <div class="drawer-header">
+      <div class="drawer-brand">
+        <img src="assets/cyslogo.png" alt="Cys Logo">
+        <span>Cys Macros</span>
+      </div>
+      <button type="button" class="drawer-close" id="drawerClose" onclick="closeMobileDrawer()" aria-label="Close menu">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="drawer-body">
+      <nav class="drawer-nav-list">
+        <a href="#macros" class="drawer-link" onclick="closeMobileDrawer()"><i class="fas fa-download"></i><span>Browse Macros</span></a>
+        <a href="configs/" class="drawer-link"><i class="fas fa-th-large"></i><span>Community Configs</span></a>
+        <a href="guides.html" class="drawer-link"><i class="fas fa-book-open"></i><span>Official Guides</span></a>
+        <a href="#reviews" class="drawer-link" onclick="closeMobileDrawer()"><i class="fas fa-star"></i><span>Verified Reviews</span></a>
+        <a href="#setup" class="drawer-link" onclick="closeMobileDrawer()"><i class="fas fa-cog"></i><span>AHK Setup Guide</span></a>
+        <a href="javascript:void(0)" class="drawer-link" onclick="openDiscordGuideModal(); closeMobileDrawer();"><i class="fab fa-discord" style="color:#5865F2;"></i><span>Role &amp; Key Guide</span></a>
+        <a href="https://discord.gg/cys" class="drawer-link drawer-discord" target="_blank" rel="noopener"><i class="fab fa-discord"></i><span>Join Discord</span></a>
+      </nav>
+
+      <div class="drawer-auth-block">
+        <button class="drawer-auth-btn" id="drawerAuthBtn" onclick="handleNavAuthClick(); closeMobileDrawer();">
+          <i class="fab fa-discord"></i>
+          <span id="drawerAuthText">Login with Discord</span>
+        </button>
+      </div>
+
+      <div class="drawer-legal-row">
+        <button type="button" class="drawer-legal-btn" onclick="openLegalModal('terms'); closeMobileDrawer();">Terms of Service</button>
+        <span class="drawer-legal-sep">·</span>
+        <button type="button" class="drawer-legal-btn" onclick="openLegalModal('privacy'); closeMobileDrawer();">Privacy Policy</button>
+      </div>
+    </div>
+  </aside>
 
   <section class="hero" id="hero">
     <div class="hero-content">
@@ -69,7 +109,10 @@
           <div class="stat-label">Members</div>
         </div>
       </div>
-      <a href="#macros" class="hero-cta"><span>Browse Macros</span><i class="fas fa-arrow-right"></i></a>
+      <div class="hero-actions">
+        <a href="#macros" class="hero-cta hero-cta-primary"><span>Browse Macros</span><i class="fas fa-arrow-right"></i></a>
+        <a href="https://discord.gg/cys" class="hero-cta hero-cta-secondary" target="_blank" rel="noopener"><i class="fab fa-discord"></i><span>Discord Community</span></a>
+      </div>
     </div>
     <div class="scroll-hint"><div class="scroll-dot"></div></div>
   </section>
@@ -401,12 +444,34 @@
 
   <footer class="footer">
     <div class="footer-inner">
-      <div class="footer-brand">
-        <img src="assets/cyslogo.png" alt="Cys Logo">
-        <span>Cys Macros</span>
+      <div class="footer-brand-col">
+        <div class="footer-brand">
+          <img src="assets/cyslogo.png" alt="Cys Logo">
+          <span>Cys Macros</span>
+        </div>
+        <p class="footer-desc">Automated, lightweight, and community-trusted macro tools for Roblox.</p>
+        <div class="footer-copyright">© 2026 Cys Macros. All rights reserved.</div>
       </div>
-      <p class="footer-copy">© 2025 Cys Macros. All rights reserved. · <a href="terms.html" style="color:var(--text-2);text-decoration:underline;">Terms</a> · <a href="privacy.html" style="color:var(--text-2);text-decoration:underline;">Privacy</a></p>
-      <a href="https://discord.gg/cys" target="_blank" class="footer-discord"><i class="fab fa-discord"></i></a>
+      <div class="footer-links-col">
+        <h4 class="footer-heading">Navigation</h4>
+        <div class="footer-nav-list">
+          <a href="#macros" class="footer-link">Macros Catalog</a>
+          <a href="#setup" class="footer-link">Setup Guide</a>
+          <a href="configs/" class="footer-link">Configs Hub</a>
+          <a href="guides.html" class="footer-link">Guides &amp; Forum</a>
+          <a href="javascript:void(0)" onclick="openDiscordGuideModal()" class="footer-link"><i class="fab fa-discord" style="color:#5865F2;"></i> Role &amp; Key Guide</a>
+          <a href="https://discord.gg/cys" target="_blank" rel="noopener" class="footer-link">Discord Community</a>
+        </div>
+      </div>
+      <div class="footer-legal-col">
+        <h4 class="footer-heading">Legal &amp; Safety</h4>
+        <div class="footer-nav-list">
+          <button type="button" class="footer-link footer-btn-link" onclick="openLegalModal('terms')"><i class="fas fa-file-contract"></i> Terms of Service</button>
+          <button type="button" class="footer-link footer-btn-link" onclick="openLegalModal('privacy')"><i class="fas fa-user-shield"></i> Privacy Policy</button>
+          <a href="terms.html" class="footer-link-sub">Terms (Direct Page)</a>
+          <a href="privacy.html" class="footer-link-sub">Privacy (Direct Page)</a>
+        </div>
+      </div>
     </div>
   </footer>
 
@@ -414,7 +479,7 @@
   <button class="floating-donate" id="donateBtn"><i class="fas fa-gift"></i><span>Donate</span></button>
 
   <!-- Donate Modal -->
-  <div class="donate-modal" id="donateModal" role="dialog" aria-modal="true">
+  <div class="donate-modal" id="donateModal" role="dialog" aria-modal="true" style="display: none;">
     <div class="modal-backdrop" id="modalBackdrop"></div>
     <div class="modal-content">
       <button class="modal-close" id="modalClose" aria-label="Close"><i class="fas fa-times"></i></button>
@@ -450,7 +515,7 @@
   </div>
 
   <!-- WRITE REVIEW MODAL -->
-  <div class="review-modal" id="reviewModal" role="dialog" aria-modal="true">
+  <div class="review-modal" id="reviewModal" role="dialog" aria-modal="true" style="display: none;">
     <div class="modal-backdrop" id="reviewModalBackdrop" onclick="closeReviewModal()"></div>
     <div class="modal-content review-modal-content">
       <button class="modal-close" id="reviewModalClose" onclick="closeReviewModal()" aria-label="Close"><i class="fas fa-times"></i></button>
@@ -566,7 +631,7 @@
   </div>
 
   <!-- USER PROFILE & USAGE STATS MODAL -->
-  <div class="user-profile-modal" id="userProfileModal" role="dialog" aria-modal="true">
+  <div class="user-profile-modal" id="userProfileModal" role="dialog" aria-modal="true" style="display: none;">
     <div class="modal-backdrop" id="userProfileModalBackdrop" onclick="closeUserProfileModal()"></div>
     <div class="modal-content profile-modal-content">
       <button class="modal-close" id="profileModalClose" onclick="closeUserProfileModal()" aria-label="Close"><i class="fas fa-times"></i></button>
@@ -643,9 +708,282 @@
     </div>
   </div>
 
+  <!-- In-Page Legal (Terms & Privacy) Modal -->
+  <div class="modal-overlay" id="legalModal" role="dialog" aria-modal="true" style="display: none;">
+    <div class="modal-box legal-modal-box">
+      <div class="legal-modal-header">
+        <div class="legal-tab-switch">
+          <button type="button" class="legal-tab-btn active" id="tabBtnTerms" onclick="switchLegalTab('terms')">
+            <i class="fas fa-file-contract"></i>
+            <span>Terms of Service</span>
+          </button>
+          <button type="button" class="legal-tab-btn" id="tabBtnPrivacy" onclick="switchLegalTab('privacy')">
+            <i class="fas fa-user-shield"></i>
+            <span>Privacy Policy</span>
+          </button>
+        </div>
+        <button type="button" class="modal-close" onclick="closeLegalModal()" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="legal-modal-body">
+        <!-- Terms Pane -->
+        <div class="legal-pane active" id="legalPaneTerms">
+          <div class="legal-pane-header">
+            <h2>Terms of Service</h2>
+            <span class="legal-badge">Effective: August 2026</span>
+          </div>
+          <p class="legal-intro">By using Cys Macros, Key System Bot, and Cys Config Hub ("the Services"), you agree to these terms. If you do not agree, please do not use the macros or website.</p>
+          
+          <div class="legal-section">
+            <h3>1. General Rules</h3>
+            <ul>
+              <li>You must be at least 13 years old to use the Services.</li>
+              <li>You must follow Discord's Terms of Service and Community Guidelines when interacting with our community and bot.</li>
+            </ul>
+          </div>
+
+          <div class="legal-section">
+            <h3>2. Keys &amp; Role Access</h3>
+            <ul>
+              <li>License keys and role access (including Donator tiers) are granted for personal, authorized use.</li>
+              <li>We reserve the right to revoke keys or access if a user attempts to crack, exploit, resell, or distribute unauthorized bypasses to our services.</li>
+            </ul>
+          </div>
+
+          <div class="legal-section">
+            <h3>3. Config Hub &amp; Cloud Presets</h3>
+            <ul>
+              <li>You are responsible for any macro configuration files you upload.</li>
+              <li>You agree not to upload malicious software, scripts, grabbers, or files intended to harm others.</li>
+              <li>You can delete your own uploaded configs at any time. Administrators may remove configs that violate community rules.</li>
+            </ul>
+          </div>
+
+          <div class="legal-section">
+            <h3>4. Service Availability &amp; Disclaimer</h3>
+            <p>The Services are provided as-is without warranties. Macro automation is subject to game updates. We strive to maintain high uptime and issue prompt macro patches.</p>
+          </div>
+
+          <div class="legal-section">
+            <h3>5. Contact</h3>
+            <p>Questions about these terms? Join our official <a href="https://discord.gg/cys" target="_blank" rel="noopener">Discord Server</a>.</p>
+          </div>
+        </div>
+
+        <!-- Privacy Pane -->
+        <div class="legal-pane" id="legalPanePrivacy">
+          <div class="legal-pane-header">
+            <h2>Privacy Policy</h2>
+            <span class="legal-badge">Effective: August 2026</span>
+          </div>
+          <p class="legal-intro">This policy outlines what data Key System Bot, CysLink, and Cys Config Hub store and how it is used.</p>
+
+          <div class="legal-section">
+            <h3>1. What We Store</h3>
+            <ul>
+              <li><strong>Discord Profile:</strong> Your Discord User ID, username, and avatar URL to link your uploaded configs and role access.</li>
+              <li><strong>Config Files:</strong> Configuration files, names, and tags you choose to upload publicly.</li>
+              <li><strong>License Keys &amp; Telemetry:</strong> Key redemption status and authorized server IDs for the verification bot. CysLink relay only transmits real-time macro telemetry between your PC and your browser session.</li>
+            </ul>
+          </div>
+
+          <div class="legal-section">
+            <h3>2. How We Use It</h3>
+            <ul>
+              <li>To verify your role in Discord and authenticate your login.</li>
+              <li>To display your username as the creator on configs you upload.</li>
+              <li>To prevent spam and block malicious uploads.</li>
+            </ul>
+          </div>
+
+          <div class="legal-section">
+            <h3>3. Data Storage &amp; Deletion</h3>
+            <ul>
+              <li>Data is stored securely on Cloudflare's global infrastructure. We never sell or share user data with third parties.</li>
+              <li>You can delete your uploaded configs at any time directly through the Config Hub.</li>
+              <li>For full account data removal, contact us via our <a href="https://discord.gg/cys" target="_blank" rel="noopener">Discord Server</a>.</li>
+            </ul>
+          </div>
+
+          <div class="legal-section">
+            <h3>4. Contact</h3>
+            <p>Questions? Reach out on our official <a href="https://discord.gg/cys" target="_blank" rel="noopener">Discord Server</a>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="legal-modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeLegalModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Purchase Legal Agreement Modal -->
+  <div class="modal-overlay" id="purchaseConsentModal" role="dialog" aria-modal="true" style="display: none;">
+    <div class="modal-box purchase-modal-box">
+      <div class="modal-header">
+        <div class="purchase-header-title">
+          <i class="fas fa-shield-alt" style="color:var(--prim);"></i>
+          <h3>Terms &amp; Purchase Agreement</h3>
+        </div>
+        <button type="button" class="modal-close" onclick="closePurchaseConsentModal()" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="purchase-modal-body">
+        <div class="purchase-item-banner">
+          <div class="purchase-item-icon"><i class="fas fa-crown"></i></div>
+          <div class="purchase-item-meta">
+            <span class="purchase-item-label">Redirecting to Roblox Gamepass:</span>
+            <div class="purchase-item-name" id="purchaseTargetName">Premium Access</div>
+          </div>
+        </div>
+
+        <div class="purchase-terms-notice">
+          <p>Before proceeding to Roblox, please confirm your agreement with our service policies:</p>
+          <ul class="purchase-notice-list">
+            <li><i class="fas fa-check"></i> Purchases are processed securely via Roblox Corporation.</li>
+            <li><i class="fas fa-check"></i> Premium unlocks access to Donator macro builds and priority updates.</li>
+            <li><i class="fas fa-check"></i> Reselling, distributing, or cracking keys is strictly prohibited.</li>
+          </ul>
+        </div>
+
+        <div class="purchase-policy-links">
+          <button type="button" class="btn-text-legal" onclick="openLegalModal('terms')">
+            <i class="fas fa-file-contract"></i> View Terms of Service
+          </button>
+          <button type="button" class="btn-text-legal" onclick="openLegalModal('privacy')">
+            <i class="fas fa-user-shield"></i> View Privacy Policy
+          </button>
+        </div>
+
+        <label class="purchase-agree-row" for="purchaseAgreeCheck">
+          <input type="checkbox" id="purchaseAgreeCheck" checked />
+          <span class="agree-label-text">I have read and agree to the <strong>Terms of Service</strong> and <strong>Privacy Policy</strong>.</span>
+        </label>
+      </div>
+
+      <div class="purchase-modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closePurchaseConsentModal()">Cancel</button>
+        <button type="button" class="btn btn-pink btn-proceed-roblox" id="btnProceedRoblox" onclick="confirmPurchaseRedirect()">
+          <span>Continue to Roblox</span>
+          <i class="fas fa-external-link-alt"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Post-Purchase Discord Role & Key Guide Modal -->
+  <div class="modal-overlay" id="discordGuideModal" role="dialog" aria-modal="true" style="display: none;">
+    <div class="modal-box discord-guide-box">
+      <div class="modal-header">
+        <div class="discord-guide-header-title">
+          <div class="discord-guide-icon-badge">
+            <i class="fab fa-discord"></i>
+          </div>
+          <div>
+            <div class="discord-guide-subtitle">
+              <span class="guide-status-dot"></span> Guide: Purchasing Premium
+            </div>
+            <h3 class="discord-guide-main-title">How to get Discord Role</h3>
+          </div>
+        </div>
+        <button type="button" class="modal-close" onclick="closeDiscordGuideModal()" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="discord-guide-body">
+        <div class="guide-alert-bar">
+          <i class="fas fa-external-link-alt"></i>
+          <div class="guide-alert-text">
+            <strong>Roblox Checkout opened in a new tab!</strong>
+            <span>Complete your purchase on Roblox, then follow the 2 quick steps below to claim your Donator role &amp; key:</span>
+          </div>
+        </div>
+
+        <div class="guide-card-steps">
+          <!-- Step 1 (formerly Step 3) -->
+          <div class="guide-card-step">
+            <div class="step-badge">1</div>
+            <div class="step-details">
+              <div class="step-title">Do <code>/verify</code> in 🤖・bot-commands</div>
+              <div class="step-desc">
+                Go to the bot commands channel on our Discord and run the verify command:
+              </div>
+              <div class="step-cmd-row">
+                <a href="discord://-/channels/1338965034616881263/1346644534729379901" onclick="openDiscordChannel('1346644534729379901', event)" class="guide-channel-tag" title="Open in Discord App">
+                  <i class="fas fa-robot"></i> 🤖・bot-commands
+                </a>
+                <span class="cmd-copy-pill" onclick="copyDiscordCommand('/verify')" title="Click to copy command">
+                  <code>/verify</code>
+                  <i class="fas fa-copy"></i>
+                </span>
+                <span class="cmd-bot-tag"><i class="fas fa-robot"></i> with @RoVer</span>
+              </div>
+              <div class="step-subcallout">
+                <i class="fas fa-info-circle"></i>
+                <span>If your account age is under 16, make a <a href="discord://-/channels/1338965034616881263/1345531927938994227" onclick="openDiscordChannel('1345531927938994227', event)" class="guide-link-accent"><i class="fas fa-ticket-alt"></i> ticket</a></span>
+              </div>
+              <div class="step-help-link">
+                If you’re connected to the wrong account, you can change it here: <a href="https://rover.link/verify" target="_blank" rel="noopener" class="guide-link-accent">https://rover.link/verify <i class="fas fa-external-link-alt"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2 (formerly Step 4) -->
+          <div class="guide-card-step">
+            <div class="step-badge">2</div>
+            <div class="step-details">
+              <div class="step-title">Get Key</div>
+              <div class="step-desc">
+                Claim your role and donator key in <a href="discord://-/channels/1338965034616881263/1367495889819664414" onclick="openDiscordChannel('1367495889819664414', event)" class="guide-channel-tag" title="Open in Discord App"><i class="fas fa-key"></i> #get-key</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trouble Downloading Callout -->
+        <div class="guide-trouble-box">
+          <div class="trouble-header">
+            <i class="fas fa-shield-alt"></i>
+            <strong>Trouble Downloading?</strong>
+          </div>
+          <p class="trouble-text">
+            Do <code class="trouble-cmd" onclick="copyDiscordCommand('*tag exclusion')" title="Click to copy">*tag exclusion</code> in 
+            <a href="discord://-/channels/1338965034616881263/1346644534729379901" onclick="openDiscordChannel('1346644534729379901', event)" class="guide-channel-tag" title="Open in Discord App"><i class="fas fa-robot"></i> 🤖・bot-commands</a>
+          </p>
+        </div>
+
+        <!-- Discord Taskbar / Foreground Focus Banner -->
+        <div class="discord-focus-hint" id="discordFocusHint" style="display: none;">
+          <i class="fab fa-discord"></i>
+          <div>
+            <strong>Discord opened in background!</strong>
+            <span>Windows keeps your browser in front. Click the <strong>Discord icon on your taskbar</strong> to view <strong>🤖・bot-commands</strong>.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="discord-guide-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeDiscordGuideModal()">Done</button>
+        <a href="https://discord.com/channels/1338965034616881263/1346644534729379901" target="_blank" rel="noopener" class="btn-discord-web-sub">
+          <i class="fas fa-globe"></i> Open in Web
+        </a>
+        <a href="discord://-/channels/1338965034616881263/1346644534729379901" onclick="openDiscordChannel('1346644534729379901', event)" class="btn btn-discord-action" id="btnOpenDiscordApp">
+          <i class="fab fa-discord"></i>
+          <span>Open Discord App</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <script src="script.js?v=2.4"></script>
+  <script src="script.js?v=2.8"></script>
 </body>
 </html>
