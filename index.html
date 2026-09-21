@@ -83,7 +83,7 @@
       </div>
 
       <div class="drawer-legal-row">
-        <button type="button" class="drawer-legal-btn" onclick="openLegalModal('terms'); closeMobileDrawer();">Terms of Service</button>
+        <button type="button" class="drawer-legal-btn" onclick="openLegalModal('terms'); closeMobileDrawer();">Terms of Service <span style="color: var(--pink); font-size: 0.8em; font-weight: bold; margin-left: 4px;">(Updated)</span></button>
         <span class="drawer-legal-sep">·</span>
         <button type="button" class="drawer-legal-btn" onclick="openLegalModal('privacy'); closeMobileDrawer();">Privacy Policy</button>
       </div>
@@ -486,7 +486,7 @@
       <div class="footer-legal-col">
         <h4 class="footer-heading">Legal &amp; Safety</h4>
         <div class="footer-nav-list">
-          <button type="button" class="footer-link footer-btn-link" onclick="openLegalModal('terms')"><i class="fas fa-file-contract"></i> Terms of Service</button>
+          <button type="button" class="footer-link footer-btn-link" onclick="openLegalModal('terms')"><i class="fas fa-file-contract"></i> Terms of Service <span style="color: var(--pink); font-size: 0.8em; font-weight: bold; margin-left: 4px;">(Updated)</span></button>
           <button type="button" class="footer-link footer-btn-link" onclick="openLegalModal('privacy')"><i class="fas fa-user-shield"></i> Privacy Policy</button>
           <a href="terms.html" class="footer-link-sub">Terms (Direct Page)</a>
           <a href="privacy.html" class="footer-link-sub">Privacy (Direct Page)</a>
@@ -729,13 +729,13 @@
   </div>
 
   <!-- In-Page Legal (Terms & Privacy) Modal -->
-  <div class="modal-overlay" id="legalModal" role="dialog" aria-modal="true" style="display: none;">
+  <div class="modal-overlay" id="legalModal" role="dialog" aria-modal="true" style="display: none; z-index: 2100 !important;">
     <div class="modal-box legal-modal-box">
       <div class="legal-modal-header">
         <div class="legal-tab-switch">
           <button type="button" class="legal-tab-btn active" id="tabBtnTerms" onclick="switchLegalTab('terms')">
             <i class="fas fa-file-contract"></i>
-            <span>Terms of Service</span>
+            <span>Terms of Service <span style="color: var(--pink); font-size: 0.8em; font-weight: bold; margin-left: 4px;">(Updated)</span></span>
           </button>
           <button type="button" class="legal-tab-btn" id="tabBtnPrivacy" onclick="switchLegalTab('privacy')">
             <i class="fas fa-user-shield"></i>
@@ -752,9 +752,9 @@
         <div class="legal-pane active" id="legalPaneTerms">
           <div class="legal-pane-header">
             <h2>Terms of Service</h2>
-            <span class="legal-badge">Effective: August 2026</span>
+            <span class="legal-badge" style="color: var(--pink); border-color: var(--pink); box-shadow: 0 0 10px rgba(212,45,204,0.3);">Recently Updated</span>
           </div>
-          <p class="legal-intro">By using Cys Macros, Key System Bot, and Cys Config Hub ("the Services"), you agree to these terms. If you do not agree, please do not use the macros or website.</p>
+          <p class="legal-intro">By using Cys Macros, Key System Bot, and Cys Config Hub ("the Services"), you agree to these terms. By purchasing, you agree to all of these terms; if you did not read these terms prior to purchase, that is your sole responsibility. If you do not agree, please do not use the macros or website.</p>
           
           <div class="legal-section">
             <h3>1. General Rules</h3>
@@ -784,10 +784,44 @@
           <div class="legal-section">
             <h3>4. Service Availability &amp; Disclaimer</h3>
             <p>The Services are provided as-is without warranties. Macro automation is subject to game updates. We strive to maintain high uptime and issue prompt macro patches.</p>
+            <ul>
+              <li>We reserve the right to update these terms at any time without prior notice.</li>
+              <li>We reserve the right to discontinue production, discontinue support for specific games, or shut down the entire server at any time without notice.</li>
+            </ul>
           </div>
 
           <div class="legal-section">
-            <h3>5. Contact</h3>
+            <h3>5. Purchases and Refund Policy</h3>
+            <p>All purchases for Premium/Donator access are final and non-refundable. By purchasing, you acknowledge that you are receiving a digital service that cannot be returned.</p>
+          </div>
+
+          <div class="legal-section">
+            <h3>6. Assumption of Risk &amp; Ban Disclaimer</h3>
+            <p>You use our macros and services entirely at your own risk. We are not responsible or liable for any account bans, suspensions, or penalties you may receive in any game or platform while using our tools.</p>
+          </div>
+
+          <div class="legal-section">
+            <h3>7. Limitation of Liability</h3>
+            <p>In no event shall Cys Macros or its creators be held liable for any direct, indirect, incidental, or consequential damages resulting from the use or inability to use our services.</p>
+          </div>
+
+          <div class="legal-section">
+            <h3>8. Intellectual Property</h3>
+            <p>All software, branding, and assets provided by Cys remain our exclusive intellectual property. You may not copy, reverse-engineer, modify, or distribute our software without explicit permission.</p>
+          </div>
+
+          <div class="legal-section">
+            <h3>9. Non-Affiliation</h3>
+            <p>Cys Macros is an independent service and is not affiliated with, endorsed by, or sponsored by Roblox Corporation, Discord, or any specific game developers.</p>
+          </div>
+
+          <div class="legal-section">
+            <h3>10. Termination of Access</h3>
+            <p>We reserve the right to terminate or suspend your access to the Services, Discord server, and your license key at any time, without refund, if you violate these terms or engage in disruptive or toxic behavior.</p>
+          </div>
+
+          <div class="legal-section">
+            <h3>11. Contact</h3>
             <p>Questions about these terms? Join our official <a href="https://discord.gg/cys" target="_blank" rel="noopener">Discord Server</a>.</p>
           </div>
         </div>
@@ -873,7 +907,7 @@
 
         <div class="purchase-policy-links">
           <button type="button" class="btn-text-legal" onclick="openLegalModal('terms')">
-            <i class="fas fa-file-contract"></i> View Terms of Service
+            <i class="fas fa-file-contract"></i> View Terms of Service <span style="color: var(--pink); font-size: 0.8em; font-weight: bold; margin-left: 4px;">(Updated)</span>
           </button>
           <button type="button" class="btn-text-legal" onclick="openLegalModal('privacy')">
             <i class="fas fa-user-shield"></i> View Privacy Policy
